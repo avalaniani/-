@@ -155,12 +155,11 @@
   /* ─── App Layout ─── */
   #app { display: none; min-height: 100vh; }
 
-  .app-wrapper { display: flex; min-height: 100vh; }
+  .app-wrapper { min-height: 100vh; }
 
   /* Sidebar */
   .sidebar {
     width: 250px;
-    min-width: 250px;
     background: var(--card);
     border-left: 1px solid var(--border);
     display: flex;
@@ -169,11 +168,12 @@
     top: 0;
     right: 0;
     height: 100vh;
-    z-index: 100;
-    transition: transform 0.3s;
-    /* Hidden by default on mobile — shown via media query on desktop */
+    z-index: 200;
+    transition: transform 0.25s ease;
     transform: translateX(100%);
+    will-change: transform;
   }
+  .sidebar.open { transform: translateX(0); }
 
   /* Desktop: always show sidebar, hide hamburger */
   @media (min-width: 769px) {
@@ -268,10 +268,12 @@
 
   /* Main Content */
   .main-content {
-    flex: 1;
     margin-right: 0;
     min-height: 100vh;
     background: var(--bg);
+  }
+  @media (min-width: 769px) {
+    .main-content { margin-right: 250px; }
   }
 
   /* Top Bar */
@@ -721,15 +723,13 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.5);
-    z-index: 99;
+    background: rgba(0,0,0,0.45);
+    z-index: 150;
   }
   .sidebar-overlay.open { display: block; }
 
   /* Responsive */
   @media (max-width: 768px) {
-    .sidebar { transform: translateX(100%); }
-    .sidebar.open { transform: translateX(0); }
     .page { padding: 16px; }
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
     .tasks-grid { grid-template-columns: 1fr; }
