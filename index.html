@@ -175,9 +175,11 @@
     transform: translateX(100%);
   }
 
-  /* Desktop: always show sidebar */
+  /* Desktop: always show sidebar, hide hamburger */
   @media (min-width: 769px) {
     .sidebar { transform: translateX(0) !important; }
+    .hamburger { display: none !important; }
+    .sidebar-overlay { display: none !important; }
   }
 
   .sidebar-header {
@@ -272,12 +274,6 @@
     background: var(--bg);
   }
 
-  /* Desktop: push content to account for fixed sidebar */
-  @media (min-width: 769px) {
-    .main-content { margin-right: 250px; }
-    .hamburger { display: none !important; }
-  }
-
   /* Top Bar */
   .topbar {
     background: var(--card);
@@ -297,7 +293,7 @@
   .topbar-actions { display: flex; align-items: center; gap: 12px; }
 
   .hamburger {
-    display: none;
+    display: flex;
     background: none;
     border: none;
     color: var(--text);
@@ -720,6 +716,16 @@
   .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
   .empty-state p { font-size: 14px; }
 
+  /* Sidebar overlay — hidden by default, shown on mobile when open */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 99;
+  }
+  .sidebar-overlay.open { display: block; }
+
   /* Responsive */
   @media (max-width: 768px) {
     .sidebar { transform: translateX(100%); }
@@ -730,15 +736,6 @@
     .topbar { padding: 0 16px; }
     .search-input { width: 140px; }
     .search-input:focus { width: 160px; }
-    .sidebar-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-      z-index: 99;
-    }
-    .sidebar-overlay.open { display: block; }
-
     /* Worker page tablet */
     #page-worker-hours .card { padding: 14px; }
     .hours-input { width: 78px !important; font-size: 12px; padding: 4px 5px; }
