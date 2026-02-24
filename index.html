@@ -1622,6 +1622,8 @@ function login(user) {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   document.getElementById('loginError').style.display = 'none';
+  // Always start with sidebar closed (mobile)
+  closeSidebar();
 
   // Setup user header
   const av = document.getElementById('userAvatar');
@@ -1719,6 +1721,7 @@ function goPage(pageId) {
 
 function routeToRole() {
   const defaults = { admin:'admin-dashboard', ceo:'ceo-dashboard', employee:'emp-dashboard', worker:'worker-hours' };
+  closeSidebar();
   goPage(defaults[currentUser.role]);
 }
 
