@@ -738,8 +738,9 @@
     .search-input:focus { width: 160px; }
     /* Worker page tablet */
     #page-worker-hours .card { padding: 14px; }
-    .hours-input { width: 74px !important; font-size: 12px; padding: 4px 4px; }
-    .hours-table th, .hours-table td { padding: 7px 4px; font-size: 11px; }
+    .hours-input { width: 70px !important; font-size: 11px; padding: 3px 3px; }
+    .hi-time { width: 70px !important; }
+    .hours-table th, .hours-table td { padding: 6px 3px; font-size: 11px; }
     #worker-name-display { font-size: 18px !important; }
     #worker-total-hours, #worker-work-days, #worker-avg-hours { font-size: 22px !important; }
   }
@@ -771,8 +772,9 @@
 
     /* Hours table compact */
     .hours-table { font-size: 11px; }
-    .hours-table th, .hours-table td { padding: 5px 3px; }
-    .hours-input { width: 62px !important; font-size: 11px !important; padding: 3px 3px !important; }
+    .hours-table th, .hours-table td { padding: 5px 2px; }
+    .hours-input { width: 58px !important; font-size: 10px !important; padding: 2px 2px !important; }
+    .hi-time { width: 58px !important; }
 
     /* Signature inputs full width */
     .sig-box input.search-input { width: 100% !important; box-sizing: border-box; }
@@ -793,8 +795,9 @@
     /* Very narrow phones (320px) */
     #page-worker-hours { padding: 6px !important; }
     #page-worker-hours > .card { padding: 10px 8px !important; }
-    .hours-input { width: 54px !important; font-size: 10px !important; padding: 2px 2px !important; }
-    .hours-table th, .hours-table td { padding: 4px 2px; }
+    .hours-input { width: 50px !important; font-size: 10px !important; padding: 2px 1px !important; }
+    .hi-time { width: 50px !important; }
+    .hours-table th, .hours-table td { padding: 3px 2px; }
     /* Hide notes column on very small screens */
     .hours-table th:last-child, .hours-table td:last-child { display: none; }
     .btn-sm { padding: 5px 7px; font-size: 11px; }
@@ -1399,7 +1402,7 @@
             🔒 הדוח נחתם על ידי מנהל האתר — לא ניתן לערוך שעות. לשינוי, פנה למנהל האתר לביטול החתימה.
           </div>
           <div class="table-wrap" style="-webkit-overflow-scrolling:touch;">
-            <table class="hours-table" style="min-width:380px;">
+            <table class="hours-table" style="min-width:320px;">
               <thead><tr><th>תאריך</th><th>יום</th><th>הגעה</th><th>יציאה</th><th>שעות</th><th>הערות</th></tr></thead>
               <tbody id="worker-hours-table"></tbody>
             </table>
@@ -1431,10 +1434,15 @@
                   <div style="font-size:13px;font-weight:700;color:#7b63d8;">📅 חתימה על ימים ספציפיים</div>
                   <button class="btn btn-sm" style="background:#e8e0ff;color:#7b63d8;border:1px solid #d8c8f5;font-size:11px;padding:5px 10px;" onclick="setSignToday()">📌 סמן להיום</button>
                 </div>
-                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                  <input type="date" id="sigDayFrom" class="search-input" style="width:150px;min-width:150px;flex:1;">
-                  <span style="color:var(--text2);font-size:13px;white-space:nowrap;">עד</span>
-                  <input type="date" id="sigDayTo" class="search-input" style="width:150px;min-width:150px;flex:1;">
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="font-size:13px;font-weight:700;color:#7b63d8;white-space:nowrap;min-width:24px;">מ:</span>
+                    <input type="date" id="sigDayFrom" class="search-input" style="flex:1;min-width:0;">
+                  </div>
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="font-size:13px;font-weight:700;color:#7b63d8;white-space:nowrap;min-width:24px;">עד:</span>
+                    <input type="date" id="sigDayTo" class="search-input" style="flex:1;min-width:0;">
+                  </div>
                 </div>
                 <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px;">
                   <input type="password" id="sigPasswordVerifyPartial" class="search-input" placeholder="סיסמת מנהל אתר" style="width:190px;flex:1;min-width:0;">
@@ -3336,8 +3344,8 @@ function renderWorkerHours(viewWorkerId, viewMonth, viewYear) {
     <tr data-day="${d}" style="${rowBg}${locked ? 'opacity:0.75;' : ''}${leftBorder}${isToday ? 'font-weight:600;' : ''}">
       <td style="font-weight:${isToday?'700':'600'};">${todayBadge}${d}/${month+1} ${signedBadge}</td>
       <td style="color:${isWeekend ? '#c0506a' : 'var(--text2)'};">${dayNames[dayIdx]}</td>
-      <td><input class="hours-input" type="time" value="${entry.start||''}" onchange="updateHourEntry(${d},'start',this.value,'${workerId}')" ${locked || isViewer ? 'disabled' : ''}></td>
-      <td><input class="hours-input" type="time" value="${entry.end||''}" onchange="updateHourEntry(${d},'end',this.value,'${workerId}')" ${locked || isViewer ? 'disabled' : ''}></td>
+      <td><input class="hours-input hi-time" type="time" value="${entry.start||''}" onchange="updateHourEntry(${d},'start',this.value,'${workerId}')" ${locked || isViewer ? 'disabled' : ''}></td>
+      <td><input class="hours-input hi-time" type="time" value="${entry.end||''}" onchange="updateHourEntry(${d},'end',this.value,'${workerId}')" ${locked || isViewer ? 'disabled' : ''}></td>
       <td style="font-weight:700;color:#4a88b8;text-align:center;" class="computed-hours">${computed > 0 ? computed.toFixed(1) : '—'}</td>
       <td><input class="hours-input" type="text" value="${entry.note||''}" onchange="updateHourEntry(${d},'note',this.value,'${workerId}')" placeholder="הערה..." ${locked || isViewer ? 'disabled' : ''}></td>
     </tr>`;
