@@ -1,7 +1,0 @@
-{
-  "buildCommand": null,
-  "outputDirectory": ".",
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/workflow-pro-v11-live.html" }
-  ]
-}
