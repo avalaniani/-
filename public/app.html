@@ -1706,15 +1706,11 @@
 // הקוד הרגיש רץ בשרת בלבד — הדפדפן רואה רק תוצאות
 // ═══════════════════════════════════════════════════════════════
 
-// ── Token storage ──────────────────────────────────────────────
-let _wfpToken = sessionStorage.getItem('wfp_token') || null;
+// ── Token storage — זיכרון בלבד (sessionStorage חסום ב-Edge) ──
+let _wfpToken = null;
 
 function getToken() { return _wfpToken; }
-function setToken(t) {
-  _wfpToken = t;
-  if (t) sessionStorage.setItem('wfp_token', t);
-  else sessionStorage.removeItem('wfp_token');
-}
+function setToken(t) { _wfpToken = t; }
 
 // ── API fetch wrapper ─────────────────────────────────────────
 async function apiFetch(endpoint, method = 'GET', body = null) {
