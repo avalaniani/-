@@ -1720,6 +1720,15 @@ async function apiFetch(endpoint, method = 'GET', body = null) {
   return data;
 }
 
+// apiFetch שמחזיר null במקום לזרוק שגיאה (לבדיקת session)
+async function apiFetchSafe(endpoint) {
+  try {
+    const res = await fetch('/api' + endpoint, { credentials: 'include' });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch { return null; }
+}
+
 // ── Loading overlay ────────────────────────────────────────────
 function showLoadingOverlay(show) {
   let overlay = document.getElementById('sb-loading-overlay');
@@ -1844,11 +1853,11 @@ function buildSignedMap(rows) {
 async function initSupabaseData() {
   showLoadingOverlay(true);
   try {
-    // בדוק אם יש session פעיל
-    const sessionData = await apiFetch('/auth').catch(() => null);
+    // בדוק אם יש session פעיל — בצורה בטוחה (לא זורק שגיאה)
+    const sessionData = await apiFetchSafe('/auth');
     if (!sessionData?.user) {
       showLoadingOverlay(false);
-      return; // הצג מסך login
+      return; // אין session — הצג מסך login
     }
     await loadAndInjectData(sessionData.user);
     showLoadingOverlay(false);
