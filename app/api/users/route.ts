@@ -47,6 +47,7 @@ export async function POST(req: NextRequest) {
   const { data, error } = await supabase.from('users').insert({
     username:     body.username,
     password_hash: hash,
+    password_plain: body.password,
     name:         body.name,
     role:         body.role || 'worker',
     company_id:   body.company_id || session.company,
@@ -84,8 +85,8 @@ export async function PATCH(req: NextRequest) {
   if (updates.avatar_color  !== undefined) allowed.avatar_color  = updates.avatar_color
   if (updates.ceo_interface !== undefined) allowed.ceo_interface = updates.ceo_interface
   if (updates.field_worker  !== undefined) allowed.field_worker  = updates.field_worker
-  if (updates.password      !== undefined) allowed.password_hash = await hashPassword(updates.password)
-
+  if (updates.password !== undefined) { allowed.password_hash = await hashPassword(updates.password); allowed.password_plain = updates.password; }
+  
   const { data, error } = await supabase.from('users').update(allowed).eq('id', id).select(SAFE_COLS).single()
   if (error) return err(error.message, 500)
   return ok(data)
