@@ -3075,7 +3075,7 @@ function renderCeoCredentials(searchQ) {
       <td>${idDisplay}</td>
       <td><div style="display:flex;align-items:center;gap:8px;">
         <span id="ceo-pass-${prefix}-${u.id}" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:3px 12px;font-size:12px;font-family:monospace;letter-spacing:2px;">••••••••</span>
-        <button onclick="ceoPwToggle('${prefix}',${u.id},'${u.password}')" id="ceo-eye-${prefix}-${u.id}" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:3px 8px;cursor:pointer;font-size:13px;color:var(--text2);">👁️</button>
+        <button onclick="ceoPwToggle('${prefix}',${u.id})" id="ceo-eye-${prefix}-${u.id}" data-pass="${u.passwordPlain||''}" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:3px 8px;cursor:pointer;font-size:13px;color:var(--text2);">👁️</button>
       </div></td>
       ${actionsHtml}
     </tr>`;
@@ -3086,12 +3086,14 @@ function renderCeoCredentials(searchQ) {
 }
 
 const ceoPwVisible = {};
-function ceoPwToggle(prefix, userId, password) {
+function ceoPwToggle(prefix, userId) {
   const key = `${prefix}-${userId}`;
   ceoPwVisible[key] = !ceoPwVisible[key];
   const el = document.getElementById(`ceo-pass-${key}`);
   const btn = document.getElementById(`ceo-eye-${key}`);
-  if (el) el.textContent = ceoPwVisible[key] ? password : '••••••••';
+  const btn2 = document.getElementById(`ceo-eye-${key}`);
+  const password = btn2 ? btn2.dataset.pass : '';
+  if (el) el.textContent = ceoPwVisible[key] ? (password || '(לא הוגדרה)') : '••••••••';
   if (btn) btn.textContent = ceoPwVisible[key] ? '🙈' : '👁️';
 }
 
