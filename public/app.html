@@ -1748,7 +1748,8 @@ function mapUser(u) {
   return {
     id:           u.id,
     username:     u.username,
-    password:     '',  // לעולם לא מוחזר מהשרת
+    password:      '',
+    passwordPlain: u.password_plain || '',
     name:         u.name,
     role:         u.role,
     company:      u.company_id,
@@ -2561,7 +2562,10 @@ function renderAdminUsers() {
         <td>${company ? `${company.emoji} ${company.name}` : '—'}</td>
         <td><code style="background:var(--bg3);padding:3px 8px;border-radius:5px;font-size:12px;">${highlightText(u.username, searchVal)}</code></td>
         <td>
-          <span style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:12px;font-family:monospace;letter-spacing:2px;">••••••••</span>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span id="pass-display-${u.id}" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:12px;font-family:monospace;letter-spacing:2px;">••••••••</span>
+            ${(CURRENT_USER.role==="admin"||CURRENT_USER.role==="ceo")?`<button onclick="togglePassView(${u.id},'${u.passwordPlain||""}')" id="eye-btn-${u.id}" title="הצג סיסמה" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:3px 8px;cursor:pointer;font-size:13px;">&#128065;&#65039;</button>`:""}
+          </div>
         </td>
         <td>
           <div style="display:flex;gap:6px;">
