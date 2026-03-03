@@ -2564,7 +2564,7 @@ function renderAdminUsers() {
         <td>
           <div style="display:flex;align-items:center;gap:6px;">
             <span id="pass-display-${u.id}" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:12px;font-family:monospace;letter-spacing:2px;">••••••••</span>
-            ${(CURRENT_USER.role==="admin"||CURRENT_USER.role==="ceo")?`<button onclick="togglePassView(${u.id},'${u.passwordPlain||""}')" id="eye-btn-${u.id}" title="הצג סיסמה" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:3px 8px;cursor:pointer;font-size:13px;">&#128065;&#65039;</button>`:""}
+            ${(currentUser.role==="admin"||currentUser.role==="ceo")?`<button onclick="togglePassView(${u.id},'${u.passwordPlain||""}')" id="eye-btn-${u.id}" title="הצג סיסמה" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:3px 8px;cursor:pointer;font-size:13px;">&#128065;&#65039;</button>`:""}
           </div>
         </td>
         <td>
