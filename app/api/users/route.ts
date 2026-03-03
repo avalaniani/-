@@ -4,6 +4,7 @@ import { ok, err, requireAuth } from '@/lib/api'
 import { hashPassword } from '@/lib/auth'
 
 const SAFE_COLS = 'id,username,name,role,company_id,avatar,avatar_color,id_type,id_number,ceo_interface,field_worker'
+const COLS_WITH_PASS = 'id,username,name,role,company_id,avatar,avatar_color,id_type,id_number,ceo_interface,field_worker,password_plain'
 
 export async function GET(req: NextRequest) {
   const session = requireAuth(req)
@@ -12,7 +13,8 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const companyId = searchParams.get('company_id')
 
-  let q = supabase.from('users').select(SAFE_COLS).order('name')
+  const cols = ['admin','ceo'].includes(session.role) ? COLS_WITH_PASS : SAFE_COLS
+  let q = supabase.from('users').select(cols).order('name')
 
   if (session.role === 'admin') {
     if (companyId) q = q.eq('company_id', companyId)
@@ -86,7 +88,7 @@ export async function PATCH(req: NextRequest) {
   if (updates.ceo_interface !== undefined) allowed.ceo_interface = updates.ceo_interface
   if (updates.field_worker  !== undefined) allowed.field_worker  = updates.field_worker
   if (updates.password !== undefined) { allowed.password_hash = await hashPassword(updates.password); allowed.password_plain = updates.password; }
-  
+
   const { data, error } = await supabase.from('users').update(allowed).eq('id', id).select(SAFE_COLS).single()
   if (error) return err(error.message, 500)
   return ok(data)
