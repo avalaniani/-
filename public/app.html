@@ -2561,10 +2561,7 @@ function renderAdminUsers() {
         <td>${company ? `${company.emoji} ${company.name}` : '—'}</td>
         <td><code style="background:var(--bg3);padding:3px 8px;border-radius:5px;font-size:12px;">${highlightText(u.username, searchVal)}</code></td>
         <td>
-          <div style="display:flex;align-items:center;gap:6px;">
-            <span id="pass-display-${u.id}" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:12px;font-family:monospace;letter-spacing:2px;">••••••••</span>
-            <button onclick="togglePassView(${u.id},'${u.password}')" title="הצג/הסתר סיסמה" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:3px 8px;cursor:pointer;font-size:13px;color:var(--text2);" id="eye-btn-${u.id}">👁️</button>
-          </div>
+          <span style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:12px;font-family:monospace;letter-spacing:2px;">••••••••</span>
         </td>
         <td>
           <div style="display:flex;gap:6px;">
@@ -5561,7 +5558,16 @@ async function addUser() {
     DATA.users.push({ id: Math.max(...DATA.users.map(u=>u.id))+1, username, password: pass, name,
       role, company: payload.company_id, avatar: payload.avatar, avatarColor: payload.avatar_color });
   }
-  closeModal(); renderAdminUsers(); showToast('✅ משתמש נוסף!');
+  renderAdminUsers();
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-title">✅ משתמש נוסף בהצלחה!</div>
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:20px;text-align:center;margin:16px 0;">
+      <div style="font-size:13px;color:var(--text3);margin-bottom:8px;">שמור את פרטי הכניסה:</div>
+      <div style="font-size:15px;margin-bottom:6px;">👤 שם משתמש: <strong>${username}</strong></div>
+      <div style="font-size:15px;">🔑 סיסמה: <strong style="background:#fef9c3;padding:2px 10px;border-radius:6px;letter-spacing:1px;">${pass}</strong></div>
+    </div>
+    <div style="font-size:12px;color:var(--red);text-align:center;margin-bottom:16px;">⚠️ הסיסמה לא תוצג שוב — שמור אותה עכשיו!</div>
+    <div class="modal-actions"><button class="btn btn-primary" onclick="closeModal()">הבנתי ✓</button></div>`;
 }
 
 async function saveUser(userId) {
@@ -5589,7 +5595,16 @@ async function doChangePass(userId) {
     const u = DATA.users.find(x => x.id === userId);
     if (u) u.password = np;
   }
-  closeModal(); showToast('✅ סיסמה עודכנה!');
+  const u = DATA.users.find(x => x.id === userId);
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-title">✅ סיסמה עודכנה!</div>
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:20px;text-align:center;margin:16px 0;">
+      <div style="font-size:13px;color:var(--text3);margin-bottom:8px;">פרטי הכניסה החדשים:</div>
+      <div style="font-size:15px;margin-bottom:6px;">👤 שם משתמש: <strong>${u?.username || ''}</strong></div>
+      <div style="font-size:15px;">🔑 סיסמה חדשה: <strong style="background:#fef9c3;padding:2px 10px;border-radius:6px;letter-spacing:1px;">${np}</strong></div>
+    </div>
+    <div style="font-size:12px;color:var(--red);text-align:center;margin-bottom:16px;">⚠️ הסיסמה לא תוצג שוב — שמור אותה עכשיו!</div>
+    <div class="modal-actions"><button class="btn btn-primary" onclick="closeModal()">הבנתי ✓</button></div>`;
 }
 
 async function confirmDeleteUser(userId) {
