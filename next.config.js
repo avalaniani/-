@@ -14,5 +14,14 @@ const nextConfig = {
       },
     ]
   },
+  async rewrites() {
+    return [
+      // כל slug של חברה → app.html (Next.js מגיש את הקובץ הסטטי)
+      {
+        source: '/:company',
+        destination: '/app.html',
+      },
+    ]
+  },
 }
 module.exports = nextConfig
