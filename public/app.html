@@ -3148,9 +3148,26 @@ async function fieldWorkerSavePass(userId) {
 async function ceoDeleteMember(userId) {
   const u = DATA.users.find(x => x.id === userId);
   if (!u) return;
-  if (!confirm(`למחוק את ${u.name}?`)) return;
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-title">🗑️ מחיקת משתמש</div>
+    <div style="text-align:center;padding:16px 0;">
+      <div style="font-size:48px;margin-bottom:12px;">⚠️</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:8px;">האם למחוק את <span style="color:var(--red);">${u.name}</span>?</div>
+      <div style="font-size:13px;color:var(--text3);">פעולה זו תמחק את המשתמש לצמיתות ולא ניתן לשחזר אותה.</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="doDeleteCeoMember(${userId})">🗑️ כן, מחק</button>
+      <button class="btn btn-outline" onclick="closeModal()">ביטול</button>
+    </div>`;
+  openModal();
+}
+
+async function doDeleteCeoMember(userId) {
+  const u = DATA.users.find(x => x.id === userId);
+  if (!u) return;
   const res = await sbDeleteUser(userId);
   if (!res.ok) { showToast('❌ שגיאה במחיקה', 'error'); return; }
+  closeModal();
   showToast(`🗑️ ${u.name} נמחק`);
   renderCeoCredentials();
 }
@@ -3348,6 +3365,20 @@ async function ceoSaveCredentials(userId) {
     if (newPass) user.password = newPass;
   }
 
+  // עדכן DATA.users מיד
+  const u2 = DATA.users.find(x => x.id === userId);
+  if (u2) {
+    u2.name = updates.name; u2.role = updates.role; u2.username = updates.username;
+    u2.idType = updates.id_type; u2.idNumber = updates.id_number;
+    if (newPass) u2.passwordPlain = newPass;
+  }
+  // עדכן data-pass על כפתורי העין
+  if (newPass) {
+    ['emp','work'].forEach(prefix => {
+      const btn = document.getElementById(`ceo-eye-${prefix}-${userId}`);
+      if (btn) btn.dataset.pass = newPass;
+    });
+  }
   closeModal();
   renderCeoCredentials();
   showToast(`✅ פרטי ${newName} עודכנו בהצלחה!`);
@@ -5575,6 +5606,11 @@ async function addUser() {
     DATA.users.push({ id: Math.max(...DATA.users.map(u=>u.id))+1, username, password: pass, name,
       role, company: payload.company_id, avatar: payload.avatar, avatarColor: payload.avatar_color });
   }
+  // טען משתמשים מחדש מה-API כדי לקבל password_plain
+  try {
+    const fresh = await apiFetch('/users');
+    if (fresh && Array.isArray(fresh)) DATA.users = fresh.map(mapUser);
+  } catch(e) {}
   renderAdminUsers();
   document.getElementById('modalBody').innerHTML = `
     <div class="modal-title">✅ משתמש נוסף בהצלחה!</div>
@@ -5635,6 +5671,25 @@ async function doChangePass(userId) {
 }
 
 async function confirmDeleteUser(userId) {
+  const idx = DATA.users.findIndex(x => x.id === userId);
+  if (idx === -1) return;
+  const name = DATA.users[idx].name;
+  // הצג modal אישור
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-title">🗑️ מחיקת משתמש</div>
+    <div style="text-align:center;padding:16px 0;">
+      <div style="font-size:48px;margin-bottom:12px;">⚠️</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:8px;">האם למחוק את <span style="color:var(--red);">${name}</span>?</div>
+      <div style="font-size:13px;color:var(--text3);">פעולה זו תמחק את המשתמש לצמיתות ולא ניתן לשחזר אותה.</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="doDeleteUser(${userId})">🗑️ כן, מחק</button>
+      <button class="btn btn-outline" onclick="closeModal()">ביטול</button>
+    </div>`;
+  openModal();
+}
+
+async function doDeleteUser(userId) {
   const idx = DATA.users.findIndex(x => x.id === userId);
   if (idx === -1) return;
   const name = DATA.users[idx].name;
