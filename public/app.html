@@ -1688,6 +1688,7 @@
 
 // ── Token storage — זיכרון בלבד (sessionStorage חסום ב-Edge) ──
 let _wfpToken = null;
+const HAS_SUPABASE = true; // תמיד משתמשים ב-API
 
 function getToken() { return _wfpToken; }
 function setToken(t) { _wfpToken = t; }
