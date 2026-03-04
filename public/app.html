@@ -840,8 +840,8 @@
 <div id="loginScreen">
   <div class="login-box">
     <div class="login-logo">
-      <h1>WorkFlow Pro ⚡</h1>
-      <p>מערכת ניהול משימות מתקדמת</p>
+      <h1 id="loginTitle">WorkFlow Pro ⚡</h1>
+      <p id="loginSubtitle">מערכת ניהול משימות מתקדמת</p>
     </div>
     <div class="form-group">
       <label>שם משתמש</label>
@@ -2202,6 +2202,23 @@ let nextSubtaskId = 1000;
 // ═══════════════════════════════════════════
 // AUTH
 // ═══════════════════════════════════════════
+// ── COMPANY URL DETECTION ──
+const COMPANY_SLUG = (() => {
+  const parts = window.location.pathname.split('/').filter(Boolean);
+  // אם ה-URL הוא /techcorp או /buildpro וכו' - זה ה-slug של החברה
+  const slug = parts[0];
+  return (slug && slug !== 'app.html') ? slug : null;
+})();
+
+// עדכן כותרת דף הכניסה לפי החברה
+window.addEventListener('DOMContentLoaded', () => {
+  if (COMPANY_SLUG) {
+    document.getElementById('loginTitle').textContent = COMPANY_SLUG.charAt(0).toUpperCase() + COMPANY_SLUG.slice(1) + ' ⚡';
+    document.getElementById('loginSubtitle').textContent = 'כניסה לעובדי ' + COMPANY_SLUG;
+    document.title = COMPANY_SLUG + ' — WorkFlow Pro';
+  }
+});
+
 async function doLogin() {
   const u = document.getElementById('loginUser').value.trim();
   const p = document.getElementById('loginPass').value.trim();
@@ -2215,6 +2232,16 @@ async function doLogin() {
     const dbUser = await sbDoLogin(u, p);
     showLoadingOverlay(false);
     if (btn) { btn.disabled = false; btn.textContent = '🔐 כניסה'; }
+    // בדוק שהמשתמש שייך לחברה הנכונה לפי URL
+    if (COMPANY_SLUG && dbUser.role !== 'admin') {
+      if (dbUser.company !== COMPANY_SLUG) {
+        const errEl = document.getElementById('loginError');
+        errEl.textContent = 'משתמש זה אינו שייך לחברה זו';
+        errEl.style.display = 'block';
+        setToken(null);
+        return;
+      }
+    }
     await loadAndInjectData(dbUser);
   } catch(e) {
     showLoadingOverlay(false);
