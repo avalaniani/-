@@ -3145,6 +3145,16 @@ async function fieldWorkerSavePass(userId) {
   showToast(`✅ סיסמת ${u?.name} עודכנה!`);
 }
 
+async function ceoDeleteMember(userId) {
+  const u = DATA.users.find(x => x.id === userId);
+  if (!u) return;
+  if (!confirm(`למחוק את ${u.name}?`)) return;
+  const res = await sbDeleteUser(userId);
+  if (!res.ok) { showToast('❌ שגיאה במחיקה', 'error'); return; }
+  showToast(`🗑️ ${u.name} נמחק`);
+  renderCeoCredentials();
+}
+
 function ceoEditCredentials(userId) {
   const user = DATA.users.find(u => u.id === userId);
   if (!user) return;
@@ -5602,7 +5612,17 @@ async function doChangePass(userId) {
     const u = DATA.users.find(x => x.id === userId);
     if (u) u.password = np;
   }
+  // עדכן DATA.users מיד
   const u = DATA.users.find(x => x.id === userId);
+  if (u) u.passwordPlain = np;
+  // עדכן data-pass על כפתורי העין
+  const eyeBtn = document.getElementById(`eye-btn-${userId}`);
+  if (eyeBtn) eyeBtn.dataset.pass = np;
+  const ceoEyeEmp = document.getElementById(`ceo-eye-emp-${userId}`);
+  if (ceoEyeEmp) ceoEyeEmp.dataset.pass = np;
+  const ceoEyeWork = document.getElementById(`ceo-eye-work-${userId}`);
+  if (ceoEyeWork) ceoEyeWork.dataset.pass = np;
+
   document.getElementById('modalBody').innerHTML = `
     <div class="modal-title">✅ סיסמה עודכנה!</div>
     <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:20px;text-align:center;margin:16px 0;">
@@ -5610,7 +5630,7 @@ async function doChangePass(userId) {
       <div style="font-size:15px;margin-bottom:6px;">👤 שם משתמש: <strong>${u?.username || ''}</strong></div>
       <div style="font-size:15px;">🔑 סיסמה חדשה: <strong style="background:#fef9c3;padding:2px 10px;border-radius:6px;letter-spacing:1px;">${np}</strong></div>
     </div>
-    <div style="font-size:12px;color:var(--red);text-align:center;margin-bottom:16px;">⚠️ הסיסמה לא תוצג שוב — שמור אותה עכשיו!</div>
+    <div style="font-size:12px;color:var(--red);text-align:center;margin-bottom:16px;">⚠️ הסיסמה תוצג גם בלחיצה על 👁️</div>
     <div class="modal-actions"><button class="btn btn-primary" onclick="closeModal()">הבנתי ✓</button></div>`;
 }
 
