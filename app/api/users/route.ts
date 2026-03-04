@@ -13,7 +13,16 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const companyId = searchParams.get('company_id')
 
-  const cols = ['admin','ceo'].includes(session.role) ? COLS_WITH_PASS : SAFE_COLS
+  // employee עם ceo_interface או field_worker גם מקבל password_plain
+  let useCols = SAFE_COLS
+  if (['admin','ceo'].includes(session.role)) {
+    useCols = COLS_WITH_PASS
+  } else if (session.role === 'employee') {
+    // בדוק אם הוא עובד מורחב או שטח
+    const { data: me } = await supabase.from('users').select('ceo_interface,field_worker').eq('id', session.id).single()
+    if (me?.ceo_interface || me?.field_worker) useCols = COLS_WITH_PASS
+  }
+  const cols = useCols
   let q = supabase.from('users').select(cols).order('name')
 
   if (session.role === 'admin') {
