@@ -2008,15 +2008,20 @@ async function sbCreateCompany(payload) {
 }
 
 async function sbUpdateCompany(id, updates) {
-  const data = await apiFetch('/companies', 'PATCH', { id, ...updates });
-  const c = DATA.companies.find(x => x.id === id);
-  if (c) {
-    if (data.name)  c.name  = data.name;
-    if (data.field) c.field = data.field;
-    if (data.emoji) c.emoji = data.emoji;
-    if (data.color) c.color = data.color;
+  try {
+    const data = await apiFetch('/companies', 'PATCH', { id, ...updates });
+    if (!data || data.error) return { ok: false, data };
+    const comp = DATA.companies.find(x => x.id === id);
+    if (comp) {
+      if (data.name)  comp.name  = data.name;
+      if (data.field) comp.field = data.field;
+      if (data.emoji) comp.emoji = data.emoji;
+      if (data.color) comp.color = data.color;
+    }
+    return { ok: true, data };
+  } catch(e) {
+    return { ok: false, data: { error: e.message } };
   }
-  return { ok: true, data };
 }
 
 async function sbDeleteCompany(id) {
@@ -2538,6 +2543,8 @@ function renderAdminUsers() {
     const cur = companyFilter.value;
     companyFilter.innerHTML = '<option value="">כל החברות</option>' +
       DATA.companies.map(c => `<option value="${c.id}" ${cur===c.id?'selected':''}>${c.emoji} ${c.name}</option>`).join('');
+    // ברירת מחדל: כל החברות (value ריק)
+    if (!cur) companyFilter.value = '';
   }
 
   const roleLabels = { admin:'👑 מנהל מערכת', ceo:'🏢 מנכ"ל', employee:'💼 עובד', worker:'🔧 פועל' };
@@ -5574,15 +5581,17 @@ async function addCompany() {
 
 async function saveCompany(compId) {
   const updates = {
-    name:  document.getElementById('ec-name').value,
-    field: document.getElementById('ec-field').value,
-    emoji: document.getElementById('ec-emoji').value || DATA.companies.find(c=>c.id===compId)?.emoji,
+    name:  document.getElementById('ec-name').value.trim(),
+    field: document.getElementById('ec-field').value.trim(),
+    emoji: document.getElementById('ec-emoji').value.trim() || DATA.companies.find(c=>c.id===compId)?.emoji,
   };
+  if (!updates.name) { showToast('❌ יש להזין שם חברה', 'error'); return; }
   if (HAS_SUPABASE) {
-    await sbUpdateCompany(compId, updates);
+    const res = await sbUpdateCompany(compId, updates);
+    if (!res.ok) { showToast('❌ שגיאה בשמירה', 'error'); return; }
   } else {
-    const c = DATA.companies.find(x => x.id === compId);
-    if (c) Object.assign(c, updates);
+    const comp = DATA.companies.find(x => x.id === compId);
+    if (comp) Object.assign(comp, updates);
   }
   closeModal(); renderAdminCompanies(); showToast('✅ חברה עודכנה!');
 }
@@ -5648,6 +5657,13 @@ async function addUser() {
     const fresh = await apiFetch('/users');
     if (fresh && Array.isArray(fresh)) DATA.users = fresh.map(mapUser);
   } catch(e) {}
+  // אפס סינון כדי שהמשתמש החדש יהיה גלוי
+  const cf = document.getElementById('usersFilterCompany');
+  const rf = document.getElementById('usersFilterRole');
+  const sf = document.getElementById('usersSearch');
+  if (cf) cf.value = '';
+  if (rf) rf.value = '';
+  if (sf) sf.value = '';
   renderAdminUsers();
   document.getElementById('modalBody').innerHTML = `
     <div class="modal-title">✅ משתמש נוסף בהצלחה!</div>
