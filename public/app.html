@@ -985,48 +985,6 @@
         <button class="btn btn-outline btn-sm" onclick="addQuickNote('admin')" style="margin-top:10px;">+ הוסף פתק מהיר</button>
       </div>
 
-      <!-- Admin AI Assistant -->
-      <div class="page" id="page-admin-ai">
-        <div style="display:flex;flex-direction:column;height:calc(100vh - 140px);gap:0;">
-          <div class="card" style="margin-bottom:12px;padding:16px 20px;background:linear-gradient(135deg,#e8f0ff,#f0e8ff);border-color:#b8c8f0;flex-shrink:0;">
-            <div style="display:flex;align-items:center;gap:12px;">
-              <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#4a6cc8,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 12px rgba(74,108,200,0.3);">🤖</div>
-              <div>
-                <div style="font-size:17px;font-weight:800;">עוזר AI — מנהל מערכת</div>
-                <div style="font-size:12px;color:var(--text2);">שאל שאלות על המערכת, קבל עצות לשיפור, ובצע פעולות ניהוליות</div>
-              </div>
-              <button onclick="clearAdminAiChat()" class="btn btn-outline btn-sm" style="margin-right:auto;font-size:11px;">🗑️ נקה שיחה</button>
-            </div>
-          </div>
-
-          <div id="admin-ai-suggestions" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;flex-shrink:0;">
-            <button onclick="sendAdminAiSuggestion(this.textContent)" class="btn btn-outline btn-sm" style="font-size:11px;border-color:#b8c8f0;color:#4a6cc8;">📊 כמה חברות וכמה משתמשים יש במערכת?</button>
-            <button onclick="sendAdminAiSuggestion(this.textContent)" class="btn btn-outline btn-sm" style="font-size:11px;border-color:#b8c8f0;color:#4a6cc8;">💡 מה אפשר לשפר במערכת?</button>
-            <button onclick="sendAdminAiSuggestion(this.textContent)" class="btn btn-outline btn-sm" style="font-size:11px;border-color:#b8c8f0;color:#4a6cc8;">🏢 תן לי סיכום על כל החברות</button>
-            <button onclick="sendAdminAiSuggestion(this.textContent)" class="btn btn-outline btn-sm" style="font-size:11px;border-color:#b8c8f0;color:#4a6cc8;">👥 מי המשתמשים ללא חברה?</button>
-            <button onclick="sendAdminAiSuggestion(this.textContent)" class="btn btn-outline btn-sm" style="font-size:11px;border-color:#b8c8f0;color:#4a6cc8;">⚠️ האם יש בעיות או אנומליות במערכת?</button>
-          </div>
-
-          <div id="admin-ai-messages" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding:4px 2px;min-height:0;">
-            <div id="admin-ai-welcome" style="text-align:center;padding:32px 16px;color:var(--text2);">
-              <div style="font-size:40px;margin-bottom:12px;">🤖</div>
-              <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px;">שלום מנהל המערכת!</div>
-              <div style="font-size:13px;line-height:1.7;">אני מכיר את כל הנתונים במערכת ויכול לעזור לך לנהל אותה.<br>
-              אני יכול <strong>לענות שאלות</strong>, לתת <strong>עצות לשיפור</strong>, וגם <strong>לבצע פעולות</strong> כמו הוספת חברה, הוספת משתמש, מחיקה, ועוד.</div>
-            </div>
-          </div>
-
-          <div style="display:flex;gap:8px;align-items:flex-end;margin-top:10px;flex-shrink:0;">
-            <textarea id="admin-ai-input" placeholder="שאל שאלה או בקש לבצע פעולה..." rows="2"
-              style="flex:1;border:2px solid #b8c8f0;border-radius:12px;padding:10px 14px;font-family:inherit;font-size:13px;resize:none;outline:none;line-height:1.5;transition:border-color 0.2s;"
-              onfocus="this.style.borderColor='#4a6cc8'" onblur="this.style.borderColor='#b8c8f0'"
-              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAdminAiMessage();}"></textarea>
-            <button onclick="sendAdminAiMessage()" id="admin-ai-send-btn"
-              style="background:linear-gradient(135deg,#4a6cc8,#8b5cf6);color:white;border:none;border-radius:12px;padding:10px 18px;cursor:pointer;font-size:18px;height:46px;flex-shrink:0;box-shadow:0 4px 12px rgba(74,108,200,0.3);">➤</button>
-          </div>
-          <div style="font-size:10px;color:var(--text3);text-align:center;margin-top:6px;flex-shrink:0;">Enter לשליחה • Shift+Enter לשורה חדשה</div>
-        </div>
-      </div>
 
       <!-- ════════════════ CEO PAGES ════════════════ -->
       <!-- CEO Dashboard -->
@@ -1227,10 +1185,6 @@
           </div>
         </div>
 
-        <!-- Gemini AI Key -->
-        <div class="card" style="margin-top:16px;">
-          <div class="card-header">
-            <div class="card-title">🤖 מפתח AI (Gemini)</div>
           </div>
           <p style="color:var(--text2);font-size:13px;margin-bottom:14px;">
             הזן את מפתח ה-API של Google Gemini כדי להפעיל את עוזר ה-AI לחברה שלך.<br>
@@ -1322,50 +1276,6 @@
         <button class="btn btn-outline btn-sm" onclick="addQuickNote('ceo')" style="margin-top:10px;">+ הוסף פתק מהיר</button>
       </div>
 
-      <!-- CEO AI Assistant -->
-      <div class="page" id="page-ceo-ai">
-        <div style="display:flex;flex-direction:column;height:calc(100vh - 140px);gap:0;">
-          <!-- Header -->
-          <div class="card" style="margin-bottom:12px;padding:16px 20px;background:linear-gradient(135deg,#f0ebff,#e8f0ff);border-color:#c8b8f0;flex-shrink:0;">
-            <div style="display:flex;align-items:center;gap:12px;">
-              <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#7b63d8,#5a9bc8);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 12px rgba(123,99,216,0.3);">🤖</div>
-              <div>
-                <div style="font-size:17px;font-weight:800;">עוזר AI</div>
-                <div style="font-size:12px;color:var(--text2);">שאל שאלות על החברה שלך, קבל תובנות, ובצע פעולות</div>
-              </div>
-              <button onclick="clearAiChat()" class="btn btn-outline btn-sm" style="margin-right:auto;font-size:11px;">🗑️ נקה שיחה</button>
-            </div>
-          </div>
-
-          <!-- Suggested prompts -->
-          <div id="ai-suggestions" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;flex-shrink:0;">
-            <button onclick="sendAiSuggestion(this.textContent)" class="btn btn-outline btn-sm" style="font-size:11px;border-color:#c8b8f0;color:#7b63d8;">📊 כמה פועלים יש לי?</button>
-            <button onclick="sendAiSuggestion(this.textContent)" class="btn btn-outline btn-sm" style="font-size:11px;border-color:#c8b8f0;color:#7b63d8;">⏰ מי עבד הכי הרבה שעות החודש?</button>
-            <button onclick="sendAiSuggestion(this.textContent)" class="btn btn-outline btn-sm" style="font-size:11px;border-color:#c8b8f0;color:#7b63d8;">📋 כמה משימות פתוחות יש?</button>
-            <button onclick="sendAiSuggestion(this.textContent)" class="btn btn-outline btn-sm" style="font-size:11px;border-color:#c8b8f0;color:#7b63d8;">✅ מי עוד לא חתם על דוח שעות?</button>
-            <button onclick="sendAiSuggestion(this.textContent)" class="btn btn-outline btn-sm" style="font-size:11px;border-color:#c8b8f0;color:#7b63d8;">🔥 אילו משימות דחופות יש?</button>
-          </div>
-
-          <!-- Chat messages -->
-          <div id="ai-chat-messages" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding:4px 2px;min-height:0;">
-            <div id="ai-welcome-msg" style="text-align:center;padding:32px 16px;color:var(--text2);">
-              <div style="font-size:40px;margin-bottom:12px;">🤖</div>
-              <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px;">שלום! אני העוזר החכם שלך</div>
-              <div style="font-size:13px;">אני יכול לענות על שאלות על הפועלים, העובדים, המשימות, ושעות העבודה בחברה שלך.<br>אני יכול גם לבצע פעולות כמו יצירת משימות ועוד.</div>
-            </div>
-          </div>
-
-          <!-- Input area -->
-          <div style="display:flex;gap:8px;align-items:flex-end;margin-top:10px;flex-shrink:0;">
-            <textarea id="ai-input" placeholder="שאל שאלה או בקש לבצע פעולה..." rows="2"
-              style="flex:1;border:2px solid #c8b8f0;border-radius:12px;padding:10px 14px;font-family:inherit;font-size:13px;resize:none;outline:none;line-height:1.5;transition:border-color 0.2s;"
-              onfocus="this.style.borderColor='#7b63d8'" onblur="this.style.borderColor='#c8b8f0'"
-              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAiMessage();}"></textarea>
-            <button onclick="sendAiMessage()" id="ai-send-btn" style="background:linear-gradient(135deg,#7b63d8,#5a9bc8);color:white;border:none;border-radius:12px;padding:10px 18px;cursor:pointer;font-size:18px;height:46px;flex-shrink:0;box-shadow:0 4px 12px rgba(123,99,216,0.3);transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">➤</button>
-          </div>
-          <div style="font-size:10px;color:var(--text3);text-align:center;margin-top:6px;flex-shrink:0;">Enter לשליחה • Shift+Enter לשורה חדשה</div>
-        </div>
-      </div>
 
 
       <!-- ════════════════ CEO REQUESTS PAGE ════════════════ -->
@@ -2338,7 +2248,6 @@ const navConfigs = {
     { page:'admin-companies', icon:'🏢', label:'ניהול חברות' },
     { page:'admin-users', icon:'👥', label:'משתמשים וסיסמאות' },
     { page:'admin-notes', icon:'📝', label:'הערות אישיות' },
-    { page:'admin-ai', icon:'🤖', label:'עוזר AI' },
   ],
   ceo: [
     { page:'ceo-dashboard', icon:'📊', label:'לוח בקרה' },
@@ -2348,7 +2257,6 @@ const navConfigs = {
     { page:'ceo-notes', icon:'📝', label:'הערות אישיות' },
     { page:'ceo-requests', icon:'📬', label:'פניות פועלים' },
     { page:'ceo-credentials', icon:'🔑', label:'שמות משתמש וסיסמאות' },
-    { page:'ceo-ai', icon:'🤖', label:'עוזר AI' },
   ],
   employee: [
     { page:'emp-dashboard', icon:'🏠', label:'ראשי' },
@@ -2433,7 +2341,6 @@ function renderPage(pageId) {
   if (pageId === 'admin-companies') renderAdminCompanies();
   else if (pageId === 'admin-users') renderAdminUsers();
   else if (pageId === 'admin-notes') renderNotes('admin');
-  else if (pageId === 'admin-ai') { /* page is static, just focus input */ setTimeout(() => document.getElementById('admin-ai-input')?.focus(), 100); }
   else if (pageId === 'ceo-dashboard') renderCeoDashboard();
   else if (pageId === 'ceo-employees') renderCeoEmployees();
   else if (pageId === 'ceo-workers') { renderCeoWorkers(); renderCeoWorkersGrid(false); setTimeout(() => { fitGridToScreen(false); updateSliderFill(document.getElementById('grid-zoom-slider')); }, 80); }
@@ -2441,7 +2348,6 @@ function renderPage(pageId) {
   else if (pageId === 'ceo-credentials') renderCeoCredentials();
   else if (pageId === 'ceo-notes') renderNotes('ceo');
   else if (pageId === 'ceo-requests') renderCeoRequests();
-  else if (pageId === 'ceo-ai') initAiPage();
   else if (pageId === 'emp-dashboard') renderEmpDashboard();
   else if (pageId === 'emp-tasks') renderEmpTasks();
   else if (pageId === 'emp-calendar') renderEmpCalendar();
@@ -3996,499 +3902,13 @@ function renderCeoTasks() {
 }
 
 // ── CEO AI ASSISTANT ──
-let aiChatHistory = [];
 
-function initAiPage() {
-  // Reset scroll on enter
-  const msgs = document.getElementById('ai-chat-messages');
-  if (msgs) msgs.scrollTop = msgs.scrollHeight;
-}
 
-function clearAiChat() {
-  aiChatHistory = [];
-  const msgs = document.getElementById('ai-chat-messages');
-  msgs.innerHTML = `
-    <div id="ai-welcome-msg" style="text-align:center;padding:32px 16px;color:var(--text2);">
-      <div style="font-size:40px;margin-bottom:12px;">🤖</div>
-      <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px;">שלום! אני העוזר החכם שלך</div>
-      <div style="font-size:13px;">אני יכול לענות על שאלות על הפועלים, העובדים, המשימות, ושעות העבודה בחברה שלך.<br>אני יכול גם לבצע פעולות כמו יצירת משימות ועוד.</div>
-    </div>`;
-  document.getElementById('ai-suggestions').style.display = 'flex';
-}
 
-function sendAiSuggestion(text) {
-  document.getElementById('ai-input').value = text;
-  sendAiMessage();
-}
 
-function buildCompanyContext() {
-  const company = DATA.companies.find(c => c.id === currentUser.company);
-  const employees = DATA.users.filter(u => u.company === currentUser.company && u.role === 'employee');
-  const workers = DATA.users.filter(u => u.company === currentUser.company && u.role === 'worker');
-  const tasks = DATA.tasks.filter(t => t.company === currentUser.company);
-  const now = new Date();
-  const monthNames = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
 
-  // Build worker hours summary for current month
-  const workerHoursSummary = workers.map(w => {
-    const key = `${w.id}-${now.getFullYear()}-${now.getMonth()}`;
-    const hours = DATA.workerHours[key] || {};
-    let total = 0;
-    Object.values(hours).forEach(e => {
-      const h = e.start && e.end ? calcHoursFromTime(e.start, e.end) : (parseFloat(e.hours)||0);
-      total += h;
-    });
-    const signedInfo = company && company.signed[key];
-    const signStatus = signedInfo ? (signedInfo.type === 'full' ? 'חתום כל החודש' : `חתום חלקית (${signedInfo.days?.length || 0} ימים)`) : 'לא חתום';
-    return `  - ${w.name} (ת"ז/דרכון: ${w.idNumber||'לא הוזן'}, ${w.idType==='passport'?'דרכון':'ת"ז'}): ${total.toFixed(1)} שעות החודש, סטטוס: ${signStatus}`;
-  }).join('\n');
 
-  const tasksSummary = tasks.map(t => {
-    const assignee = DATA.users.find(u => u.id === t.assignedTo);
-    return `  - "${t.title}" | עדיפות: ${t.priority==='high'?'גבוהה':t.priority==='medium'?'בינונית':'נמוכה'} | סטטוס: ${t.status==='open'?'פתוחה':'הושלמה'} | מוקצה ל: ${assignee?.name||'—'} | תאריך יעד: ${t.dueDate}`;
-  }).join('\n');
 
-  return `אתה עוזר AI חכם של מנכ"ל חברה. אתה מדבר עברית בלבד. אתה מכיר את כל הנתונים של החברה ויכול לענות על שאלות ולבצע משימות.
-
-== פרטי החברה ==
-שם: ${company?.name || '—'}
-תחום: ${company?.field || '—'}
-מנכ"ל: ${currentUser.name}
-תאריך היום: ${now.toLocaleDateString('he-IL')} (${monthNames[now.getMonth()]} ${now.getFullYear()})
-
-== עובדים (${employees.length}) ==
-${employees.map(e => `  - ${e.name} (שם משתמש: ${e.username})`).join('\n') || '  אין עובדים'}
-
-== פועלים (${workers.length}) ==
-${workers.map(w => `  - ${w.name} (ת"ז/דרכון: ${w.idNumber||'לא הוזן'})`).join('\n') || '  אין פועלים'}
-
-== שעות עבודה חודש נוכחי (${monthNames[now.getMonth()]}) ==
-${workerHoursSummary || '  אין נתונים'}
-
-== משימות (${tasks.length}) ==
-${tasksSummary || '  אין משימות'}
-
-== הוראות לביצוע פעולות ==
-אם המשתמש מבקש לבצע פעולה (כגון יצירת משימה, שינוי סטטוס, וכו'), תאר בדיוק מה אתה מבצע ובסוף ההודעה הוסף JSON בפורמט הבא בתוך תגיות <ACTION>:
-<ACTION>{"type":"create_task","title":"כותרת","desc":"תיאור","assignedTo":"שם העובד","priority":"high|medium|low","dueDate":"YYYY-MM-DD"}</ACTION>
-או לסגירת משימה:
-<ACTION>{"type":"close_task","title":"חלק מהכותרת"}</ACTION>
-או לפתיחת משימה:
-<ACTION>{"type":"open_task","title":"חלק מהכותרת"}</ACTION>
-
-אם אין פעולה לביצוע, אל תוסיף תגיות ACTION.
-ענה בצורה ידידותית, תמציתית ומקצועית בעברית.`;
-}
-
-async function sendAiMessage() {
-  const input = document.getElementById('ai-input');
-  const text = input.value.trim();
-  if (!text) return;
-
-  // Hide welcome + suggestions
-  const welcome = document.getElementById('ai-welcome-msg');
-  if (welcome) welcome.remove();
-  document.getElementById('ai-suggestions').style.display = 'none';
-
-  input.value = '';
-  input.disabled = true;
-  document.getElementById('ai-send-btn').disabled = true;
-
-  const msgs = document.getElementById('ai-chat-messages');
-
-  // Add user message
-  msgs.innerHTML += `
-    <div style="display:flex;justify-content:flex-start;">
-      <div style="max-width:75%;background:#e8e0ff;border-radius:14px 14px 4px 14px;padding:10px 14px;font-size:13px;line-height:1.6;color:var(--text);">${text.replace(/\n/g,'<br>')}</div>
-    </div>`;
-  msgs.scrollTop = msgs.scrollHeight;
-
-  // Add typing indicator
-  const typingId = 'ai-typing-' + Date.now();
-  msgs.innerHTML += `
-    <div id="${typingId}" style="display:flex;justify-content:flex-end;">
-      <div style="background:var(--bg3);border-radius:14px 14px 14px 4px;padding:10px 16px;font-size:13px;color:var(--text2);">
-        <span style="display:inline-flex;gap:4px;align-items:center;">
-          <span style="width:6px;height:6px;background:#7b63d8;border-radius:50%;animation:aiDot 1.2s infinite 0s;"></span>
-          <span style="width:6px;height:6px;background:#7b63d8;border-radius:50%;animation:aiDot 1.2s infinite 0.4s;"></span>
-          <span style="width:6px;height:6px;background:#7b63d8;border-radius:50%;animation:aiDot 1.2s infinite 0.8s;"></span>
-        </span>
-      </div>
-    </div>`;
-  msgs.scrollTop = msgs.scrollHeight;
-
-  // Add CSS animation if not present
-  if (!document.getElementById('ai-dot-style')) {
-    const s = document.createElement('style');
-    s.id = 'ai-dot-style';
-    s.textContent = '@keyframes aiDot{0%,80%,100%{opacity:0.2;transform:scale(0.8)}40%{opacity:1;transform:scale(1.2)}}';
-    document.head.appendChild(s);
-  }
-
-  // Add to history
-  aiChatHistory.push({ role: 'user', content: text });
-
-  try {
-    const systemPrompt = buildCompanyContext();
-    const token = getToken();
-    const response = await fetch('/api/ai', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({
-        max_tokens: 1000,
-        system: systemPrompt,
-        messages: aiChatHistory
-      })
-    });
-
-    const data = await response.json();
-    const rawReply = data.content?.[0]?.text || '❌ לא התקבלה תגובה';
-
-    // Parse and execute any actions
-    let displayReply = rawReply;
-    const actionMatch = rawReply.match(/<ACTION>([\s\S]*?)<\/ACTION>/);
-    if (actionMatch) {
-      displayReply = rawReply.replace(/<ACTION>[\s\S]*?<\/ACTION>/, '').trim();
-      try {
-        const action = JSON.parse(actionMatch[1]);
-        executeAiAction(action);
-      } catch(e) { console.error('Action parse error', e); }
-    }
-
-    aiChatHistory.push({ role: 'assistant', content: rawReply });
-
-    // Remove typing, add response
-    document.getElementById(typingId)?.remove();
-    msgs.innerHTML += `
-      <div style="display:flex;justify-content:flex-end;">
-        <div style="max-width:80%;background:var(--card);border:1px solid var(--border);border-radius:14px 14px 14px 4px;padding:12px 16px;font-size:13px;line-height:1.7;color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,0.06);">${displayReply.replace(/\n/g,'<br>')}</div>
-      </div>`;
-  } catch(err) {
-    document.getElementById(typingId)?.remove();
-    msgs.innerHTML += `
-      <div style="display:flex;justify-content:flex-end;">
-        <div style="max-width:80%;background:#fff5f5;border:1px solid #f0c0c8;border-radius:14px 14px 14px 4px;padding:12px 16px;font-size:13px;color:#c0506a;">❌ ${err?.message || 'שגיאה בחיבור ל-AI. נסה שוב.'}</div>
-      </div>`;
-  }
-
-  msgs.scrollTop = msgs.scrollHeight;
-  input.disabled = false;
-  document.getElementById('ai-send-btn').disabled = false;
-  input.focus();
-}
-
-function executeAiAction(action) {
-  if (action.type === 'create_task') {
-    const assignee = DATA.users.find(u =>
-      u.company === currentUser.company &&
-      (u.name === action.assignedTo || u.name.includes(action.assignedTo))
-    );
-    const newTask = {
-      id: ++nextTaskId,
-      title: action.title,
-      desc: action.desc || '',
-      assignedTo: assignee?.id || null,
-      assignedBy: currentUser.id,
-      company: currentUser.company,
-      priority: action.priority || 'medium',
-      status: 'open',
-      dueDate: action.dueDate || new Date().toISOString().split('T')[0],
-      createdByEmp: false
-    };
-    DATA.tasks.push(newTask);
-    showToast(`✅ משימה "${action.title}" נוצרה על ידי AI`);
-  } else if (action.type === 'close_task') {
-    const task = DATA.tasks.find(t => t.company === currentUser.company && t.title.includes(action.title));
-    if (task) { task.status = 'done'; showToast(`✅ משימה "${task.title}" נסגרה`); }
-  } else if (action.type === 'open_task') {
-    const task = DATA.tasks.find(t => t.company === currentUser.company && t.title.includes(action.title));
-    if (task) { task.status = 'open'; showToast(`✅ משימה "${task.title}" נפתחה מחדש`); }
-  }
-}
-
-// ── ADMIN AI ASSISTANT ──
-let adminAiHistory = [];
-
-function clearAdminAiChat() {
-  adminAiHistory = [];
-  const msgs = document.getElementById('admin-ai-messages');
-  if (!msgs) return;
-  msgs.innerHTML = `
-    <div id="admin-ai-welcome" style="text-align:center;padding:32px 16px;color:var(--text2);">
-      <div style="font-size:40px;margin-bottom:12px;">🤖</div>
-      <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px;">שלום מנהל המערכת!</div>
-      <div style="font-size:13px;line-height:1.7;">אני מכיר את כל הנתונים במערכת ויכול לעזור לך לנהל אותה.<br>
-      אני יכול <strong>לענות שאלות</strong>, לתת <strong>עצות לשיפור</strong>, וגם <strong>לבצע פעולות</strong> כמו הוספת חברה, הוספת משתמש, מחיקה, ועוד.</div>
-    </div>`;
-  document.getElementById('admin-ai-suggestions').style.display = 'flex';
-}
-
-function sendAdminAiSuggestion(text) {
-  const input = document.getElementById('admin-ai-input');
-  if (input) input.value = text;
-  sendAdminAiMessage();
-}
-
-function buildAdminContext() {
-  const now = new Date();
-  const monthNames = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
-
-  // Companies summary
-  const companiesSummary = DATA.companies.map(c => {
-    const members = DATA.users.filter(u => u.company === c.id);
-    const ceos = members.filter(u => u.role === 'ceo').map(u => u.name);
-    const employees = members.filter(u => u.role === 'employee').length;
-    const workers = members.filter(u => u.role === 'worker').length;
-    const tasks = DATA.tasks.filter(t => t.company === c.id);
-    const openTasks = tasks.filter(t => t.status === 'open').length;
-    return `  - ${c.emoji} ${c.name} (${c.field}): מנכ"ל: ${ceos.join(', ')||'אין'}, ${employees} עובדים, ${workers} פועלים, ${openTasks} משימות פתוחות`;
-  }).join('\n');
-
-  // All users summary
-  const usersSummary = DATA.users.filter(u => u.role !== 'admin').map(u => {
-    const company = DATA.companies.find(c => c.id === u.company);
-    const roleMap = { ceo:'מנכ"ל', employee:'עובד', worker:'פועל' };
-    return `  - ${u.name} (@${u.username}) | ${roleMap[u.role]||u.role} | חברה: ${company?.name||'ללא חברה'}`;
-  }).join('\n');
-
-  // Tasks overview
-  const allTasks = DATA.tasks;
-  const openTasks = allTasks.filter(t => t.status === 'open').length;
-  const doneTasks = allTasks.filter(t => t.status === 'done').length;
-  const highPriority = allTasks.filter(t => t.priority === 'high' && t.status === 'open').length;
-
-  // Anomalies / insights
-  const noCompanyUsers = DATA.users.filter(u => !u.company && u.role !== 'admin');
-  const companiesNoCeo = DATA.companies.filter(c => !DATA.users.find(u => u.company === c.id && u.role === 'ceo'));
-
-  return `אתה עוזר AI מתקדם של מנהל מערכת. אתה מדבר עברית בלבד. אתה מכיר את כל הנתונים במערכת ויכול לענות על שאלות, לנתח, לתת המלצות, ולבצע פעולות ניהוליות.
-
-== פרטי מנהל המערכת ==
-שם: ${currentUser.name}
-תאריך: ${now.toLocaleDateString('he-IL')} (${monthNames[now.getMonth()]} ${now.getFullYear()})
-
-== סיכום מערכת ==
-סה"כ חברות: ${DATA.companies.length}
-סה"כ משתמשים (לא כולל מנהל): ${DATA.users.filter(u=>u.role!=='admin').length}
-סה"כ משימות: ${allTasks.length} (פתוחות: ${openTasks}, הושלמו: ${doneTasks}, דחופות: ${highPriority})
-
-== חברות (${DATA.companies.length}) ==
-${companiesSummary || '  אין חברות'}
-
-== כל המשתמשים ==
-${usersSummary || '  אין משתמשים'}
-
-${noCompanyUsers.length ? `== ⚠️ משתמשים ללא חברה (${noCompanyUsers.length}) ==\n${noCompanyUsers.map(u=>`  - ${u.name} (@${u.username})`).join('\n')}` : ''}
-${companiesNoCeo.length ? `== ⚠️ חברות ללא מנכ"ל (${companiesNoCeo.length}) ==\n${companiesNoCeo.map(c=>`  - ${c.emoji} ${c.name}`).join('\n')}` : ''}
-
-== הוראות לביצוע פעולות ==
-כשהמשתמש מבקש לבצע פעולה, תאר מה אתה עושה ובסוף הוסף JSON בתגיות <ADMIN_ACTION>:
-
-הוספת חברה:
-<ADMIN_ACTION>{"type":"add_company","name":"שם","field":"תחום","emoji":"🏢"}</ADMIN_ACTION>
-
-הוספת משתמש:
-<ADMIN_ACTION>{"type":"add_user","name":"שם מלא","username":"username","password":"סיסמה","role":"ceo|employee|worker","company":"שם החברה"}</ADMIN_ACTION>
-
-מחיקת משתמש:
-<ADMIN_ACTION>{"type":"delete_user","username":"username"}</ADMIN_ACTION>
-
-מחיקת חברה:
-<ADMIN_ACTION>{"type":"delete_company","name":"שם החברה"}</ADMIN_ACTION>
-
-הוספת הערה אישית:
-<ADMIN_ACTION>{"type":"add_note","content":"תוכן ההערה"}</ADMIN_ACTION>
-
-שינוי סיסמת משתמש:
-<ADMIN_ACTION>{"type":"change_password","username":"username","password":"סיסמה חדשה"}</ADMIN_ACTION>
-
-שינוי חברה של משתמש:
-<ADMIN_ACTION>{"type":"move_user","username":"username","company":"שם החברה"}</ADMIN_ACTION>
-
-== עצות לשיפור — הנחיות ==
-כשמבקשים המלצות, תנתח את הנתונים לעומק: האם יש חברות עם מעט עובדים? אנומליות? משתמשים לא פעילים? משימות פתוחות ישנות? תן המלצות קונקרטיות ומנומקות.
-
-ענה בצורה מקצועית, ידידותית ותמציתית בעברית.`;
-}
-
-async function sendAdminAiMessage() {
-  const input = document.getElementById('admin-ai-input');
-  const text = (input?.value || '').trim();
-  if (!text) return;
-
-  const welcome = document.getElementById('admin-ai-welcome');
-  if (welcome) welcome.remove();
-  document.getElementById('admin-ai-suggestions').style.display = 'none';
-
-  input.value = '';
-  input.disabled = true;
-  const sendBtn = document.getElementById('admin-ai-send-btn');
-  if (sendBtn) sendBtn.disabled = true;
-
-  const msgs = document.getElementById('admin-ai-messages');
-
-  // User bubble
-  msgs.innerHTML += `
-    <div style="display:flex;justify-content:flex-start;">
-      <div style="max-width:75%;background:#dde8ff;border-radius:14px 14px 4px 14px;padding:10px 14px;font-size:13px;line-height:1.6;color:var(--text);">${text.replace(/\n/g,'<br>')}</div>
-    </div>`;
-  msgs.scrollTop = msgs.scrollHeight;
-
-  // Typing dots
-  if (!document.getElementById('ai-dot-style')) {
-    const s = document.createElement('style');
-    s.id = 'ai-dot-style';
-    s.textContent = '@keyframes aiDot{0%,80%,100%{opacity:0.2;transform:scale(0.8)}40%{opacity:1;transform:scale(1.2)}}';
-    document.head.appendChild(s);
-  }
-  const typingId = 'admin-typing-' + Date.now();
-  msgs.innerHTML += `
-    <div id="${typingId}" style="display:flex;justify-content:flex-end;">
-      <div style="background:var(--bg3);border-radius:14px 14px 14px 4px;padding:10px 16px;">
-        <span style="display:inline-flex;gap:4px;align-items:center;">
-          <span style="width:6px;height:6px;background:#4a6cc8;border-radius:50%;animation:aiDot 1.2s infinite 0s;"></span>
-          <span style="width:6px;height:6px;background:#4a6cc8;border-radius:50%;animation:aiDot 1.2s infinite 0.4s;"></span>
-          <span style="width:6px;height:6px;background:#4a6cc8;border-radius:50%;animation:aiDot 1.2s infinite 0.8s;"></span>
-        </span>
-      </div>
-    </div>`;
-  msgs.scrollTop = msgs.scrollHeight;
-
-  adminAiHistory.push({ role: 'user', content: text });
-
-  try {
-    const token = getToken();
-    const response = await fetch('/api/ai', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({
-        max_tokens: 1200,
-        system: buildAdminContext(),
-        messages: adminAiHistory
-      })
-    });
-    const data = await response.json();
-    const rawReply = data.content?.[0]?.text || '❌ לא התקבלה תגובה';
-
-    // Parse and execute actions
-    let displayReply = rawReply;
-    const actionMatch = rawReply.match(/<ADMIN_ACTION>([\s\S]*?)<\/ADMIN_ACTION>/);
-    let actionResult = '';
-    if (actionMatch) {
-      displayReply = rawReply.replace(/<ADMIN_ACTION>[\s\S]*?<\/ADMIN_ACTION>/, '').trim();
-      try {
-        const action = JSON.parse(actionMatch[1]);
-        actionResult = executeAdminAiAction(action);
-      } catch(e) { console.error('Admin action parse error', e); }
-    }
-
-    adminAiHistory.push({ role: 'assistant', content: rawReply });
-
-    document.getElementById(typingId)?.remove();
-
-    // Action result badge
-    const actionBadge = actionResult
-      ? `<div style="margin-top:8px;padding:6px 10px;background:#f0fff4;border:1px solid #a8e0b8;border-radius:8px;font-size:11px;color:#2d8a5a;font-weight:600;">${actionResult}</div>`
-      : '';
-
-    msgs.innerHTML += `
-      <div style="display:flex;justify-content:flex-end;">
-        <div style="max-width:82%;background:var(--card);border:1px solid var(--border);border-radius:14px 14px 14px 4px;padding:12px 16px;font-size:13px;line-height:1.7;color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-          ${displayReply.replace(/\n/g,'<br>')}${actionBadge}
-        </div>
-      </div>`;
-
-  } catch(err) {
-    document.getElementById(typingId)?.remove();
-    msgs.innerHTML += `
-      <div style="display:flex;justify-content:flex-end;">
-        <div style="max-width:80%;background:#fff5f5;border:1px solid #f0c0c8;border-radius:14px 14px 14px 4px;padding:12px 16px;font-size:13px;color:#c0506a;">❌ ${err?.message || 'שגיאה בחיבור ל-AI. נסה שוב.'}</div>
-      </div>`;
-  }
-
-  msgs.scrollTop = msgs.scrollHeight;
-  input.disabled = false;
-  if (sendBtn) sendBtn.disabled = false;
-  input.focus();
-}
-
-function executeAdminAiAction(action) {
-  const roleMap = { ceo:'מנכ"ל', employee:'עובד', worker:'פועל' };
-  const avatarColors = { ceo:'#a78bfa', employee:'#4ade80', worker:'#fb923c' };
-  const avatarIcons = { ceo:'👔', employee:'💼', worker:'🔧' };
-
-  if (action.type === 'add_company') {
-    const id = 'co_' + Date.now();
-    DATA.companies.push({ id, name: action.name, field: action.field || 'כללי', emoji: action.emoji || '🏢', signed: {} });
-    renderAdminCompanies?.();
-    return `✅ חברה "${action.name}" נוספה בהצלחה`;
-  }
-
-  if (action.type === 'add_user') {
-    if (DATA.users.find(u => u.username === action.username)) return `❌ שם משתמש "${action.username}" כבר קיים`;
-    const company = DATA.companies.find(c => c.name === action.company || c.id === action.company);
-    const maxId = Math.max(...DATA.users.map(u => u.id));
-    const role = action.role || 'employee';
-    DATA.users.push({
-      id: maxId + 1, username: action.username, password: action.password || '1234',
-      name: action.name, role, company: company?.id || null,
-      avatar: avatarIcons[role] || '👤', avatarColor: avatarColors[role] || '#888'
-    });
-    renderAdminUsers?.();
-    return `✅ משתמש "${action.name}" (@${action.username}) נוסף כ${roleMap[role]||role}${company ? ' לחברת ' + company.name : ''}`;
-  }
-
-  if (action.type === 'delete_user') {
-    const idx = DATA.users.findIndex(u => u.username === action.username && u.role !== 'admin');
-    if (idx === -1) return `❌ משתמש "${action.username}" לא נמצא`;
-    const name = DATA.users[idx].name;
-    DATA.users.splice(idx, 1);
-    DATA.tasks.forEach(t => { if (t.assignedTo === DATA.users[idx]?.id) t.assignedTo = null; });
-    renderAdminUsers?.();
-    return `✅ משתמש "${name}" נמחק מהמערכת`;
-  }
-
-  if (action.type === 'delete_company') {
-    const idx = DATA.companies.findIndex(c => c.name === action.name);
-    if (idx === -1) return `❌ חברה "${action.name}" לא נמצאה`;
-    const compId = DATA.companies[idx].id;
-    DATA.companies.splice(idx, 1);
-    DATA.users.forEach(u => { if (u.company === compId) u.company = null; });
-    renderAdminCompanies?.();
-    return `✅ חברה "${action.name}" נמחקה`;
-  }
-
-  if (action.type === 'add_note') {
-    const notesEl = document.getElementById('admin-notes');
-    if (notesEl) {
-      const existing = notesEl.value;
-      notesEl.value = existing ? existing + '\n' + action.content : action.content;
-    }
-    return `✅ הערה נוספה לאזור ההערות האישיות`;
-  }
-
-  if (action.type === 'change_password') {
-    const user = DATA.users.find(u => u.username === action.username);
-    if (!user) return `❌ משתמש "${action.username}" לא נמצא`;
-    user.password = action.password;
-    renderAdminUsers?.();
-    return `✅ סיסמת "${user.name}" שונתה בהצלחה`;
-  }
-
-  if (action.type === 'move_user') {
-    const user = DATA.users.find(u => u.username === action.username);
-    const company = DATA.companies.find(c => c.name === action.company);
-    if (!user) return `❌ משתמש "${action.username}" לא נמצא`;
-    if (!company) return `❌ חברה "${action.company}" לא נמצאה`;
-    user.company = company.id;
-    renderAdminUsers?.();
-    return `✅ ${user.name} הועבר לחברת "${company.name}"`;
-  }
-
-  return '';
-}
-
-// ── EMPLOYEE ──
 function renderEmpDashboard() {
   document.getElementById('emp-welcome-name').textContent = currentUser.name;
   const company = DATA.companies.find(c => c.id === currentUser.company);
@@ -5232,34 +4652,6 @@ async function setSigPassword() {
   if (dispEl) { dispEl.textContent = '••••••••'; dispEl.dataset.pass = pass; sigPassVisible = false; }
   showToast('✅ סיסמת החתימה עודכנה!');
   document.getElementById('sigPasswordInput').value = '';
-}
-
-let geminiKeyVisible = false;
-function toggleGeminiKeyView() {
-  geminiKeyVisible = !geminiKeyVisible;
-  const company = DATA.companies.find(c => c.id === currentUser.company);
-  const dispEl = document.getElementById('current-gemini-key-display');
-  const eyeEl  = document.getElementById('gemini-key-eye');
-  if (!dispEl) return;
-  dispEl.textContent = geminiKeyVisible ? (company?.geminiKey || '(לא הוגדר)') : '••••••••';
-  if (eyeEl) eyeEl.textContent = geminiKeyVisible ? '🙈' : '👁️';
-}
-
-async function saveGeminiKey() {
-  const key = document.getElementById('geminiKeyInput').value.trim();
-  if (!key) { showToast('❌ יש להזין מפתח', 'error'); return; }
-  if (!key.startsWith('AIza')) { showToast('❌ מפתח לא תקין — חייב להתחיל ב-AIza', 'error'); return; }
-  const company = DATA.companies.find(c => c.id === currentUser.company);
-  if (!company) return;
-  if (HAS_SUPABASE) {
-    const res = await sbUpdateCompany(company.id, { gemini_key: key });
-    if (!res.ok) { showToast('❌ שגיאה בשמירת המפתח', 'error'); return; }
-  }
-  company.geminiKey = key;
-  const dispEl = document.getElementById('current-gemini-key-display');
-  if (dispEl) { dispEl.textContent = '••••••••'; geminiKeyVisible = false; }
-  showToast('✅ מפתח ה-AI נשמר!');
-  document.getElementById('geminiKeyInput').value = '';
 }
 
 
