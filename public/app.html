@@ -2190,7 +2190,17 @@ async function doLogin() {
       return;
     }
 
-    // JWT מכיל את פרטי החברה — אין צורך בבדיקת URL נוספת
+    // בדוק שהחברה של המשתמש תואמת ל-URL
+    // dbUser.companySlug = ה-id של החברה מהשרת (e.g. "techcorp")
+    // COMPANY_SLUG = מה שב-URL (e.g. "techcorp")
+    const companySlug = (dbUser.companySlug || dbUser.company || '').toLowerCase();
+    if (companySlug !== COMPANY_SLUG.toLowerCase()) {
+      errEl.textContent = 'משתמש זה אינו שייך לחברה זו';
+      errEl.style.display = 'block';
+      setToken(null);
+      return;
+    }
+
     await loadAndInjectData(dbUser);
   } catch(e) {
     showLoadingOverlay(false);
