@@ -5873,9 +5873,43 @@ function calGetSharedEvents() {
 }
 
 function fmtCalDate(dateStr) {
+  // yyyy-mm-dd → dd/mm/yyyy
   if (!dateStr) return '';
   const [y,m,d] = dateStr.split('-');
   return `${d}/${m}/${y}`;
+}
+
+function parseFmtDate(display) {
+  // dd/mm/yyyy → yyyy-mm-dd
+  if (!display) return '';
+  const parts = display.split('/');
+  if (parts.length !== 3) return '';
+  const [d,m,y] = parts;
+  if (!d||!m||!y||y.length!==4) return '';
+  return `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
+}
+
+function calFormatDateInput(input) {
+  // הוסף / אוטומטי אחרי יום ואחרי חודש
+  let v = input.value.replace(/[^0-9]/g,'');
+  if (v.length > 2) v = v.slice(0,2) + '/' + v.slice(2);
+  if (v.length > 5) v = v.slice(0,5) + '/' + v.slice(5);
+  if (v.length > 10) v = v.slice(0,10);
+  input.value = v;
+}
+
+function calFormatTimeInput(input) {
+  // הוסף : אוטומטי אחרי שעה
+  let v = input.value.replace(/[^0-9]/g,'');
+  if (v.length > 2) v = v.slice(0,2) + ':' + v.slice(2);
+  if (v.length > 5) v = v.slice(0,5);
+  // ולידציה
+  if (v.length === 5) {
+    const [h,m] = v.split(':').map(Number);
+    if (h > 23) v = '23:' + v.slice(3);
+    if (m > 59) v = v.slice(0,3) + '59';
+  }
+  input.value = v;
 }
 
 const CAL_COLORS = [
@@ -6201,12 +6235,21 @@ function openCalEventModal(dateStr) {
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
       <div class="form-group">
-        <label>תאריך</label>
-        <input type="date" id="cal-ev-date" class="search-input" value="${defaultDate}" style="width:100%;">
+        <label>תאריך (יי/חח/שששש)</label>
+        <input type="text" id="cal-ev-date" class="search-input" 
+          placeholder="28/10/2026"
+          value="${defaultDate ? fmtCalDate(defaultDate) : ''}"
+          maxlength="10"
+          oninput="calFormatDateInput(this)"
+          style="width:100%;direction:ltr;text-align:left;">
       </div>
       <div class="form-group">
-        <label>שעה (אופציונלי)</label>
-        <input type="time" id="cal-ev-time" class="search-input" style="width:100%;" step="300">
+        <label>שעה (אופציונלי, דד:דד)</label>
+        <input type="text" id="cal-ev-time" class="search-input"
+          placeholder="20:00"
+          maxlength="5"
+          oninput="calFormatTimeInput(this)"
+          style="width:100%;direction:ltr;text-align:left;">
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
@@ -6286,10 +6329,13 @@ function openCalEventModal(dateStr) {
       }
     }
 
+    const rawDate = document.getElementById('cal-ev-date').value;
+    const evDate = parseFmtDate(rawDate) || rawDate;
+    if (!evDate) { showToast('❌ תאריך לא תקין', 'error'); return; }
     const ev = {
       id: 'ev_' + Date.now(),
       title,
-      date:       document.getElementById('cal-ev-date').value,
+      date:       evDate,
       time:       document.getElementById('cal-ev-time').value,
       type:       document.getElementById('cal-ev-type').value,
       color:      document.getElementById('cal-ev-color').value,
@@ -6329,12 +6375,22 @@ function openCalEventEdit(eventId) {
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
       <div class="form-group">
-        <label>תאריך</label>
-        <input type="date" id="cal-ed-date" class="search-input" value="${ev.date}" style="width:100%;">
+        <label>תאריך (יי/חח/שששש)</label>
+        <input type="text" id="cal-ed-date" class="search-input"
+          placeholder="28/10/2026"
+          value="${fmtCalDate(ev.date)}"
+          maxlength="10"
+          oninput="calFormatDateInput(this)"
+          style="width:100%;direction:ltr;text-align:left;">
       </div>
       <div class="form-group">
-        <label>שעה</label>
-        <input type="time" id="cal-ed-time" class="search-input" value="${ev.time||''}" style="width:100%;" step="300">
+        <label>שעה (דד:דד)</label>
+        <input type="text" id="cal-ed-time" class="search-input"
+          placeholder="20:00"
+          value="${ev.time||''}"
+          maxlength="5"
+          oninput="calFormatTimeInput(this)"
+          style="width:100%;direction:ltr;text-align:left;">
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
@@ -6380,9 +6436,12 @@ function openCalEventEdit(eventId) {
   document.getElementById('cal-update-btn').onclick = () => {
     const title = document.getElementById('cal-ed-title').value.trim();
     if (!title) { showToast('❌ יש להזין כותרת', 'error'); return; }
+    const rawDateEd = document.getElementById('cal-ed-date').value;
+    const evDateEd = parseFmtDate(rawDateEd) || rawDateEd;
+    if (!evDateEd) { showToast('❌ תאריך לא תקין', 'error'); return; }
     Object.assign(ev, {
       title,
-      date:   document.getElementById('cal-ed-date').value,
+      date:   evDateEd,
       time:   document.getElementById('cal-ed-time').value,
       type:   document.getElementById('cal-ed-type').value,
       color:  document.getElementById('cal-ed-color').value,
