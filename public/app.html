@@ -2009,12 +2009,21 @@ async function sbCreateCompany(payload) {
 
 async function sbUpdateCompany(id, updates) {
   try {
-    const data = await apiFetch('/companies', 'PATCH', { id, ...updates });
-    if (!data || data.error) return { ok: false, data };
+    const headers = { 'Content-Type': 'application/json' };
+    const token = getToken();
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    const res = await fetch('/api/companies', {
+      method: 'PATCH',
+      credentials: 'include',
+      headers,
+      body: JSON.stringify({ id, ...updates })
+    });
+    const data = await res.json();
+    if (!res.ok) return { ok: false, data };
     const comp = DATA.companies.find(x => x.id === id);
     if (comp) {
       if (data.name)  comp.name  = data.name;
-      if (data.field) comp.field = data.field;
+      if (data.field !== undefined) comp.field = data.field;
       if (data.emoji) comp.emoji = data.emoji;
       if (data.color) comp.color = data.color;
     }
@@ -5645,14 +5654,16 @@ async function addUser() {
     avatar: role === 'ceo' ? '🏢' : role === 'worker' ? '🔧' : '💼',
     avatar_color: colors[role],
   };
+  let createdUser = null;
   if (HAS_SUPABASE) {
     const res = await sbCreateUser(payload);
     if (!res.ok) { showToast(res.data?.error || '❌ שגיאה בהוספת משתמש', 'error'); return; }
+    createdUser = res.data;
   } else {
     DATA.users.push({ id: Math.max(...DATA.users.map(u=>u.id))+1, username, password: pass, name,
       role, company: payload.company_id, avatar: payload.avatar, avatarColor: payload.avatar_color });
   }
-  // טען משתמשים מחדש מה-API כדי לקבל password_plain
+  // טען משתמשים מחדש מה-API
   try {
     const fresh = await apiFetch('/users');
     if (fresh && Array.isArray(fresh)) DATA.users = fresh.map(mapUser);
