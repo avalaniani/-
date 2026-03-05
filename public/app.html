@@ -2009,20 +2009,7 @@ async function sbCreateCompany(payload) {
 
 async function sbUpdateCompany(id, updates) {
   try {
-    const payload = { id, ...updates };
-    console.log('[sbUpdateCompany] sending:', JSON.stringify(payload));
-    const headers = { 'Content-Type': 'application/json' };
-    const token = getToken();
-    if (token) headers['Authorization'] = 'Bearer ' + token;
-    const res = await fetch('/api/companies', {
-      method: 'PATCH',
-      credentials: 'include',
-      headers,
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json();
-    console.log('[sbUpdateCompany] response', res.status, JSON.stringify(data));
-    if (!res.ok) return { ok: false, data };
+    const data = await apiFetch('/companies', 'PATCH', { id, ...updates });
     const comp = DATA.companies.find(x => x.id === id);
     if (comp) {
       if (data.name  !== undefined) comp.name  = data.name;
@@ -2032,7 +2019,6 @@ async function sbUpdateCompany(id, updates) {
     }
     return { ok: true, data };
   } catch(e) {
-    console.error('[sbUpdateCompany] error:', e);
     return { ok: false, data: { error: e.message } };
   }
 }
@@ -5543,13 +5529,16 @@ function editCompany(compId) {
   if (!c) return;
   document.getElementById('modalBody').innerHTML = `
     <div class="modal-title">✏️ עריכת ${c.name}</div>
+    <input type="hidden" id="ec-comp-id">
     <div class="form-group"><label>שם החברה</label><input type="text" id="ec-name" value="${c.name}"></div>
     <div class="form-group"><label>תחום פעילות</label><input type="text" id="ec-field" value="${c.field}"></div>
     <div class="form-group"><label>אמוג׳י</label><input type="text" id="ec-emoji" value="${c.emoji}" maxlength="2" style="font-size:24px;width:80px;text-align:center;"></div>
     <div class="modal-actions">
-      <button class="btn btn-primary" onclick="saveCompany('${compId}')">💾 שמור</button>
+      <button class="btn btn-primary" id="ec-save-btn">💾 שמור</button>
       <button class="btn btn-outline" onclick="closeModal()">ביטול</button>
     </div>`;
+  document.getElementById('ec-comp-id').value = compId;
+  document.getElementById('ec-save-btn').onclick = () => saveCompany(compId);
   openModal();
 }
 
