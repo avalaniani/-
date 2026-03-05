@@ -1601,12 +1601,15 @@
 // הקוד הרגיש רץ בשרת בלבד — הדפדפן רואה רק תוצאות
 // ═══════════════════════════════════════════════════════════════
 
-// ── Token storage — זיכרון בלבד (sessionStorage חסום ב-Edge) ──
-let _wfpToken = null;
-const HAS_SUPABASE = true; // תמיד משתמשים ב-API
+// ── Token storage — localStorage לשמירה לאחר רענון ──
+const TOKEN_KEY = 'wfp_token';
+const HAS_SUPABASE = true;
 
-function getToken() { return _wfpToken; }
-function setToken(t) { _wfpToken = t; }
+function getToken() { return localStorage.getItem(TOKEN_KEY); }
+function setToken(t) {
+  if (t) localStorage.setItem(TOKEN_KEY, t);
+  else   localStorage.removeItem(TOKEN_KEY);
+}
 
 // ── API fetch wrapper ─────────────────────────────────────────
 async function apiFetch(endpoint, method = 'GET', body = null) {
@@ -2247,6 +2250,7 @@ function login(user) {
 function logout() {
   sbDoLogout();
   currentUser = null;
+  history.replaceState(null, '', window.location.pathname); // נקה hash
   document.getElementById('app').style.display = 'none';
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('loginUser').value = '';
@@ -2335,6 +2339,10 @@ function goPage(pageId) {
     'worker-hours':'דוח שעות','worker-requests':'פניות ובקשות' };
   document.getElementById('pageTitle').textContent = labels[pageId] || pageId;
   currentPage = pageId;
+  // עדכן URL hash
+  if (window.location.hash !== '#' + pageId) {
+    history.pushState(null, '', window.location.pathname + '#' + pageId);
+  }
   // Clear global search on page change
   const gs = document.getElementById('globalSearch');
   if (gs) gs.value = '';
@@ -2346,8 +2354,39 @@ function routeToRole() {
   const defaults = { admin:'admin-dashboard', ceo:'ceo-dashboard', employee:'emp-dashboard', worker:'worker-hours', fieldWorker:'emp-dashboard' };
   closeSidebar();
   const effectiveRole = getEffectiveRole(currentUser);
+
+  // נסה לשחזר עמוד מה-hash
+  const hash = window.location.hash.replace('#', '');
+  const allPages = Object.values(navConfigs).flat().map(x => x.page);
+  if (hash && allPages.includes(hash)) {
+    // וודא שהעמוד שייך לתפקיד הנוכחי
+    const rolePages = (navConfigs[effectiveRole] || []).map(x => x.page);
+    if (rolePages.includes(hash)) {
+      goPage(hash);
+      return;
+    }
+  }
   goPage(defaults[effectiveRole] || 'emp-dashboard');
 }
+
+// ניווט אחורה/קדימה בדפדפן
+window.addEventListener('popstate', () => {
+  if (!currentUser) return;
+  const hash = window.location.hash.replace('#', '');
+  const effectiveRole = getEffectiveRole(currentUser);
+  const rolePages = (navConfigs[effectiveRole] || []).map(x => x.page);
+  if (hash && rolePages.includes(hash)) {
+    // goPage בלי pushState נוסף
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const pg = document.getElementById('page-' + hash);
+    if (pg) pg.classList.add('active');
+    const nav = document.querySelector('[data-page="' + hash + '"]');
+    if (nav) nav.classList.add('active');
+    currentPage = hash;
+    renderPage(hash);
+  }
+});
 
 // ═══════════════════════════════════════════
 // RENDER PAGES
