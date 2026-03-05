@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
     id_number:    body.id_number || null,
     ceo_interface: false,
     field_worker:  false,
-  }).select(SAFE_COLS).single()
+  }).select(COLS_WITH_PASS).single()
 
   if (error) return err(error.message, 500)
   return ok(data)
