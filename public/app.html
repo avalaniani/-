@@ -6236,25 +6236,23 @@ function openCalEventModal(dateStr) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
       <div class="form-group">
         <label>תאריך</label>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <input type="text" id="cal-ev-date" class="search-input"
-            placeholder="28/10/2026" maxlength="10"
-            oninput="calFormatDateInput(this)"
-            style="flex:1;direction:ltr;text-align:left;"
-            value="${defaultDate ? fmtCalDate(defaultDate) : ''}">
-          <button type="button" onclick="openCalDatePicker('cal-ev-date')"
-            style="font-size:20px;background:none;border:1px solid var(--border);border-radius:8px;padding:6px 8px;cursor:pointer;line-height:1;">📅</button>
+        <div onclick="openCalDatePicker('cal-ev-date')" style="display:flex;align-items:center;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:9px 12px;gap:8px;cursor:pointer;transition:border-color 0.15s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+          <input type="text" id="cal-ev-date"
+            placeholder="יי/חח/שששש" maxlength="10"
+            oninput="calFormatDateInput(this)" onclick="event.stopPropagation();openCalDatePicker('cal-ev-date')"
+            value="${defaultDate ? fmtCalDate(defaultDate) : ''}"
+            style="flex:1;border:none;background:none;outline:none;font-size:13px;direction:ltr;text-align:left;color:var(--text);font-family:inherit;cursor:pointer;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text3);flex-shrink:0;pointer-events:none;"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         </div>
       </div>
       <div class="form-group">
-        <label>שעה (אופציונלי)</label>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <input type="text" id="cal-ev-time" class="search-input"
-            placeholder="20:00" maxlength="5"
-            oninput="calFormatTimeInput(this)"
-            style="flex:1;direction:ltr;text-align:left;">
-          <button type="button" onclick="openCalTimePicker('cal-ev-time')"
-            style="font-size:20px;background:none;border:1px solid var(--border);border-radius:8px;padding:6px 8px;cursor:pointer;line-height:1;">🕐</button>
+        <label>שעה <span style="font-size:11px;color:var(--text3);">(אופציונלי)</span></label>
+        <div onclick="openCalTimePicker('cal-ev-time')" style="display:flex;align-items:center;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:9px 12px;gap:8px;cursor:pointer;transition:border-color 0.15s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+          <input type="text" id="cal-ev-time"
+            placeholder="שעה:דקות" maxlength="5"
+            oninput="calFormatTimeInput(this)" onclick="event.stopPropagation();openCalTimePicker('cal-ev-time')"
+            style="flex:1;border:none;background:none;outline:none;font-size:13px;direction:ltr;text-align:left;color:var(--text);font-family:inherit;cursor:pointer;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text3);flex-shrink:0;pointer-events:none;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         </div>
       </div>
     </div>
@@ -6382,26 +6380,24 @@ function openCalEventEdit(eventId) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
       <div class="form-group">
         <label>תאריך</label>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <input type="text" id="cal-ed-date" class="search-input"
-            placeholder="28/10/2026" maxlength="10"
-            oninput="calFormatDateInput(this)"
-            style="flex:1;direction:ltr;text-align:left;"
-            value="${fmtCalDate(ev.date)}">
-          <button type="button" onclick="openCalDatePicker('cal-ed-date')"
-            style="font-size:20px;background:none;border:1px solid var(--border);border-radius:8px;padding:6px 8px;cursor:pointer;line-height:1;">📅</button>
+        <div onclick="openCalDatePicker('cal-ed-date')" style="display:flex;align-items:center;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:9px 12px;gap:8px;cursor:pointer;transition:border-color 0.15s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+          <input type="text" id="cal-ed-date"
+            placeholder="יי/חח/שששש" maxlength="10"
+            oninput="calFormatDateInput(this)" onclick="event.stopPropagation();openCalDatePicker('cal-ed-date')"
+            value="${fmtCalDate(ev.date)}"
+            style="flex:1;border:none;background:none;outline:none;font-size:13px;direction:ltr;text-align:left;color:var(--text);font-family:inherit;cursor:pointer;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text3);flex-shrink:0;pointer-events:none;"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         </div>
       </div>
       <div class="form-group">
         <label>שעה</label>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <input type="text" id="cal-ed-time" class="search-input"
-            placeholder="20:00" maxlength="5"
-            oninput="calFormatTimeInput(this)"
-            style="flex:1;direction:ltr;text-align:left;"
-            value="${ev.time||''}">
-          <button type="button" onclick="openCalTimePicker('cal-ed-time')"
-            style="font-size:20px;background:none;border:1px solid var(--border);border-radius:8px;padding:6px 8px;cursor:pointer;line-height:1;">🕐</button>
+        <div onclick="openCalTimePicker('cal-ed-time')" style="display:flex;align-items:center;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:9px 12px;gap:8px;cursor:pointer;transition:border-color 0.15s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+          <input type="text" id="cal-ed-time"
+            placeholder="שעה:דקות" maxlength="5"
+            oninput="calFormatTimeInput(this)" onclick="event.stopPropagation();openCalTimePicker('cal-ed-time')"
+            value="${ev.time||''}"
+            style="flex:1;border:none;background:none;outline:none;font-size:13px;direction:ltr;text-align:left;color:var(--text);font-family:inherit;cursor:pointer;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text3);flex-shrink:0;pointer-events:none;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         </div>
       </div>
     </div>
