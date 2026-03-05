@@ -2009,7 +2009,20 @@ async function sbCreateCompany(payload) {
 
 async function sbUpdateCompany(id, updates) {
   try {
-    const data = await apiFetch('/companies', 'PATCH', { id, ...updates });
+    const payload = { id, ...updates };
+    console.log('[sbUpdateCompany] sending:', JSON.stringify(payload));
+    const headers = { 'Content-Type': 'application/json' };
+    const token = getToken();
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    const res = await fetch('/api/companies', {
+      method: 'PATCH',
+      credentials: 'include',
+      headers,
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    console.log('[sbUpdateCompany] response', res.status, JSON.stringify(data));
+    if (!res.ok) return { ok: false, data };
     const comp = DATA.companies.find(x => x.id === id);
     if (comp) {
       if (data.name  !== undefined) comp.name  = data.name;
@@ -2019,6 +2032,7 @@ async function sbUpdateCompany(id, updates) {
     }
     return { ok: true, data };
   } catch(e) {
+    console.error('[sbUpdateCompany] error:', e);
     return { ok: false, data: { error: e.message } };
   }
 }
@@ -5587,7 +5601,7 @@ async function saveCompany(compId) {
   if (!updates.name) { showToast('❌ יש להזין שם חברה', 'error'); return; }
   if (HAS_SUPABASE) {
     const res = await sbUpdateCompany(compId, updates);
-    if (!res.ok) { showToast('❌ שגיאה בשמירה', 'error'); return; }
+    if (!res.ok) { showToast('❌ ' + (res.data?.error || 'שגיאה בשמירה'), 'error'); return; }
   } else {
     const comp = DATA.companies.find(x => x.id === compId);
     if (comp) Object.assign(comp, updates);
