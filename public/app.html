@@ -2123,11 +2123,24 @@ let nextSubtaskId = 1000;
 // ═══════════════════════════════════════════
 // ── COMPANY URL DETECTION ──
 const COMPANY_SLUG = (() => {
-  const parts = window.location.pathname.split('/').filter(Boolean);
-  // אם ה-URL הוא /techcorp או /buildpro וכו' - זה ה-slug של החברה
+  const hostname = window.location.hostname;
+  const parts    = window.location.pathname.split('/').filter(Boolean);
+
+  // אופציה 1: subdomain — techcorp.workflowpro.vercel.app
+  const knownRoots = ['workflowpro.vercel.app', 'workflowproo.vercel.app', 'localhost'];
+  for (const root of knownRoots) {
+    if (hostname.endsWith('.' + root)) {
+      return hostname.slice(0, hostname.length - root.length - 1); // e.g. "techcorp"
+    }
+  }
+
+  // אופציה 2: pathname — workflowpro.vercel.app/techcorp
   const slug = parts[0];
   return (slug && slug !== 'app.html') ? slug : null;
 })();
+
+// האם זו כתובת ראשית (ללא חברה)?
+const IS_MAIN_DOMAIN = !COMPANY_SLUG;
 
 // עדכן כותרת דף הכניסה לפי החברה
 window.addEventListener('DOMContentLoaded', () => {
@@ -2151,16 +2164,37 @@ async function doLogin() {
     const dbUser = await sbDoLogin(u, p);
     showLoadingOverlay(false);
     if (btn) { btn.disabled = false; btn.textContent = '🔐 כניסה'; }
-    // בדוק שהמשתמש שייך לחברה הנכונה לפי URL
-    if (COMPANY_SLUG && dbUser.role !== 'admin') {
-      if (dbUser.company !== COMPANY_SLUG) {
-        const errEl = document.getElementById('loginError');
-        errEl.textContent = 'משתמש זה אינו שייך לחברה זו';
+
+    const errEl = document.getElementById('loginError');
+
+    // מנהל מערכת — מותר להיכנס רק מהדומיין הראשי
+    if (dbUser.role === 'admin') {
+      if (!IS_MAIN_DOMAIN) {
+        errEl.textContent = 'מנהל מערכת יכול להיכנס רק מהכתובת הראשית';
         errEl.style.display = 'block';
         setToken(null);
         return;
       }
+      await loadAndInjectData(dbUser);
+      return;
     }
+
+    // משתמש רגיל — חייב להיכנס דרך כתובת החברה
+    if (IS_MAIN_DOMAIN) {
+      errEl.textContent = 'יש להיכנס דרך כתובת החברה שלך';
+      errEl.style.display = 'block';
+      setToken(null);
+      return;
+    }
+
+    // בדוק שהמשתמש שייך לחברה של ה-URL
+    if (dbUser.company !== COMPANY_SLUG) {
+      errEl.textContent = 'משתמש זה אינו שייך לחברה זו';
+      errEl.style.display = 'block';
+      setToken(null);
+      return;
+    }
+
     await loadAndInjectData(dbUser);
   } catch(e) {
     showLoadingOverlay(false);
