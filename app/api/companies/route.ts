@@ -71,6 +71,7 @@ export async function PATCH(req: NextRequest) {
   if (updates.emoji        !== undefined) allowed.emoji        = updates.emoji
   if (updates.color        !== undefined) allowed.color        = updates.color
   if (updates.sig_password !== undefined) allowed.sig_password = updates.sig_password
+  if (updates.gemini_key   !== undefined) allowed.gemini_key   = updates.gemini_key
 
   if (Object.keys(allowed).length === 0) return err('No fields to update', 400)
 
