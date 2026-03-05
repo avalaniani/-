@@ -1187,6 +1187,17 @@
 
       </div>
 
+
+      <!-- Admin Calendar -->
+      <div class="page" id="page-admin-calendar">
+        <div id="cal-admin-root"></div>
+      </div>
+
+      <!-- CEO Calendar -->
+      <div class="page" id="page-ceo-calendar">
+        <div id="cal-ceo-root"></div>
+      </div>
+
       <!-- CEO Tasks -->
       <div class="page" id="page-ceo-tasks">
         <div class="card-header" style="margin-bottom:20px;flex-wrap:nowrap;gap:8px;">
@@ -2270,6 +2281,7 @@ const navConfigs = {
     { page:'admin-companies', icon:'🏢', label:'ניהול חברות' },
     { page:'admin-users', icon:'👥', label:'משתמשים וסיסמאות' },
     { page:'admin-notes', icon:'📝', label:'הערות אישיות' },
+    { page:'admin-calendar', icon:'📅', label:'יומן' },
   ],
   ceo: [
     { page:'ceo-dashboard', icon:'📊', label:'לוח בקרה' },
@@ -2277,6 +2289,7 @@ const navConfigs = {
     { page:'ceo-workers', icon:'🔧', label:'פועלים ושעות' },
     { page:'ceo-tasks', icon:'📋', label:'משימות' },
     { page:'ceo-notes', icon:'📝', label:'הערות אישיות' },
+    { page:'ceo-calendar', icon:'📅', label:'יומן' },
     { page:'ceo-requests', icon:'📬', label:'פניות פועלים' },
     { page:'ceo-credentials', icon:'🔑', label:'שמות משתמש וסיסמאות' },
   ],
@@ -2398,12 +2411,14 @@ function renderPage(pageId) {
   if (pageId === 'admin-companies') renderAdminCompanies();
   else if (pageId === 'admin-users') renderAdminUsers();
   else if (pageId === 'admin-notes') renderNotes('admin');
+  else if (pageId === 'admin-calendar') renderCalendar('admin');
   else if (pageId === 'ceo-dashboard') renderCeoDashboard();
   else if (pageId === 'ceo-employees') renderCeoEmployees();
   else if (pageId === 'ceo-workers') { renderCeoWorkers(); renderCeoWorkersGrid(false); setTimeout(() => { fitGridToScreen(false); updateSliderFill(document.getElementById('grid-zoom-slider')); }, 80); }
   else if (pageId === 'ceo-tasks') renderCeoTasks();
   else if (pageId === 'ceo-credentials') renderCeoCredentials();
   else if (pageId === 'ceo-notes') renderNotes('ceo');
+  else if (pageId === 'ceo-calendar') renderCalendar('ceo');
   else if (pageId === 'ceo-requests') renderCeoRequests();
   else if (pageId === 'emp-dashboard') renderEmpDashboard();
   else if (pageId === 'emp-tasks') renderEmpTasks();
@@ -5814,6 +5829,498 @@ function openEmojiPicker(targetInputId) {
   });
 
   setTimeout(() => document.getElementById('emoji-search')?.focus(), 50);
+}
+
+
+
+// ═══════════════════════════════════════════════════════════════
+// 📅 CALENDAR — יומן מנהל מקצועי
+// ═══════════════════════════════════════════════════════════════
+
+const CAL_COLORS = [
+  { id:'blue',   label:'כחול',   hex:'#3b82f6' },
+  { id:'green',  label:'ירוק',   hex:'#22c55e' },
+  { id:'red',    label:'אדום',   hex:'#ef4444' },
+  { id:'orange', label:'כתום',   hex:'#f97316' },
+  { id:'purple', label:'סגול',   hex:'#a855f7' },
+  { id:'pink',   label:'ורוד',   hex:'#ec4899' },
+  { id:'teal',   label:'טורקיז', hex:'#14b8a6' },
+  { id:'yellow', label:'צהוב',   hex:'#eab308' },
+];
+
+const CAL_TYPES = [
+  { id:'meeting',  label:'פגישה',    icon:'🤝' },
+  { id:'task',     label:'משימה',    icon:'✅' },
+  { id:'reminder', label:'תזכורת',   icon:'🔔' },
+  { id:'event',    label:'אירוע',    icon:'🎯' },
+  { id:'personal', label:'אישי',     icon:'👤' },
+];
+
+const CAL_STATUS = [
+  { id:'pending',   label:'ממתין',   cls:'cal-pending' },
+  { id:'done',      label:'הושלם',   cls:'cal-done' },
+  { id:'cancelled', label:'בוטל',    cls:'cal-cancelled' },
+];
+
+// state
+let calState = {
+  mode: 'month',   // month | week | day
+  year: new Date().getFullYear(),
+  month: new Date().getMonth(),
+  day: new Date().getDate(),
+  role: 'admin',
+  events: [],      // נטען מ-localStorage
+};
+
+function calStorageKey(role) {
+  const company = currentUser?.company || 'admin';
+  return `wfp_cal_${role}_${company}`;
+}
+
+function calLoad(role) {
+  try {
+    const raw = localStorage.getItem(calStorageKey(role));
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+function calSave(role, events) {
+  localStorage.setItem(calStorageKey(role), JSON.stringify(events));
+}
+
+function calGetTaskEvents(role) {
+  // שלוף משימות עם תאריך יעד
+  const tasks = DATA.tasks || [];
+  const filtered = role === 'admin' ? tasks :
+    tasks.filter(t => t.company === currentUser?.company);
+  return filtered
+    .filter(t => t.dueDate)
+    .map(t => ({
+      id: 'task_' + t.id,
+      title: t.title,
+      date: t.dueDate,
+      type: 'task',
+      color: t.status === 'done' ? 'green' : (t.priority === 'high' ? 'red' : 'blue'),
+      status: t.status === 'done' ? 'done' : 'pending',
+      note: t.desc || '',
+      fromTask: true,
+    }));
+}
+
+function renderCalendar(role) {
+  calState.role = role;
+  calState.events = calLoad(role);
+  const rootId = role === 'admin' ? 'cal-admin-root' : 'cal-ceo-root';
+  const root = document.getElementById(rootId);
+  if (!root) return;
+
+  const allEvents = [...calState.events, ...calGetTaskEvents(role)];
+
+  root.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:0;height:100%;">
+      ${calHeader()}
+      ${calState.mode === 'month' ? calMonthView(allEvents) :
+        calState.mode === 'week'  ? calWeekView(allEvents)  :
+        calDayView(allEvents)}
+    </div>`;
+
+  // bind buttons
+  root.querySelector('#cal-prev')?.addEventListener('click', () => calNav(-1));
+  root.querySelector('#cal-next')?.addEventListener('click', () => calNav(1));
+  root.querySelector('#cal-today')?.addEventListener('click', () => calToday());
+  root.querySelectorAll('[data-calmode]').forEach(b => {
+    b.addEventListener('click', () => { calState.mode = b.dataset.calmode; renderCalendar(calState.role); });
+  });
+  root.querySelectorAll('[data-calday]').forEach(cell => {
+    cell.addEventListener('click', (e) => {
+      if (e.target.closest('[data-calevent]')) return;
+      openCalEventModal(cell.dataset.calday);
+    });
+  });
+  root.querySelectorAll('[data-calevent]').forEach(ev => {
+    ev.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openCalEventEdit(ev.dataset.calevent);
+    });
+  });
+}
+
+function calHeader() {
+  const monthNames = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+  let title = '';
+  if (calState.mode === 'month') title = `${monthNames[calState.month]} ${calState.year}`;
+  else if (calState.mode === 'week') {
+    const startOfWeek = calWeekStart();
+    const endOfWeek = new Date(startOfWeek); endOfWeek.setDate(endOfWeek.getDate() + 6);
+    title = `${startOfWeek.getDate()} – ${endOfWeek.getDate()} ${monthNames[endOfWeek.getMonth()]} ${endOfWeek.getFullYear()}`;
+  } else {
+    title = `${calState.day} ${monthNames[calState.month]} ${calState.year}`;
+  }
+
+  return `
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+    <div style="font-size:18px;font-weight:800;flex:1;">${title}</div>
+    <button id="cal-today" class="btn btn-outline btn-sm">היום</button>
+    <button id="cal-prev" class="btn btn-outline btn-sm" style="padding:6px 12px;">▶</button>
+    <button id="cal-next" class="btn btn-outline btn-sm" style="padding:6px 12px;">◀</button>
+    <div style="display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+      ${['month','week','day'].map(m => `
+        <button data-calmode="${m}" style="padding:6px 14px;border:none;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;
+          background:${calState.mode===m?'var(--accent)':'var(--bg3)'};
+          color:${calState.mode===m?'white':'var(--text2)'};">
+          ${{month:'חודש',week:'שבוע',day:'יום'}[m]}
+        </button>`).join('')}
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="openCalEventModal()">+ אירוע</button>
+  </div>`;
+}
+
+function calMonthView(allEvents) {
+  const firstDay = new Date(calState.year, calState.month, 1);
+  const daysInMonth = new Date(calState.year, calState.month + 1, 0).getDate();
+  // ב-JS: 0=ראשון, נרצה שבת=0, ראשון=1 (RTL)
+  let startDow = firstDay.getDay(); // 0=sun
+  const today = new Date();
+  const dayNames = ['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','שב׳'];
+
+  let html = `<div style="flex:1;overflow:auto;">
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border);border-radius:12px;overflow:hidden;">
+      ${dayNames.map(d => `<div style="background:var(--bg3);padding:8px;text-align:center;font-size:11px;font-weight:700;color:var(--text2);">${d}</div>`).join('')}`;
+
+  // תאים ריקים לפני היום הראשון
+  for (let i = 0; i < startDow; i++) {
+    html += `<div style="background:var(--card);min-height:80px;padding:6px;"></div>`;
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${calState.year}-${String(calState.month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dayEvents = allEvents.filter(e => {
+      if (e.date === dateStr) return true;
+      if (e.repeat === 'weekly') {
+        const evDay = new Date(e.date).getDay();
+        const thisDay = new Date(dateStr).getDay();
+        return evDay === thisDay && e.date <= dateStr;
+      }
+      if (e.repeat === 'monthly') {
+        const evD = new Date(e.date).getDate();
+        return evD === d && e.date <= dateStr;
+      }
+      return false;
+    });
+    const isToday = d === today.getDate() && calState.month === today.getMonth() && calState.year === today.getFullYear();
+    const isSelected = d === calState.day;
+
+    html += `<div data-calday="${dateStr}" style="background:var(--card);min-height:80px;padding:6px;cursor:pointer;transition:background 0.15s;position:relative;"
+      onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='var(--card)'">
+      <div style="font-size:12px;font-weight:${isToday?'800':'600'};color:${isToday?'white':'var(--text)'};
+        width:22px;height:22px;border-radius:50%;background:${isToday?'var(--accent)':'transparent'};
+        display:flex;align-items:center;justify-content:center;margin-bottom:4px;">${d}</div>
+      ${dayEvents.slice(0,3).map(ev => calEventChip(ev)).join('')}
+      ${dayEvents.length > 3 ? `<div style="font-size:10px;color:var(--text3);margin-top:2px;">+${dayEvents.length-3} נוספים</div>` : ''}
+    </div>`;
+  }
+
+  // תאים ריקים בסוף
+  const totalCells = startDow + daysInMonth;
+  const remainder = totalCells % 7;
+  if (remainder > 0) {
+    for (let i = 0; i < 7 - remainder; i++) {
+      html += `<div style="background:var(--card);min-height:80px;"></div>`;
+    }
+  }
+
+  html += `</div></div>`;
+  return html;
+}
+
+function calWeekStart() {
+  const d = new Date(calState.year, calState.month, calState.day);
+  const dow = d.getDay();
+  d.setDate(d.getDate() - dow);
+  return d;
+}
+
+function calWeekView(allEvents) {
+  const start = calWeekStart();
+  const dayNames = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+  const today = new Date();
+  const monthNames = ['ינו׳','פבר׳','מרץ','אפר׳','מאי','יוני','יולי','אוג׳','ספט׳','אוק׳','נוב׳','דצמ׳'];
+
+  let html = `<div style="flex:1;overflow:auto;"><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;">`;
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(start); d.setDate(d.getDate() + i);
+    const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const dayEvents = allEvents.filter(e => e.date === dateStr ||
+      (e.repeat === 'weekly' && new Date(e.date).getDay() === d.getDay() && e.date <= dateStr) ||
+      (e.repeat === 'monthly' && new Date(e.date).getDate() === d.getDate() && e.date <= dateStr));
+    const isToday = d.toDateString() === today.toDateString();
+
+    html += `<div data-calday="${dateStr}" style="background:var(--card);border:1px solid ${isToday?'var(--accent)':'var(--border)'};
+      border-radius:12px;padding:10px;min-height:140px;cursor:pointer;">
+      <div style="font-size:11px;color:var(--text2);margin-bottom:4px;">${dayNames[i]}</div>
+      <div style="font-size:16px;font-weight:800;color:${isToday?'var(--accent)':'var(--text)'};margin-bottom:8px;">
+        ${d.getDate()} ${monthNames[d.getMonth()]}
+      </div>
+      ${dayEvents.map(ev => calEventChip(ev, true)).join('')}
+    </div>`;
+  }
+
+  html += `</div></div>`;
+  return html;
+}
+
+function calDayView(allEvents) {
+  const dateStr = `${calState.year}-${String(calState.month+1).padStart(2,'0')}-${String(calState.day).padStart(2,'0')}`;
+  const dayEvents = allEvents.filter(e => e.date === dateStr ||
+    (e.repeat === 'weekly' && new Date(e.date).getDay() === new Date(dateStr).getDay() && e.date <= dateStr) ||
+    (e.repeat === 'monthly' && new Date(e.date).getDate() === calState.day && e.date <= dateStr));
+
+  const hours = Array.from({length:24}, (_,i) => i);
+
+  let html = `<div style="flex:1;overflow:auto;">`;
+
+  if (!dayEvents.length) {
+    html += `<div style="text-align:center;padding:40px;color:var(--text2);">
+      <div style="font-size:48px;margin-bottom:12px;">📅</div>
+      <div>אין אירועים ביום זה</div>
+      <button class="btn btn-primary btn-sm" style="margin-top:16px;" onclick="openCalEventModal('${dateStr}')">+ הוסף אירוע</button>
+    </div>`;
+  } else {
+    html += dayEvents.map(ev => {
+      const type = CAL_TYPES.find(t => t.id === ev.type) || CAL_TYPES[0];
+      const color = (CAL_COLORS.find(c => c.id === ev.color) || CAL_COLORS[0]).hex;
+      const status = CAL_STATUS.find(s => s.id === ev.status) || CAL_STATUS[0];
+      return `<div data-calevent="${ev.id}" style="background:${color}15;border-right:4px solid ${color};
+        border-radius:10px;padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:all 0.15s;"
+        onmouseover="this.style.background='${color}25'" onmouseout="this.style.background='${color}15'">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+          <span style="font-size:18px;">${type.icon}</span>
+          <div style="font-size:15px;font-weight:700;${ev.status==='done'?'text-decoration:line-through;color:var(--text3)':''}">${ev.title}</div>
+          <span style="font-size:11px;background:${color}22;color:${color};border-radius:6px;padding:2px 8px;font-weight:600;margin-right:auto;">${status.label}</span>
+        </div>
+        ${ev.time ? `<div style="font-size:12px;color:var(--text2);">🕐 ${ev.time}</div>` : ''}
+        ${ev.note ? `<div style="font-size:12px;color:var(--text2);margin-top:4px;">${ev.note}</div>` : ''}
+        ${ev.fromTask ? `<div style="font-size:11px;color:var(--text3);margin-top:4px;">📋 ממשימה</div>` : ''}
+      </div>`;
+    }).join('');
+  }
+
+  html += `</div>`;
+  return html;
+}
+
+function calEventChip(ev, tall = false) {
+  const color = (CAL_COLORS.find(c => c.id === ev.color) || CAL_COLORS[0]).hex;
+  const type = CAL_TYPES.find(t => t.id === ev.type) || CAL_TYPES[0];
+  return `<div data-calevent="${ev.id}" style="background:${color};color:white;border-radius:4px;
+    padding:${tall?'4px 6px':'2px 5px'};font-size:${tall?'12px':'10px'};margin-bottom:2px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;opacity:${ev.status==='done'?'0.5':'1'};">
+    ${type.icon} ${ev.title}
+  </div>`;
+}
+
+function calNav(dir) {
+  if (calState.mode === 'month') {
+    calState.month += dir;
+    if (calState.month < 0) { calState.month = 11; calState.year--; }
+    if (calState.month > 11) { calState.month = 0; calState.year++; }
+  } else if (calState.mode === 'week') {
+    const d = new Date(calState.year, calState.month, calState.day);
+    d.setDate(d.getDate() + dir * 7);
+    calState.year = d.getFullYear(); calState.month = d.getMonth(); calState.day = d.getDate();
+  } else {
+    const d = new Date(calState.year, calState.month, calState.day);
+    d.setDate(d.getDate() + dir);
+    calState.year = d.getFullYear(); calState.month = d.getMonth(); calState.day = d.getDate();
+  }
+  renderCalendar(calState.role);
+}
+
+function calToday() {
+  const t = new Date();
+  calState.year = t.getFullYear(); calState.month = t.getMonth(); calState.day = t.getDate();
+  renderCalendar(calState.role);
+}
+
+function openCalEventModal(dateStr) {
+  const defaultDate = dateStr || `${calState.year}-${String(calState.month+1).padStart(2,'0')}-${String(calState.day).padStart(2,'0')}`;
+
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-title">📅 אירוע חדש</div>
+    <div class="form-group">
+      <label>כותרת</label>
+      <input type="text" id="cal-ev-title" class="search-input" placeholder="שם האירוע..." style="width:100%;">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-group">
+        <label>תאריך</label>
+        <input type="date" id="cal-ev-date" class="search-input" value="${defaultDate}" style="width:100%;">
+      </div>
+      <div class="form-group">
+        <label>שעה (אופציונלי)</label>
+        <input type="time" id="cal-ev-time" class="search-input" style="width:100%;">
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-group">
+        <label>סוג</label>
+        <select id="cal-ev-type" class="search-input" style="width:100%;">
+          ${CAL_TYPES.map(t => `<option value="${t.id}">${t.icon} ${t.label}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>צבע</label>
+        <select id="cal-ev-color" class="search-input" style="width:100%;">
+          ${CAL_COLORS.map(c => `<option value="${c.id}">${c.label}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-group">
+        <label>סטטוס</label>
+        <select id="cal-ev-status" class="search-input" style="width:100%;">
+          ${CAL_STATUS.map(s => `<option value="${s.id}">${s.label}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>חזרה</label>
+        <select id="cal-ev-repeat" class="search-input" style="width:100%;">
+          <option value="">ללא חזרה</option>
+          <option value="weekly">שבועי</option>
+          <option value="monthly">חודשי</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>הערה</label>
+      <textarea id="cal-ev-note" class="search-input" rows="2" placeholder="הערות..." style="width:100%;resize:vertical;"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="cal-save-btn">💾 שמור</button>
+      <button class="btn btn-outline" onclick="closeModal()">ביטול</button>
+    </div>`;
+
+  document.getElementById('cal-save-btn').onclick = () => {
+    const title = document.getElementById('cal-ev-title').value.trim();
+    if (!title) { showToast('❌ יש להזין כותרת', 'error'); return; }
+    const ev = {
+      id: 'ev_' + Date.now(),
+      title,
+      date:   document.getElementById('cal-ev-date').value,
+      time:   document.getElementById('cal-ev-time').value,
+      type:   document.getElementById('cal-ev-type').value,
+      color:  document.getElementById('cal-ev-color').value,
+      status: document.getElementById('cal-ev-status').value,
+      repeat: document.getElementById('cal-ev-repeat').value,
+      note:   document.getElementById('cal-ev-note').value.trim(),
+    };
+    calState.events.push(ev);
+    calSave(calState.role, calState.events);
+    closeModal();
+    renderCalendar(calState.role);
+    showToast('✅ האירוע נוסף!');
+  };
+  openModal();
+  setTimeout(() => document.getElementById('cal-ev-title')?.focus(), 100);
+}
+
+function openCalEventEdit(eventId) {
+  const ev = calState.events.find(e => e.id === eventId);
+  if (!ev) {
+    // אירוע ממשימה — רק צפייה
+    const taskEv = calGetTaskEvents(calState.role).find(e => e.id === eventId);
+    if (!taskEv) return;
+    document.getElementById('modalBody').innerHTML = `
+      <div class="modal-title">📋 משימה — ${taskEv.title}</div>
+      <p style="color:var(--text2);font-size:13px;">אירוע זה מגיע ממשימה קיימת במערכת.<br>לעריכה — עבור לדף המשימות.</p>
+      <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">סגור</button></div>`;
+    openModal();
+    return;
+  }
+
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-title">✏️ עריכת אירוע</div>
+    <div class="form-group">
+      <label>כותרת</label>
+      <input type="text" id="cal-ed-title" class="search-input" value="${ev.title}" style="width:100%;">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-group">
+        <label>תאריך</label>
+        <input type="date" id="cal-ed-date" class="search-input" value="${ev.date}" style="width:100%;">
+      </div>
+      <div class="form-group">
+        <label>שעה</label>
+        <input type="time" id="cal-ed-time" class="search-input" value="${ev.time||''}" style="width:100%;">
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-group">
+        <label>סוג</label>
+        <select id="cal-ed-type" class="search-input" style="width:100%;">
+          ${CAL_TYPES.map(t => `<option value="${t.id}" ${ev.type===t.id?'selected':''}>${t.icon} ${t.label}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>צבע</label>
+        <select id="cal-ed-color" class="search-input" style="width:100%;">
+          ${CAL_COLORS.map(c => `<option value="${c.id}" ${ev.color===c.id?'selected':''}>${c.label}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-group">
+        <label>סטטוס</label>
+        <select id="cal-ed-status" class="search-input" style="width:100%;">
+          ${CAL_STATUS.map(s => `<option value="${s.id}" ${ev.status===s.id?'selected':''}>${s.label}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>חזרה</label>
+        <select id="cal-ed-repeat" class="search-input" style="width:100%;">
+          <option value="" ${!ev.repeat?'selected':''}>ללא חזרה</option>
+          <option value="weekly" ${ev.repeat==='weekly'?'selected':''}>שבועי</option>
+          <option value="monthly" ${ev.repeat==='monthly'?'selected':''}>חודשי</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>הערה</label>
+      <textarea id="cal-ed-note" class="search-input" rows="2" style="width:100%;resize:vertical;">${ev.note||''}</textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="cal-update-btn">💾 עדכן</button>
+      <button class="btn btn-danger btn-sm" id="cal-delete-btn">🗑️ מחק</button>
+      <button class="btn btn-outline" onclick="closeModal()">ביטול</button>
+    </div>`;
+
+  document.getElementById('cal-update-btn').onclick = () => {
+    const title = document.getElementById('cal-ed-title').value.trim();
+    if (!title) { showToast('❌ יש להזין כותרת', 'error'); return; }
+    Object.assign(ev, {
+      title,
+      date:   document.getElementById('cal-ed-date').value,
+      time:   document.getElementById('cal-ed-time').value,
+      type:   document.getElementById('cal-ed-type').value,
+      color:  document.getElementById('cal-ed-color').value,
+      status: document.getElementById('cal-ed-status').value,
+      repeat: document.getElementById('cal-ed-repeat').value,
+      note:   document.getElementById('cal-ed-note').value.trim(),
+    });
+    calSave(calState.role, calState.events);
+    closeModal();
+    renderCalendar(calState.role);
+    showToast('✅ האירוע עודכן!');
+  };
+  document.getElementById('cal-delete-btn').onclick = () => {
+    calState.events = calState.events.filter(e => e.id !== eventId);
+    calSave(calState.role, calState.events);
+    closeModal();
+    renderCalendar(calState.role);
+    showToast('🗑️ האירוע נמחק');
+  };
+  openModal();
 }
 
 
