@@ -2182,7 +2182,7 @@ async function doLogin() {
       return;
     }
 
-    // משתמש רגיל — חייב להיכנס דרך כתובת החברה
+    // משתמש רגיל — חייב להיכנס דרך כתובת חברה (לא הדומיין הראשי)
     if (IS_MAIN_DOMAIN) {
       errEl.textContent = 'יש להיכנס דרך כתובת החברה שלך';
       errEl.style.display = 'block';
@@ -2190,14 +2190,7 @@ async function doLogin() {
       return;
     }
 
-    // בדוק שהמשתמש שייך לחברה של ה-URL
-    if (dbUser.company !== COMPANY_SLUG) {
-      errEl.textContent = 'משתמש זה אינו שייך לחברה זו';
-      errEl.style.display = 'block';
-      setToken(null);
-      return;
-    }
-
+    // JWT מכיל את פרטי החברה — אין צורך בבדיקת URL נוספת
     await loadAndInjectData(dbUser);
   } catch(e) {
     showLoadingOverlay(false);
