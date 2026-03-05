@@ -6235,21 +6235,27 @@ function openCalEventModal(dateStr) {
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
       <div class="form-group">
-        <label>תאריך (יי/חח/שששש)</label>
-        <input type="text" id="cal-ev-date" class="search-input" 
-          placeholder="28/10/2026"
-          value="${defaultDate ? fmtCalDate(defaultDate) : ''}"
-          maxlength="10"
-          oninput="calFormatDateInput(this)"
-          style="width:100%;direction:ltr;text-align:left;">
+        <label>תאריך</label>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <input type="text" id="cal-ev-date" class="search-input"
+            placeholder="28/10/2026" maxlength="10"
+            oninput="calFormatDateInput(this)"
+            style="flex:1;direction:ltr;text-align:left;"
+            value="${defaultDate ? fmtCalDate(defaultDate) : ''}">
+          <button type="button" onclick="openCalDatePicker('cal-ev-date')"
+            style="font-size:20px;background:none;border:1px solid var(--border);border-radius:8px;padding:6px 8px;cursor:pointer;line-height:1;">📅</button>
+        </div>
       </div>
       <div class="form-group">
-        <label>שעה (אופציונלי, דד:דד)</label>
-        <input type="text" id="cal-ev-time" class="search-input"
-          placeholder="20:00"
-          maxlength="5"
-          oninput="calFormatTimeInput(this)"
-          style="width:100%;direction:ltr;text-align:left;">
+        <label>שעה (אופציונלי)</label>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <input type="text" id="cal-ev-time" class="search-input"
+            placeholder="20:00" maxlength="5"
+            oninput="calFormatTimeInput(this)"
+            style="flex:1;direction:ltr;text-align:left;">
+          <button type="button" onclick="openCalTimePicker('cal-ev-time')"
+            style="font-size:20px;background:none;border:1px solid var(--border);border-radius:8px;padding:6px 8px;cursor:pointer;line-height:1;">🕐</button>
+        </div>
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
@@ -6375,22 +6381,28 @@ function openCalEventEdit(eventId) {
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
       <div class="form-group">
-        <label>תאריך (יי/חח/שששש)</label>
-        <input type="text" id="cal-ed-date" class="search-input"
-          placeholder="28/10/2026"
-          value="${fmtCalDate(ev.date)}"
-          maxlength="10"
-          oninput="calFormatDateInput(this)"
-          style="width:100%;direction:ltr;text-align:left;">
+        <label>תאריך</label>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <input type="text" id="cal-ed-date" class="search-input"
+            placeholder="28/10/2026" maxlength="10"
+            oninput="calFormatDateInput(this)"
+            style="flex:1;direction:ltr;text-align:left;"
+            value="${fmtCalDate(ev.date)}">
+          <button type="button" onclick="openCalDatePicker('cal-ed-date')"
+            style="font-size:20px;background:none;border:1px solid var(--border);border-radius:8px;padding:6px 8px;cursor:pointer;line-height:1;">📅</button>
+        </div>
       </div>
       <div class="form-group">
-        <label>שעה (דד:דד)</label>
-        <input type="text" id="cal-ed-time" class="search-input"
-          placeholder="20:00"
-          value="${ev.time||''}"
-          maxlength="5"
-          oninput="calFormatTimeInput(this)"
-          style="width:100%;direction:ltr;text-align:left;">
+        <label>שעה</label>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <input type="text" id="cal-ed-time" class="search-input"
+            placeholder="20:00" maxlength="5"
+            oninput="calFormatTimeInput(this)"
+            style="flex:1;direction:ltr;text-align:left;"
+            value="${ev.time||''}">
+          <button type="button" onclick="openCalTimePicker('cal-ed-time')"
+            style="font-size:20px;background:none;border:1px solid var(--border);border-radius:8px;padding:6px 8px;cursor:pointer;line-height:1;">🕐</button>
+        </div>
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
@@ -6464,6 +6476,173 @@ function openCalEventEdit(eventId) {
   openModal();
 }
 
+
+
+function openCalDatePicker(targetId) {
+  const currentVal = document.getElementById(targetId)?.value || '';
+  let pickerYear, pickerMonth;
+  const parsed = parseFmtDate(currentVal);
+  if (parsed) {
+    pickerYear  = parseInt(parsed.split('-')[0]);
+    pickerMonth = parseInt(parsed.split('-')[1]) - 1;
+  } else {
+    const now = new Date();
+    pickerYear = now.getFullYear();
+    pickerMonth = now.getMonth();
+  }
+
+  function buildPicker() {
+    const monthNames = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+    const dayNames = ['א','ב','ג','ד','ה','ו','ש'];
+    const firstDay = new Date(pickerYear, pickerMonth, 1).getDay();
+    const daysInMonth = new Date(pickerYear, pickerMonth + 1, 0).getDate();
+    const today = new Date();
+    const selectedParsed = parseFmtDate(document.getElementById(targetId)?.value || '');
+
+    let grid = `<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px;">`;
+    dayNames.forEach(d => { grid += `<div style="text-align:center;font-size:11px;font-weight:700;color:var(--text3);padding:4px 0;">${d}</div>`; });
+    for (let i = 0; i < firstDay; i++) grid += `<div></div>`;
+    for (let d = 1; d <= daysInMonth; d++) {
+      const ds = `${pickerYear}-${String(pickerMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const isToday = d === today.getDate() && pickerMonth === today.getMonth() && pickerYear === today.getFullYear();
+      const isSelected = ds === selectedParsed;
+      grid += `<button data-ds="${ds}" style="border:none;border-radius:6px;padding:5px 2px;cursor:pointer;font-size:12px;font-weight:${isToday?'800':'400'};
+        background:${isSelected?'var(--accent)':isToday?'var(--bg3)':'none'};
+        color:${isSelected?'white':isToday?'var(--accent)':'var(--text)'};
+        transition:background 0.1s;"
+        onmouseover="if(!${isSelected})this.style.background='var(--bg3)'"
+        onmouseout="if(!${isSelected})this.style.background='${isSelected?'var(--accent)':'none'}'">${d}</button>`;
+    }
+    grid += `</div>`;
+
+    overlay.querySelector('#dp-body').innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <button id="dp-prev" style="background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:14px;">‹</button>
+        <div style="font-weight:800;font-size:14px;">${monthNames[pickerMonth]} ${pickerYear}</div>
+        <button id="dp-next" style="background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:14px;">›</button>
+      </div>
+      ${grid}
+      <div style="display:flex;justify-content:space-between;margin-top:8px;border-top:1px solid var(--border);padding-top:8px;">
+        <button id="dp-today" style="background:none;border:none;cursor:pointer;font-size:12px;color:var(--accent);font-weight:700;">היום</button>
+        <button id="dp-close" style="background:none;border:none;cursor:pointer;font-size:12px;color:var(--text2);">סגור</button>
+      </div>`;
+
+    overlay.querySelector('#dp-prev').onclick = () => { pickerMonth--; if (pickerMonth<0){pickerMonth=11;pickerYear--;} buildPicker(); };
+    overlay.querySelector('#dp-next').onclick = () => { pickerMonth++; if (pickerMonth>11){pickerMonth=0;pickerYear++;} buildPicker(); };
+    overlay.querySelector('#dp-today').onclick = () => {
+      const t = new Date();
+      document.getElementById(targetId).value = fmtCalDate(`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`);
+      overlay.remove();
+    };
+    overlay.querySelector('#dp-close').onclick = () => overlay.remove();
+    overlay.querySelectorAll('[data-ds]').forEach(btn => {
+      btn.onclick = () => {
+        document.getElementById(targetId).value = fmtCalDate(btn.dataset.ds);
+        overlay.remove();
+      };
+    });
+  }
+
+  document.getElementById('dp-overlay')?.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'dp-overlay';
+  overlay.innerHTML = `<div id="dp-body" style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;width:260px;box-shadow:0 8px 32px rgba(0,0,0,0.18);"></div>`;
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.3);';
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+  buildPicker();
+}
+
+function openCalTimePicker(targetId) {
+  const currentVal = document.getElementById(targetId)?.value || '';
+  let selH = 8, selM = 0;
+  if (/^\d{1,2}:\d{2}$/.test(currentVal)) {
+    selH = parseInt(currentVal.split(':')[0]);
+    selM = parseInt(currentVal.split(':')[1]);
+  }
+
+  document.getElementById('tp-overlay')?.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'tp-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.3);';
+
+  const hours   = Array.from({length:24}, (_,i) => i);
+  const minutes = [0,5,10,15,20,25,30,35,40,45,50,55];
+
+  overlay.innerHTML = `
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;width:280px;box-shadow:0 8px 32px rgba(0,0,0,0.18);">
+      <div style="font-size:14px;font-weight:800;margin-bottom:12px;text-align:center;">🕐 בחר שעה</div>
+      <div style="display:flex;gap:12px;justify-content:center;align-items:center;margin-bottom:14px;">
+        <div style="text-align:center;">
+          <div style="font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:600;">שעה</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:3px;max-height:160px;overflow-y:auto;">
+            ${hours.map(h => `<button data-h="${h}" style="border:none;border-radius:6px;padding:5px 2px;cursor:pointer;font-size:13px;
+              background:${h===selH?'var(--accent)':'var(--bg3)'};color:${h===selH?'white':'var(--text)'};
+              font-weight:${h===selH?'800':'400'};">${String(h).padStart(2,'0')}</button>`).join('')}
+          </div>
+        </div>
+        <div style="font-size:28px;font-weight:800;color:var(--accent);margin-top:20px;">:</div>
+        <div style="text-align:center;">
+          <div style="font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:600;">דקות</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px;">
+            ${minutes.map(m => `<button data-m="${m}" style="border:none;border-radius:6px;padding:5px 4px;cursor:pointer;font-size:13px;
+              background:${m===selM?'var(--accent)':'var(--bg3)'};color:${m===selM?'white':'var(--text)'};
+              font-weight:${m===selM?'800':'400'};">${String(m).padStart(2,'0')}</button>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div id="tp-preview" style="text-align:center;font-size:28px;font-weight:800;color:var(--accent);letter-spacing:2px;margin-bottom:10px;">
+        ${String(selH).padStart(2,'0')}:${String(selM).padStart(2,'0')}
+      </div>
+      <div style="display:flex;gap:8px;justify-content:center;">
+        <button id="tp-confirm" class="btn btn-primary btn-sm">✅ אישור</button>
+        <button id="tp-clear" class="btn btn-outline btn-sm">נקה</button>
+        <button id="tp-cancel" class="btn btn-outline btn-sm">ביטול</button>
+      </div>
+    </div>`;
+
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+
+  function updatePreview() {
+    overlay.querySelector('#tp-preview').textContent =
+      String(selH).padStart(2,'0') + ':' + String(selM).padStart(2,'0');
+  }
+
+  overlay.querySelectorAll('[data-h]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      selH = parseInt(btn.dataset.h);
+      overlay.querySelectorAll('[data-h]').forEach(b => {
+        b.style.background = parseInt(b.dataset.h)===selH ? 'var(--accent)' : 'var(--bg3)';
+        b.style.color      = parseInt(b.dataset.h)===selH ? 'white' : 'var(--text)';
+        b.style.fontWeight = parseInt(b.dataset.h)===selH ? '800' : '400';
+      });
+      updatePreview();
+    });
+  });
+
+  overlay.querySelectorAll('[data-m]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      selM = parseInt(btn.dataset.m);
+      overlay.querySelectorAll('[data-m]').forEach(b => {
+        b.style.background = parseInt(b.dataset.m)===selM ? 'var(--accent)' : 'var(--bg3)';
+        b.style.color      = parseInt(b.dataset.m)===selM ? 'white' : 'var(--text)';
+        b.style.fontWeight = parseInt(b.dataset.m)===selM ? '800' : '400';
+      });
+      updatePreview();
+    });
+  });
+
+  overlay.querySelector('#tp-confirm').onclick = () => {
+    document.getElementById(targetId).value = String(selH).padStart(2,'0') + ':' + String(selM).padStart(2,'0');
+    overlay.remove();
+  };
+  overlay.querySelector('#tp-clear').onclick = () => {
+    document.getElementById(targetId).value = '';
+    overlay.remove();
+  };
+  overlay.querySelector('#tp-cancel').onclick = () => overlay.remove();
+}
 
 // ── SIDEBAR ──
 function toggleSidebar() {
