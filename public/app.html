@@ -4940,13 +4940,25 @@ function openAddCompany() {
     <div class="modal-title">🏢 הוסף חברה חדשה</div>
     <div class="form-group"><label>שם החברה</label><input type="text" id="nc-name" placeholder="שם החברה..."></div>
     <div class="form-group"><label>תחום פעילות</label><input type="text" id="nc-field" placeholder="תחום פעילות..."></div>
-    <div class="form-group"><label>אמוג׳י</label><input type="text" id="nc-emoji" placeholder="🏢" maxlength="2" style="font-size:24px;width:80px;text-align:center;"></div>
+    <div class="form-group">
+      <label>אמוג׳י</label>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <input type="hidden" id="nc-emoji" value="🏢">
+        <button id="emoji-preview-nc-emoji" onclick="openEmojiPicker('nc-emoji')"
+          style="font-size:32px;width:56px;height:56px;border:2px solid var(--border);border-radius:12px;background:var(--bg3);cursor:pointer;transition:all 0.15s;"
+          onmouseover="this.style.borderColor='var(--accent)'"
+          onmouseout="this.style.borderColor='var(--border)'">🏢</button>
+        <span style="font-size:12px;color:var(--text2);">לחץ לבחירה מהמאגר</span>
+      </div>
+    </div>
     <div class="form-group"><label>צבע</label><input type="color" id="nc-color" value="#6c63ff" style="width:60px;height:40px;border-radius:8px;border:none;cursor:pointer;"></div>
     <div class="modal-actions">
-      <button class="btn btn-primary" onclick="addCompany()">הוסף</button>
+      <button class="btn btn-primary" id="nc-add-btn">הוסף</button>
       <button class="btn btn-outline" onclick="closeModal()">ביטול</button>
     </div>`;
+  document.getElementById('nc-add-btn').onclick = addCompany;
   openModal();
+  setTimeout(() => document.getElementById('nc-name')?.focus(), 100);
 }
 
 function editCompany(compId) {
@@ -4957,7 +4969,17 @@ function editCompany(compId) {
     <input type="hidden" id="ec-comp-id">
     <div class="form-group"><label>שם החברה</label><input type="text" id="ec-name" value="${c.name}"></div>
     <div class="form-group"><label>תחום פעילות</label><input type="text" id="ec-field" value="${c.field}"></div>
-    <div class="form-group"><label>אמוג׳י</label><input type="text" id="ec-emoji" value="${c.emoji}" maxlength="2" style="font-size:24px;width:80px;text-align:center;"></div>
+    <div class="form-group">
+      <label>אמוג׳י</label>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <input type="hidden" id="ec-emoji" value="${c.emoji}">
+        <button id="emoji-preview-ec-emoji" onclick="openEmojiPicker('ec-emoji')"
+          style="font-size:32px;width:56px;height:56px;border:2px solid var(--border);border-radius:12px;background:var(--bg3);cursor:pointer;transition:all 0.15s;"
+          onmouseover="this.style.borderColor='var(--accent)'"
+          onmouseout="this.style.borderColor='var(--border)'">${c.emoji}</button>
+        <span style="font-size:12px;color:var(--text2);">לחץ לבחירה מהמאגר</span>
+      </div>
+    </div>
     <div class="modal-actions">
       <button class="btn btn-primary" id="ec-save-btn">💾 שמור</button>
       <button class="btn btn-outline" onclick="closeModal()">ביטול</button>
@@ -5602,6 +5624,75 @@ function togglePassView(userId) {
 function openModal() { document.getElementById('modalOverlay').classList.add('open'); }
 function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
 document.getElementById('modalOverlay').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+
+
+const EMOJI_CATEGORIES = {
+  '🏢 עסקים': ['🏢','🏗️','🏭','🏬','🏦','🏨','🏪','🏫','🏛️','🏠','🏡','🏰','🗼','🗽','⛪','🕌','🕍','🛕'],
+  '💼 עבודה':  ['💼','👔','🧳','📁','📂','📋','📊','📈','📉','🗂️','🗃️','📌','📍','✏️','🖊️','📝','💡','🔑'],
+  '🔧 תעשייה': ['🔧','🔨','⚒️','🛠️','⚙️','🔩','🪛','🪚','⛏️','🪝','🧱','🪜','🏗️','🚧','⚡','🔌','💡','🔦'],
+  '🌿 טבע':    ['🌿','🌱','🌳','🌲','🌴','🌵','🍀','🌺','🌸','🌼','🌻','🌞','🌙','⭐','🌈','❄️','🔥','💧'],
+  '🚗 תחבורה': ['🚗','🚕','🚙','🚌','🚎','🏎️','🚓','🚑','🚒','✈️','🚀','🚢','🚁','🚂','🚚','🛻','🏍️','🚲'],
+  '🍕 מזון':   ['🍕','🍔','🍟','🌮','🌯','🥗','🍱','🍜','🍣','☕','🧃','🍷','🎂','🍰','🧁','🍩','🍪','🍫'],
+  '💊 בריאות': ['💊','🏥','🩺','🩹','💉','🧬','🔬','🧪','🩻','❤️','💚','💙','💛','🧡','💜','🤍','🖤','💗'],
+  '🎓 חינוך':  ['🎓','📚','📖','✏️','🖊️','📐','📏','🔭','🔬','🧮','🖥️','💻','📱','🎯','🏆','🥇','🎖️','🏅'],
+  '✨ כללי':   ['✨','⚡','💫','🌟','💥','🎯','🎪','🎨','🎭','🎬','🎤','🎵','🎶','🎲','🎮','🃏','🎁','🎀'],
+};
+
+function openEmojiPicker(targetInputId) {
+  const currentVal = document.getElementById(targetInputId)?.value || '';
+  let html = `<div class="modal-title">😀 בחר אימוג׳י</div>`;
+  html += `<input type="text" id="emoji-search" placeholder="🔍 חיפוש..." 
+    style="width:100%;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:16px;margin-bottom:12px;font-family:inherit;outline:none;"
+    oninput="filterEmojis(this.value,'${targetInputId}')">`;
+  html += `<div id="emoji-grid-wrap" style="max-height:340px;overflow-y:auto;">`;
+  for (const [cat, emojis] of Object.entries(EMOJI_CATEGORIES)) {
+    html += `<div style="font-size:11px;font-weight:700;color:var(--text3);margin:10px 0 6px;text-transform:uppercase;letter-spacing:1px;">${cat}</div>`;
+    html += `<div class="emoji-cat-grid" data-cat="${cat}" style="display:grid;grid-template-columns:repeat(9,1fr);gap:4px;margin-bottom:4px;">`;
+    emojis.forEach(e => {
+      html += `<button onclick="selectEmoji('${e}','${targetInputId}')" 
+        style="background:none;border:1px solid transparent;border-radius:8px;font-size:22px;cursor:pointer;padding:4px;transition:all 0.15s;aspect-ratio:1;"
+        onmouseover="this.style.background='var(--bg3)';this.style.borderColor='var(--border)'"
+        onmouseout="this.style.background='none';this.style.borderColor='transparent'"
+        title="${e}">${e}</button>`;
+    });
+    html += `</div>`;
+  }
+  html += `</div>`;
+  html += `<div style="margin-top:12px;display:flex;align-items:center;gap:10px;border-top:1px solid var(--border);padding-top:12px;">
+    <span style="font-size:12px;color:var(--text2);">או הקלד ישירות:</span>
+    <input type="text" id="emoji-manual" value="${currentVal}" maxlength="2"
+      style="width:60px;font-size:22px;text-align:center;border:1px solid var(--border);border-radius:8px;padding:4px;"
+      oninput="document.getElementById('${targetInputId}').value=this.value">
+    <button class="btn btn-outline btn-sm" onclick="closeModal()">סגור</button>
+  </div>`;
+  document.getElementById('modalBody').innerHTML = html;
+  openModal();
+  setTimeout(() => document.getElementById('emoji-search')?.focus(), 100);
+}
+
+function selectEmoji(emoji, targetInputId) {
+  document.getElementById(targetInputId).value = emoji;
+  // עדכן תצוגת הכפתור
+  const btn = document.getElementById('emoji-preview-' + targetInputId);
+  if (btn) btn.textContent = emoji;
+  closeModal();
+}
+
+function filterEmojis(query, targetInputId) {
+  const q = query.toLowerCase();
+  document.querySelectorAll('.emoji-cat-grid').forEach(grid => {
+    let anyVisible = false;
+    grid.querySelectorAll('button').forEach(btn => {
+      const match = !q || btn.title.includes(q);
+      btn.style.display = match ? '' : 'none';
+      if (match) anyVisible = true;
+    });
+    // הסתר כותרת קטגוריה אם אין תוצאות
+    const label = grid.previousElementSibling;
+    if (label) label.style.display = anyVisible ? '' : 'none';
+    grid.style.display = anyVisible ? '' : 'none';
+  });
+}
 
 // ── SIDEBAR ──
 function toggleSidebar() {
