@@ -2187,31 +2187,6 @@ async function doLogin() {
     const dbUser = await sbDoLogin(u, p);
     showLoadingOverlay(false);
     if (btn) { btn.disabled = false; btn.textContent = '🔐 כניסה'; }
-
-    const errEl = document.getElementById('loginError');
-
-    // בדיקת URL רק אם COMPANY_SLUG ידוע ותקין (לא app.html, לא ריק)
-    const validSlug = COMPANY_SLUG && COMPANY_SLUG !== 'app.html';
-
-    if (validSlug) {
-      // נמצאים בכתובת ספציפית של חברה (/techcorp)
-      // מנהל מערכת לא יכול להיכנס מכאן
-      if (dbUser.role === 'admin') {
-        errEl.textContent = 'מנהל מערכת יכול להיכנס רק מהכתובת הראשית';
-        errEl.style.display = 'block';
-        setToken(null);
-        return;
-      }
-      // בדוק שהמשתמש שייך לחברה זו
-      const companySlug = (dbUser.companySlug || dbUser.company || '').toLowerCase();
-      if (companySlug && companySlug !== COMPANY_SLUG.toLowerCase()) {
-        errEl.textContent = 'משתמש זה אינו שייך לחברה זו';
-        errEl.style.display = 'block';
-        setToken(null);
-        return;
-      }
-    }
-
     await loadAndInjectData(dbUser);
   } catch(e) {
     showLoadingOverlay(false);
