@@ -5640,58 +5640,71 @@ const EMOJI_CATEGORIES = {
 };
 
 function openEmojiPicker(targetInputId) {
-  // שמור את תוכן ה-modal הנוכחי
-  const prevHTML = document.getElementById('modalBody').innerHTML;
+  // הסר בורר קודם אם קיים
+  document.getElementById('emoji-overlay')?.remove();
+
   const currentVal = document.getElementById(targetInputId)?.value || '';
 
-  let html = `<div class="modal-title">😀 בחר אימוג׳י</div>`;
-  html += `<input type="text" id="emoji-search" placeholder="🔍 חיפוש..." 
-    style="width:100%;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:15px;margin-bottom:12px;font-family:inherit;outline:none;">`;
-  html += `<div id="emoji-grid-wrap" style="max-height:320px;overflow-y:auto;">`;
+  // בנה את ה-overlay
+  const overlay = document.createElement('div');
+  overlay.id = 'emoji-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.4);';
+
+  let html = `
+    <div style="background:var(--card);border-radius:16px;padding:20px;width:360px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div style="font-size:16px;font-weight:800;">😀 בחר אימוג׳י</div>
+        <button id="emoji-close-btn" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text2);">✕</button>
+      </div>
+      <input type="text" id="emoji-search" placeholder="🔍 חיפוש..." 
+        style="width:100%;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:14px;margin-bottom:12px;font-family:inherit;outline:none;background:var(--bg3);">
+      <div id="emoji-grid-wrap" style="max-height:300px;overflow-y:auto;">`;
+
   for (const [cat, emojis] of Object.entries(EMOJI_CATEGORIES)) {
-    html += `<div class="emoji-cat-label" style="font-size:11px;font-weight:700;color:var(--text3);margin:10px 0 6px;letter-spacing:1px;">${cat}</div>`;
-    html += `<div class="emoji-cat-grid" style="display:grid;grid-template-columns:repeat(9,1fr);gap:4px;margin-bottom:4px;">`;
+    html += `<div class="emoji-cat-label" style="font-size:10px;font-weight:700;color:var(--text3);margin:8px 0 5px;letter-spacing:1px;">${cat}</div>`;
+    html += `<div class="emoji-cat-grid" style="display:grid;grid-template-columns:repeat(9,1fr);gap:3px;margin-bottom:3px;">`;
     emojis.forEach(e => {
       html += `<button class="emoji-btn" data-emoji="${e}"
-        style="background:none;border:1px solid transparent;border-radius:8px;font-size:22px;cursor:pointer;padding:4px;transition:all 0.15s;aspect-ratio:1;">${e}</button>`;
+        style="background:none;border:1px solid transparent;border-radius:7px;font-size:20px;cursor:pointer;padding:3px;line-height:1;">${e}</button>`;
     });
     html += `</div>`;
   }
-  html += `</div>`;
-  html += `<div style="margin-top:12px;display:flex;align-items:center;gap:10px;border-top:1px solid var(--border);padding-top:12px;">
-    <span style="font-size:12px;color:var(--text2);">או הקלד:</span>
-    <input type="text" id="emoji-manual" value="${currentVal}" maxlength="2"
-      style="width:56px;font-size:22px;text-align:center;border:1px solid var(--border);border-radius:8px;padding:4px;">
-    <button class="btn btn-outline btn-sm" id="emoji-back-btn" style="margin-right:auto;">↩ חזור</button>
-  </div>`;
 
-  document.getElementById('modalBody').innerHTML = html;
+  html += `</div>
+      <div style="margin-top:12px;display:flex;align-items:center;gap:8px;border-top:1px solid var(--border);padding-top:12px;">
+        <span style="font-size:12px;color:var(--text2);">או הקלד:</span>
+        <input type="text" id="emoji-manual" value="${currentVal}" maxlength="2"
+          style="width:52px;font-size:22px;text-align:center;border:1px solid var(--border);border-radius:8px;padding:4px;background:var(--bg3);">
+      </div>
+    </div>`;
 
-  // אירועי לחיצה על אימוג'י — בלי onclick inline
-  document.querySelectorAll('.emoji-btn').forEach(btn => {
+  overlay.innerHTML = html;
+  document.body.appendChild(overlay);
+
+  // סגירה בלחיצה על הרקע
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  document.getElementById('emoji-close-btn').addEventListener('click', () => overlay.remove());
+
+  // לחיצה על אימוג'י
+  overlay.querySelectorAll('.emoji-btn').forEach(btn => {
     btn.addEventListener('mouseover', () => { btn.style.background='var(--bg3)'; btn.style.borderColor='var(--border)'; });
     btn.addEventListener('mouseout',  () => { btn.style.background='none'; btn.style.borderColor='transparent'; });
     btn.addEventListener('click', () => {
       const emoji = btn.dataset.emoji;
-      // עדכן input + כפתור preview
+      // עדכן את ה-hidden input
       const input = document.getElementById(targetInputId);
       if (input) input.value = emoji;
+      // עדכן את כפתור ה-preview
       const preview = document.getElementById('emoji-preview-' + targetInputId);
       if (preview) preview.textContent = emoji;
-      // חזור ל-modal הקודם
-      document.getElementById('modalBody').innerHTML = prevHTML;
-      // שחזר אירועים חשובים
-      const saveBtn = document.getElementById('ec-save-btn');
-      if (saveBtn && window._ecSaveHandler) saveBtn.onclick = window._ecSaveHandler;
-      const addBtn = document.getElementById('nc-add-btn');
-      if (addBtn) addBtn.onclick = addCompany;
+      overlay.remove();
     });
   });
 
   // חיפוש
   document.getElementById('emoji-search').addEventListener('input', function() {
-    const q = this.value.toLowerCase();
-    document.querySelectorAll('.emoji-cat-grid').forEach((grid, i) => {
+    const q = this.value.trim().toLowerCase();
+    overlay.querySelectorAll('.emoji-cat-grid').forEach(grid => {
       let any = false;
       grid.querySelectorAll('.emoji-btn').forEach(btn => {
         const show = !q || btn.dataset.emoji.includes(q);
@@ -5706,23 +5719,16 @@ function openEmojiPicker(targetInputId) {
 
   // הקלדה ידנית
   document.getElementById('emoji-manual').addEventListener('input', function() {
+    if (!this.value) return;
     const input = document.getElementById(targetInputId);
     if (input) input.value = this.value;
     const preview = document.getElementById('emoji-preview-' + targetInputId);
-    if (preview && this.value) preview.textContent = this.value;
-  });
-
-  // כפתור חזור
-  document.getElementById('emoji-back-btn').addEventListener('click', () => {
-    document.getElementById('modalBody').innerHTML = prevHTML;
-    const saveBtn = document.getElementById('ec-save-btn');
-    if (saveBtn && window._ecSaveHandler) saveBtn.onclick = window._ecSaveHandler;
-    const addBtn = document.getElementById('nc-add-btn');
-    if (addBtn) addBtn.onclick = addCompany;
+    if (preview) preview.textContent = this.value;
   });
 
   setTimeout(() => document.getElementById('emoji-search')?.focus(), 50);
 }
+
 
 // ── SIDEBAR ──
 function toggleSidebar() {
