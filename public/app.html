@@ -2495,6 +2495,7 @@ function renderAdminCompanies() {
       <!-- Actions -->
       <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
         <button class="btn btn-outline btn-sm" onclick="editCompany('${c.id}')">✏️ עריכה</button>
+        <button class="btn btn-outline btn-sm" onclick="copyCompanyUrl('${c.id}')" style="background:#f0f7ff;border-color:#93c5fd;color:#2563eb;" title="${window.location.origin}/${c.id}">🔗 כתובת</button>
         <button class="btn btn-danger btn-sm" onclick="deleteCompany('${c.id}')">🗑️ מחק</button>
       </div>
     </div>`;
@@ -2520,6 +2521,16 @@ function setSort(field) {
     b.textContent = labels[f] + (adminUserSort.field === f ? (adminUserSort.dir === 1 ? ' ↑' : ' ↓') : ' ↕');
   });
   renderAdminUsers();
+}
+
+function copyCompanyUrl(companyId) {
+  const url = window.location.origin + '/' + companyId;
+  navigator.clipboard.writeText(url).then(() => {
+    showToast('✅ הכתובת הועתקה: ' + url);
+  }).catch(() => {
+    // fallback אם clipboard לא זמין
+    prompt('העתק את הכתובת:', url);
+  });
 }
 
 function renderAdminUsers() {
