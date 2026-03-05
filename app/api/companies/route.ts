@@ -33,19 +33,27 @@ export async function PATCH(req: NextRequest) {
   const session = requireAuth(req)
   if ('status' in session) return session
 
-  const body = await req.json()
+  let body: Record<string, unknown>
+  try {
+    body = await req.json()
+  } catch {
+    return err('Invalid JSON body', 400)
+  }
+
   const { id, ...updates } = body
   if (!id) return err('Missing id')
 
   // מנכ"ל יכול לעדכן רק את החברה שלו
   if (session.role !== 'admin' && id !== session.company) return err('Forbidden', 403)
 
-  const allowed: Record<string,unknown> = {}
-  if (updates.name)         allowed.name         = updates.name
-  if (updates.field)        allowed.field        = updates.field
-  if (updates.emoji)        allowed.emoji        = updates.emoji
-  if (updates.color)        allowed.color        = updates.color
-  if (updates.sig_password) allowed.sig_password = updates.sig_password
+  const allowed: Record<string, unknown> = {}
+  if (updates.name  !== undefined) allowed.name         = updates.name
+  if (updates.field !== undefined) allowed.field        = updates.field
+  if (updates.emoji !== undefined) allowed.emoji        = updates.emoji
+  if (updates.color !== undefined) allowed.color        = updates.color
+  if (updates.sig_password !== undefined) allowed.sig_password = updates.sig_password
+
+  if (Object.keys(allowed).length === 0) return err('No fields to update', 400)
 
   const { data, error } = await supabase.from('companies').update(allowed).eq('id', id).select('*').single()
   if (error) return err(error.message, 500)
