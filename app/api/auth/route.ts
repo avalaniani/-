@@ -29,6 +29,18 @@ export async function POST(req: NextRequest) {
   const valid = await verifyPassword(password, user.password_hash)
   if (!valid) return err('שם משתמש או סיסמה שגויים', 401)
 
+  // שלוף את שם החברה לצורך אימות URL
+  let companySlug: string | null = null
+  if (user.company_id) {
+    const { data: company } = await supabase
+      .from('companies')
+      .select('id, name')
+      .eq('id', user.company_id)
+      .single()
+    // slug = company id (e.g. "techcorp") — זה מה שמופיע ב-URL
+    companySlug = company?.id || null
+  }
+
   const payload = {
     id:      user.id,
     username: user.username,
@@ -46,6 +58,7 @@ export async function POST(req: NextRequest) {
     name:         user.name,
     role:         user.role,
     company:      user.company_id,
+    companySlug,          // <-- חדש: ה-id של החברה לצורך השוואת URL
     avatar:       user.avatar,
     avatarColor:  user.avatar_color,
     ceoInterface: user.ceo_interface,
@@ -57,5 +70,3 @@ export async function POST(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   return ok({ ok: true })
 }
-
-
