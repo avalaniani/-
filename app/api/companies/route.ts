@@ -21,10 +21,29 @@ export async function POST(req: NextRequest) {
   if (session.role !== 'admin') return err('Forbidden', 403)
 
   const body = await req.json()
-  const id = body.name.toLowerCase().replace(/\s+/g,'').replace(/[^a-z0-9]/g,'')
+  if (!body.name?.trim()) return err('חסר שם חברה')
+
+  // תמיכה בשמות עבריים — אם אין אותיות לטיניות, משתמשים ב-timestamp
+  let id = body.name.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '')
+  if (!id) {
+    // שם עברי — צור id ייחודי מ-timestamp
+    id = 'co_' + Date.now().toString(36)
+  }
+
+  // ודא ייחודיות — אם ה-id כבר קיים הוסף suffix
+  const { data: existing } = await supabase.from('companies').select('id').eq('id', id).single()
+  if (existing) id = id + '_' + Math.random().toString(36).slice(2, 6)
+
   const { data, error } = await supabase.from('companies')
-    .insert({ id, name: body.name, field: body.field||'כללי', emoji: body.emoji||'🏢', color: body.color||'#6c63ff' })
+    .insert({
+      id,
+      name:  body.name.trim(),
+      field: body.field || 'כללי',
+      emoji: body.emoji || '🏢',
+      color: body.color || '#6c63ff',
+    })
     .select('*').single()
+
   if (error) return err(error.message, 500)
   return ok(data)
 }
@@ -47,10 +66,10 @@ export async function PATCH(req: NextRequest) {
   if (session.role !== 'admin' && id !== session.company) return err('Forbidden', 403)
 
   const allowed: Record<string, unknown> = {}
-  if (updates.name  !== undefined) allowed.name         = updates.name
-  if (updates.field !== undefined) allowed.field        = updates.field
-  if (updates.emoji !== undefined) allowed.emoji        = updates.emoji
-  if (updates.color !== undefined) allowed.color        = updates.color
+  if (updates.name         !== undefined) allowed.name         = updates.name
+  if (updates.field        !== undefined) allowed.field        = updates.field
+  if (updates.emoji        !== undefined) allowed.emoji        = updates.emoji
+  if (updates.color        !== undefined) allowed.color        = updates.color
   if (updates.sig_password !== undefined) allowed.sig_password = updates.sig_password
 
   if (Object.keys(allowed).length === 0) return err('No fields to update', 400)
@@ -66,6 +85,8 @@ export async function DELETE(req: NextRequest) {
   if (session.role !== 'admin') return err('Forbidden', 403)
 
   const { id } = await req.json()
+  if (!id) return err('Missing id')
+
   const { error } = await supabase.from('companies').delete().eq('id', id)
   if (error) return err(error.message, 500)
   return ok({ ok: true })
