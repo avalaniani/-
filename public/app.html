@@ -2007,6 +2007,7 @@ async function sbCreateCompany(payload) {
   return { ok: true, data };
 }
 
+/* v2-fix-company-update */
 async function sbUpdateCompany(id, updates) {
   try {
     const headers = { 'Content-Type': 'application/json' };
