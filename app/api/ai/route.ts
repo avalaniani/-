@@ -12,7 +12,6 @@ export async function POST(req: NextRequest) {
 
   // שלוף את מפתח ה-Gemini של החברה מ-Supabase
   let geminiKey: string | null = null
-
   if (session.company) {
     const { data: company } = await supabase
       .from('companies')
@@ -21,8 +20,6 @@ export async function POST(req: NextRequest) {
       .single()
     geminiKey = company?.gemini_key || null
   }
-
-  // fallback למפתח גלובלי (אם הוגדר ב-Vercel env)
   if (!geminiKey) geminiKey = process.env.GEMINI_API_KEY || null
   if (!geminiKey) return err('מפתח AI לא הוגדר לחברה זו. בקש ממנהל החברה להוסיף מפתח Gemini בהגדרות.', 503)
 
@@ -40,17 +37,41 @@ export async function POST(req: NextRequest) {
     geminiBody.systemInstruction = { parts: [{ text: system }] }
   }
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.0-flash:generateContent?key=${geminiKey}`
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(geminiBody),
-  })
+  // נסה את המודלים בסדר עדיפות — מהחדש לישן
+  const models = [
+    'gemini-3-pro-preview',
+    'gemini-2.5-flash',
+    'gemini-2.0-flash',
+  ]
 
-  const data = await response.json()
-  if (!response.ok) return err(data?.error?.message || 'Gemini error', response.status)
+  let lastError = ''
+  for (const model of models) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': geminiKey,
+      },
+      body: JSON.stringify(geminiBody),
+    })
 
-  // החזר בפורמט Anthropic (שה-frontend מצפה לו)
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '❌ לא התקבלה תגובה'
-  return ok({ content: [{ type: 'text', text }] })
+    const data = await response.json()
+
+    if (response.ok) {
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '❌ לא התקבלה תגובה'
+      return ok({ content: [{ type: 'text', text }] })
+    }
+
+    // אם המודל לא נמצא — נסה הבא
+    if (data?.error?.message?.includes('not found')) {
+      lastError = data.error.message
+      continue
+    }
+
+    // שגיאה אחרת — החזר מיד
+    return err(data?.error?.message || 'Gemini error', response.status)
+  }
+
+  return err('לא נמצא מודל זמין: ' + lastError, 503)
 }
