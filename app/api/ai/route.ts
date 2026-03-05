@@ -39,9 +39,9 @@ export async function POST(req: NextRequest) {
 
   // נסה את המודלים בסדר עדיפות — מהחדש לישן
   const models = [
-    'gemini-3-pro-preview',
-    'gemini-2.5-flash',
     'gemini-2.0-flash',
+    'gemini-2.0-flash-lite',
+    'gemini-1.5-flash',
   ]
 
   let lastError = ''
