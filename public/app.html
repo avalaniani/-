@@ -1832,8 +1832,16 @@ async function loadAndInjectData(user) {
   DATA.tasks     = (tasks     || []).map(mapTask);
   DATA.requests  = (requests  || []).map(mapRequest);
   DATA.workerHours = buildHoursMap(hoursRows);
+  // הערות — נטען לפי role כדי להפריד ceo מ-emp (עובד עם ממשק מורחב)
   if (notesData?.content) {
     DATA.notes[`${user.role}-${user.id}`] = notesData.content;
+  }
+  // טעינת הערות נוספות לממשק עובד מורחב (fieldWorker = גם ceo גם emp)
+  if (user.ceoInterface || user.fieldWorker) {
+    try {
+      const empNotes = await apiFetch('/notes?note_type=emp').catch(() => null);
+      if (empNotes?.content) DATA.notes[`emp-${user.id}`] = empNotes.content;
+    } catch {}
   }
 
   // Auto-login
@@ -2020,10 +2028,11 @@ async function sbDeleteRequest(id) {
 
 // ── Notes ──────────────────────────────────────────────────────
 const _notesTimer = {};
-function sbSaveNote(content) {
+function sbSaveNote(content, noteType) {
   clearTimeout(_notesTimer._t);
   _notesTimer._t = setTimeout(async () => {
-    await apiFetch('/notes', 'POST', { content }).catch(e => console.error('שגיאת שמירת הערות:', e));
+    await apiFetch('/notes', 'POST', { content, note_type: noteType || currentUser?.role || 'user' })
+      .catch(e => console.error('שגיאת שמירת הערות:', e));
   }, 1000);
 }
 
@@ -5646,7 +5655,7 @@ async function saveNotes(type) {
   if (!el) return;
   const content = el.value;
   DATA.notes[`${type}-${currentUser.id}`] = content;
-  sbSaveNote(content);
+  sbSaveNote(content, type);
   showToast('✅ הערות נשמרו!');
 }
 
@@ -5837,6 +5846,38 @@ function openEmojiPicker(targetInputId) {
 // 📅 CALENDAR — יומן מנהל מקצועי
 // ═══════════════════════════════════════════════════════════════
 
+function calShareEvent(ev) {
+  // שמור אירוע משותף ב-localStorage עבור עובדים ששותפו
+  const company = currentUser?.company || '';
+  const sharedKey = `wfp_cal_shared_${company}`;
+  try {
+    const existing = JSON.parse(localStorage.getItem(sharedKey) || '[]');
+    const idx = existing.findIndex(e => e.id === ev.id);
+    if (idx >= 0) existing[idx] = ev; else existing.push(ev);
+    localStorage.setItem(sharedKey, JSON.stringify(existing));
+  } catch {}
+}
+
+function calGetSharedEvents() {
+  // עובד/פועל — טען אירועים ששותפו איתו
+  const company = currentUser?.company || '';
+  const sharedKey = `wfp_cal_shared_${company}`;
+  try {
+    const all = JSON.parse(localStorage.getItem(sharedKey) || '[]');
+    return all.filter(ev => {
+      if (ev.visibility === 'all') return true;
+      if (ev.visibility === 'selected') return (ev.sharedWith || []).includes(String(currentUser?.id));
+      return false;
+    }).map(ev => ({ ...ev, fromShared: true }));
+  } catch { return []; }
+}
+
+function fmtCalDate(dateStr) {
+  if (!dateStr) return '';
+  const [y,m,d] = dateStr.split('-');
+  return `${d}/${m}/${y}`;
+}
+
 const CAL_COLORS = [
   { id:'blue',   label:'כחול',   hex:'#3b82f6' },
   { id:'green',  label:'ירוק',   hex:'#22c55e' },
@@ -5914,7 +5955,13 @@ function renderCalendar(role) {
   const root = document.getElementById(rootId);
   if (!root) return;
 
-  const allEvents = [...calState.events, ...calGetTaskEvents(role)];
+  const isEmpRole = ['employee','worker','fieldWorker'].includes(currentUser?.role) || 
+    (currentUser?.role === 'ceo' && calState.role === 'emp');
+  const allEvents = [
+    ...calState.events,
+    ...calGetTaskEvents(role),
+    ...(isEmpRole ? calGetSharedEvents() : []),
+  ];
 
   root.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:0;height:100%;">
@@ -6159,7 +6206,7 @@ function openCalEventModal(dateStr) {
       </div>
       <div class="form-group">
         <label>שעה (אופציונלי)</label>
-        <input type="time" id="cal-ev-time" class="search-input" style="width:100%;">
+        <input type="time" id="cal-ev-time" class="search-input" style="width:100%;" step="300">
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
@@ -6196,27 +6243,66 @@ function openCalEventModal(dateStr) {
       <label>הערה</label>
       <textarea id="cal-ev-note" class="search-input" rows="2" placeholder="הערות..." style="width:100%;resize:vertical;"></textarea>
     </div>
+    ${calState.role === 'ceo' ? `
+    <div class="form-group">
+      <label>👥 שיתוף עם עובדי החברה</label>
+      <select id="cal-ev-visibility" class="search-input" style="width:100%;" onchange="calToggleEmployeeSelect(this.value)">
+        <option value="private">🔒 פרטי — רק אני רואה</option>
+        <option value="all">👥 כולם — כל עובדי החברה</option>
+        <option value="selected">✅ נבחרים — עובדים ספציפיים</option>
+      </select>
+    </div>
+    <div id="cal-employee-select" style="display:none;" class="form-group">
+      <label>בחר עובדים</label>
+      <div id="cal-employees-list" style="display:flex;flex-direction:column;gap:6px;max-height:140px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:8px;">
+        ${(DATA.users||[]).filter(u => u.company === currentUser?.company && ['employee','worker'].includes(u.role)).map(u =>
+          `<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
+            <input type="checkbox" value="${u.id}" style="width:16px;height:16px;">
+            ${u.name} <span style="font-size:11px;color:var(--text3);">(${u.role==='employee'?'עובד':'פועל'})</span>
+          </label>`).join('')}
+      </div>
+    </div>` : ''}
     <div class="modal-actions">
       <button class="btn btn-primary" id="cal-save-btn">💾 שמור</button>
       <button class="btn btn-outline" onclick="closeModal()">ביטול</button>
     </div>`;
 
+  if (calState.role === 'ceo') {
+    window.calToggleEmployeeSelect = (val) => {
+      document.getElementById('cal-employee-select').style.display = val === 'selected' ? '' : 'none';
+    };
+  }
+
   document.getElementById('cal-save-btn').onclick = () => {
     const title = document.getElementById('cal-ev-title').value.trim();
     if (!title) { showToast('❌ יש להזין כותרת', 'error'); return; }
+
+    // אסוף מי רואה את האירוע
+    let visibility = 'private', sharedWith = [];
+    if (calState.role === 'ceo') {
+      visibility = document.getElementById('cal-ev-visibility')?.value || 'private';
+      if (visibility === 'selected') {
+        document.querySelectorAll('#cal-employees-list input:checked').forEach(cb => sharedWith.push(cb.value));
+      }
+    }
+
     const ev = {
       id: 'ev_' + Date.now(),
       title,
-      date:   document.getElementById('cal-ev-date').value,
-      time:   document.getElementById('cal-ev-time').value,
-      type:   document.getElementById('cal-ev-type').value,
-      color:  document.getElementById('cal-ev-color').value,
-      status: document.getElementById('cal-ev-status').value,
-      repeat: document.getElementById('cal-ev-repeat').value,
-      note:   document.getElementById('cal-ev-note').value.trim(),
+      date:       document.getElementById('cal-ev-date').value,
+      time:       document.getElementById('cal-ev-time').value,
+      type:       document.getElementById('cal-ev-type').value,
+      color:      document.getElementById('cal-ev-color').value,
+      status:     document.getElementById('cal-ev-status').value,
+      repeat:     document.getElementById('cal-ev-repeat').value,
+      note:       document.getElementById('cal-ev-note').value.trim(),
+      visibility,
+      sharedWith,
     };
     calState.events.push(ev);
     calSave(calState.role, calState.events);
+    // שמור גם עבור עובדים ששותפו
+    if (visibility !== 'private') calShareEvent(ev);
     closeModal();
     renderCalendar(calState.role);
     showToast('✅ האירוע נוסף!');
@@ -6226,17 +6312,13 @@ function openCalEventModal(dateStr) {
 }
 
 function openCalEventEdit(eventId) {
-  const ev = calState.events.find(e => e.id === eventId);
+  let ev = calState.events.find(e => e.id === eventId);
   if (!ev) {
-    // אירוע ממשימה — רק צפייה
+    // אירוע ממשימה — צור override הניתן לעריכה
     const taskEv = calGetTaskEvents(calState.role).find(e => e.id === eventId);
     if (!taskEv) return;
-    document.getElementById('modalBody').innerHTML = `
-      <div class="modal-title">📋 משימה — ${taskEv.title}</div>
-      <p style="color:var(--text2);font-size:13px;">אירוע זה מגיע ממשימה קיימת במערכת.<br>לעריכה — עבור לדף המשימות.</p>
-      <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">סגור</button></div>`;
-    openModal();
-    return;
+    ev = { ...taskEv };
+    calState.events.push(ev);
   }
 
   document.getElementById('modalBody').innerHTML = `
@@ -6252,7 +6334,7 @@ function openCalEventEdit(eventId) {
       </div>
       <div class="form-group">
         <label>שעה</label>
-        <input type="time" id="cal-ed-time" class="search-input" value="${ev.time||''}" style="width:100%;">
+        <input type="time" id="cal-ed-time" class="search-input" value="${ev.time||''}" style="width:100%;" step="300">
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
