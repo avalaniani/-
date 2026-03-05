@@ -4985,7 +4985,8 @@ function editCompany(compId) {
       <button class="btn btn-outline" onclick="closeModal()">ביטול</button>
     </div>`;
   document.getElementById('ec-comp-id').value = compId;
-  document.getElementById('ec-save-btn').onclick = () => saveCompany(compId);
+  window._ecSaveHandler = () => saveCompany(compId);
+  document.getElementById('ec-save-btn').onclick = window._ecSaveHandler;
   openModal();
 }
 
@@ -5639,59 +5640,88 @@ const EMOJI_CATEGORIES = {
 };
 
 function openEmojiPicker(targetInputId) {
+  // שמור את תוכן ה-modal הנוכחי
+  const prevHTML = document.getElementById('modalBody').innerHTML;
   const currentVal = document.getElementById(targetInputId)?.value || '';
+
   let html = `<div class="modal-title">😀 בחר אימוג׳י</div>`;
   html += `<input type="text" id="emoji-search" placeholder="🔍 חיפוש..." 
-    style="width:100%;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:16px;margin-bottom:12px;font-family:inherit;outline:none;"
-    oninput="filterEmojis(this.value,'${targetInputId}')">`;
-  html += `<div id="emoji-grid-wrap" style="max-height:340px;overflow-y:auto;">`;
+    style="width:100%;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:15px;margin-bottom:12px;font-family:inherit;outline:none;">`;
+  html += `<div id="emoji-grid-wrap" style="max-height:320px;overflow-y:auto;">`;
   for (const [cat, emojis] of Object.entries(EMOJI_CATEGORIES)) {
-    html += `<div style="font-size:11px;font-weight:700;color:var(--text3);margin:10px 0 6px;text-transform:uppercase;letter-spacing:1px;">${cat}</div>`;
-    html += `<div class="emoji-cat-grid" data-cat="${cat}" style="display:grid;grid-template-columns:repeat(9,1fr);gap:4px;margin-bottom:4px;">`;
+    html += `<div class="emoji-cat-label" style="font-size:11px;font-weight:700;color:var(--text3);margin:10px 0 6px;letter-spacing:1px;">${cat}</div>`;
+    html += `<div class="emoji-cat-grid" style="display:grid;grid-template-columns:repeat(9,1fr);gap:4px;margin-bottom:4px;">`;
     emojis.forEach(e => {
-      html += `<button onclick="selectEmoji('${e}','${targetInputId}')" 
-        style="background:none;border:1px solid transparent;border-radius:8px;font-size:22px;cursor:pointer;padding:4px;transition:all 0.15s;aspect-ratio:1;"
-        onmouseover="this.style.background='var(--bg3)';this.style.borderColor='var(--border)'"
-        onmouseout="this.style.background='none';this.style.borderColor='transparent'"
-        title="${e}">${e}</button>`;
+      html += `<button class="emoji-btn" data-emoji="${e}"
+        style="background:none;border:1px solid transparent;border-radius:8px;font-size:22px;cursor:pointer;padding:4px;transition:all 0.15s;aspect-ratio:1;">${e}</button>`;
     });
     html += `</div>`;
   }
   html += `</div>`;
   html += `<div style="margin-top:12px;display:flex;align-items:center;gap:10px;border-top:1px solid var(--border);padding-top:12px;">
-    <span style="font-size:12px;color:var(--text2);">או הקלד ישירות:</span>
+    <span style="font-size:12px;color:var(--text2);">או הקלד:</span>
     <input type="text" id="emoji-manual" value="${currentVal}" maxlength="2"
-      style="width:60px;font-size:22px;text-align:center;border:1px solid var(--border);border-radius:8px;padding:4px;"
-      oninput="document.getElementById('${targetInputId}').value=this.value">
-    <button class="btn btn-outline btn-sm" onclick="closeModal()">סגור</button>
+      style="width:56px;font-size:22px;text-align:center;border:1px solid var(--border);border-radius:8px;padding:4px;">
+    <button class="btn btn-outline btn-sm" id="emoji-back-btn" style="margin-right:auto;">↩ חזור</button>
   </div>`;
+
   document.getElementById('modalBody').innerHTML = html;
-  openModal();
-  setTimeout(() => document.getElementById('emoji-search')?.focus(), 100);
-}
 
-function selectEmoji(emoji, targetInputId) {
-  document.getElementById(targetInputId).value = emoji;
-  // עדכן תצוגת הכפתור
-  const btn = document.getElementById('emoji-preview-' + targetInputId);
-  if (btn) btn.textContent = emoji;
-  closeModal();
-}
-
-function filterEmojis(query, targetInputId) {
-  const q = query.toLowerCase();
-  document.querySelectorAll('.emoji-cat-grid').forEach(grid => {
-    let anyVisible = false;
-    grid.querySelectorAll('button').forEach(btn => {
-      const match = !q || btn.title.includes(q);
-      btn.style.display = match ? '' : 'none';
-      if (match) anyVisible = true;
+  // אירועי לחיצה על אימוג'י — בלי onclick inline
+  document.querySelectorAll('.emoji-btn').forEach(btn => {
+    btn.addEventListener('mouseover', () => { btn.style.background='var(--bg3)'; btn.style.borderColor='var(--border)'; });
+    btn.addEventListener('mouseout',  () => { btn.style.background='none'; btn.style.borderColor='transparent'; });
+    btn.addEventListener('click', () => {
+      const emoji = btn.dataset.emoji;
+      // עדכן input + כפתור preview
+      const input = document.getElementById(targetInputId);
+      if (input) input.value = emoji;
+      const preview = document.getElementById('emoji-preview-' + targetInputId);
+      if (preview) preview.textContent = emoji;
+      // חזור ל-modal הקודם
+      document.getElementById('modalBody').innerHTML = prevHTML;
+      // שחזר אירועים חשובים
+      const saveBtn = document.getElementById('ec-save-btn');
+      if (saveBtn && window._ecSaveHandler) saveBtn.onclick = window._ecSaveHandler;
+      const addBtn = document.getElementById('nc-add-btn');
+      if (addBtn) addBtn.onclick = addCompany;
     });
-    // הסתר כותרת קטגוריה אם אין תוצאות
-    const label = grid.previousElementSibling;
-    if (label) label.style.display = anyVisible ? '' : 'none';
-    grid.style.display = anyVisible ? '' : 'none';
   });
+
+  // חיפוש
+  document.getElementById('emoji-search').addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    document.querySelectorAll('.emoji-cat-grid').forEach((grid, i) => {
+      let any = false;
+      grid.querySelectorAll('.emoji-btn').forEach(btn => {
+        const show = !q || btn.dataset.emoji.includes(q);
+        btn.style.display = show ? '' : 'none';
+        if (show) any = true;
+      });
+      const label = grid.previousElementSibling;
+      if (label) label.style.display = any ? '' : 'none';
+      grid.style.display = any ? '' : 'none';
+    });
+  });
+
+  // הקלדה ידנית
+  document.getElementById('emoji-manual').addEventListener('input', function() {
+    const input = document.getElementById(targetInputId);
+    if (input) input.value = this.value;
+    const preview = document.getElementById('emoji-preview-' + targetInputId);
+    if (preview && this.value) preview.textContent = this.value;
+  });
+
+  // כפתור חזור
+  document.getElementById('emoji-back-btn').addEventListener('click', () => {
+    document.getElementById('modalBody').innerHTML = prevHTML;
+    const saveBtn = document.getElementById('ec-save-btn');
+    if (saveBtn && window._ecSaveHandler) saveBtn.onclick = window._ecSaveHandler;
+    const addBtn = document.getElementById('nc-add-btn');
+    if (addBtn) addBtn.onclick = addCompany;
+  });
+
+  setTimeout(() => document.getElementById('emoji-search')?.focus(), 50);
 }
 
 // ── SIDEBAR ──
