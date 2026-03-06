@@ -1849,9 +1849,28 @@ async function loadAndInjectData(user) {
     } catch {}
   }
 
-  // Auto-login
-  const appUser = DATA.users.find(u => u.id === user.id);
-  if (appUser) login(appUser);
+  // Auto-login — השתמש ב-== לא === כי id יכול להיות number או string
+  const appUser = DATA.users.find(u => u.id == user.id);
+  if (appUser) {
+    login(appUser);
+  } else {
+    // fallback: בנה user object ישירות מה-API response
+    const fallback = {
+      id:           user.id,
+      username:     user.username,
+      name:         user.name,
+      role:         user.role,
+      company:      user.company || user.company_id || null,
+      avatar:       user.avatar        || '💼',
+      avatarColor:  user.avatarColor   || user.avatar_color || '#60a5fa',
+      ceoInterface: user.ceoInterface  || user.ceo_interface || false,
+      fieldWorker:  user.fieldWorker   || user.field_worker  || false,
+      idType:       user.idType        || user.id_type       || 'id',
+      idNumber:     user.idNumber      || user.id_number     || '',
+      passwordPlain: '',
+    };
+    login(fallback);
+  }
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -2177,6 +2196,8 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('loginSubtitle').textContent = 'כניסה לעובדי ' + COMPANY_SLUG;
     document.title = COMPANY_SLUG + ' — WorkFlow Pro';
   }
+  // ── הפעל בדיקת session שמור בכל טעינת דף ──
+  initSupabaseData();
 });
 
 async function doLogin() {
@@ -2405,7 +2426,8 @@ window.addEventListener('popstate', () => {
 // RENDER PAGES
 // ═══════════════════════════════════════════
 function renderPage(pageId) {
-  if (pageId === 'admin-companies') renderAdminCompanies();
+  if (pageId === 'admin-dashboard') renderAdminDashboard();
+  else if (pageId === 'admin-companies') renderAdminCompanies();
   else if (pageId === 'admin-users') renderAdminUsers();
   else if (pageId === 'admin-notes') renderNotes('admin');
   else if (pageId === 'admin-calendar') renderCalendar('admin');
@@ -2427,6 +2449,13 @@ function renderPage(pageId) {
 }
 
 // ── ADMIN ──
+function renderAdminDashboard() {
+  const el_c = document.getElementById('stat-companies');
+  const el_u = document.getElementById('stat-users');
+  if (el_c) el_c.textContent = DATA.companies.length;
+  if (el_u) el_u.textContent = DATA.users.filter(u => u.role !== 'admin').length;
+}
+
 let companySortState = { field: 'name', dir: 1 };
 
 function setCompanySort(field) {
