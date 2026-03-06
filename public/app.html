@@ -1774,13 +1774,18 @@ function buildSignedMap(rows) {
 async function initSupabaseData() {
   showLoadingOverlay(true);
   try {
-    // בדוק אם יש session פעיל — בצורה בטוחה (לא זורק שגיאה)
     const sessionData = await apiFetchSafe('/auth');
-    if (!sessionData?.user) {
-      showLoadingOverlay(false);
-      return; // אין session — הצג מסך login
+    if (!sessionData?.user) { showLoadingOverlay(false); return; }
+    const user = sessionData.user;
+    // בדיקת URL: auto-login רק אם המשתמש שייך לחברה הנכונה
+    if (COMPANY_SLUG && user.role !== 'admin') {
+      if (user.company && user.company !== COMPANY_SLUG) {
+        setToken(null);
+        showLoadingOverlay(false);
+        return;
+      }
     }
-    await loadAndInjectData(sessionData.user);
+    await loadAndInjectData(user);
     showLoadingOverlay(false);
   } catch(err) {
     console.error('Init error:', err);
@@ -2177,21 +2182,38 @@ window.addEventListener('DOMContentLoaded', () => {
 async function doLogin() {
   const u = document.getElementById('loginUser').value.trim();
   const p = document.getElementById('loginPass').value.trim();
-  if (!u || !p) { document.getElementById('loginError').style.display = 'block'; return; }
+  const errEl = document.getElementById('loginError');
+  if (!u || !p) { errEl.textContent = 'שם משתמש או סיסמה שגויים'; errEl.style.display = 'block'; return; }
 
   const btn = document.querySelector('#loginScreen .btn-primary');
   if (btn) { btn.disabled = true; btn.textContent = '⏳ מתחבר...'; }
+  errEl.style.display = 'none';
   showLoadingOverlay(true);
 
   try {
     const dbUser = await sbDoLogin(u, p);
+
+    // ── בדיקת URL: אם המשתמש ניגש ל-/techcorp אבל שייך לחברה אחרת ──
+    if (COMPANY_SLUG && dbUser.role !== 'admin') {
+      const userSlug = dbUser.companySlug || dbUser.company;
+      if (userSlug && userSlug !== COMPANY_SLUG) {
+        setToken(null); // בטל token — המשתמש לא שייך לכאן
+        showLoadingOverlay(false);
+        if (btn) { btn.disabled = false; btn.textContent = 'כניסה למערכת'; }
+        errEl.textContent = 'משתמש זה אינו שייך לחברה זו';
+        errEl.style.display = 'block';
+        return;
+      }
+    }
+
     showLoadingOverlay(false);
-    if (btn) { btn.disabled = false; btn.textContent = '🔐 כניסה'; }
+    if (btn) { btn.disabled = false; btn.textContent = 'כניסה למערכת'; }
     await loadAndInjectData(dbUser);
   } catch(e) {
     showLoadingOverlay(false);
-    if (btn) { btn.disabled = false; btn.textContent = '🔐 כניסה'; }
-    document.getElementById('loginError').style.display = 'block';
+    if (btn) { btn.disabled = false; btn.textContent = 'כניסה למערכת'; }
+    errEl.textContent = 'שם משתמש או סיסמה שגויים';
+    errEl.style.display = 'block';
   }
 }
 
@@ -6580,3 +6602,7 @@ function openCalTimePicker(targetId) {
     }, 30);
   }
 }
+
+</script>
+</body>
+</html>
