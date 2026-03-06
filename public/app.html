@@ -2291,6 +2291,63 @@ function logout() {
 }
 
 // ═══════════════════════════════════════════
+// SIDEBAR & UI UTILITIES
+// ═══════════════════════════════════════════
+function openSidebar() {
+  document.getElementById('sidebar')?.classList.add('open');
+  document.getElementById('sidebarOverlay')?.classList.add('open');
+}
+
+function closeSidebar() {
+  document.getElementById('sidebar')?.classList.remove('open');
+  document.getElementById('sidebarOverlay')?.classList.remove('open');
+}
+
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  if (!sb) return;
+  if (sb.classList.contains('open')) closeSidebar();
+  else openSidebar();
+}
+
+let _toastTimer = null;
+function showToast(msg, type = 'success') {
+  let toast = document.getElementById('wfp-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'wfp-toast';
+    toast.style.cssText = [
+      'position:fixed','bottom:24px','left:50%','transform:translateX(-50%) translateY(20px)',
+      'padding:12px 22px','border-radius:12px','font-family:Heebo,sans-serif',
+      'font-size:14px','font-weight:600','z-index:99999','opacity:0',
+      'transition:all 0.25s','pointer-events:none','max-width:90vw','text-align:center',
+      'box-shadow:0 6px 24px rgba(0,0,0,0.15)'
+    ].join(';');
+    document.body.appendChild(toast);
+  }
+  const colors = {
+    success: { bg:'#f0fff4', color:'#2d8a5a', border:'#a8e8c0' },
+    error:   { bg:'#fff0f3', color:'#c0506a', border:'#f0c0c8' },
+    info:    { bg:'#eef5ff', color:'#4a88b8', border:'#c8dff5' },
+  };
+  const c = colors[type] || colors.success;
+  toast.textContent = msg;
+  toast.style.background = c.bg;
+  toast.style.color = c.color;
+  toast.style.border = '1px solid ' + c.border;
+  // Trigger animation
+  requestAnimationFrame(() => {
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+  });
+  if (_toastTimer) clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(-50%) translateY(20px)';
+  }, 3000);
+}
+
+// ═══════════════════════════════════════════
 // NAV
 // ═══════════════════════════════════════════
 const navConfigs = {
