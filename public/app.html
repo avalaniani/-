@@ -2196,6 +2196,12 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('loginSubtitle').textContent = 'כניסה לעובדי ' + COMPANY_SLUG;
     document.title = COMPANY_SLUG + ' — WorkFlow Pro';
   }
+  // ── Enter להתחברות ──
+  ['loginUser', 'loginPass'].forEach(id => {
+    document.getElementById(id)?.addEventListener('keydown', e => {
+      if (e.key === 'Enter') doLogin();
+    });
+  });
   // ── הפעל בדיקת session שמור בכל טעינת דף ──
   initSupabaseData();
 });
