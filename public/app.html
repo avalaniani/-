@@ -1774,13 +1774,18 @@ function buildSignedMap(rows) {
 async function initSupabaseData() {
   showLoadingOverlay(true);
   try {
-    // בדוק אם יש session פעיל — בצורה בטוחה (לא זורק שגיאה)
     const sessionData = await apiFetchSafe('/auth');
-    if (!sessionData?.user) {
-      showLoadingOverlay(false);
-      return; // אין session — הצג מסך login
+    if (!sessionData?.user) { showLoadingOverlay(false); return; }
+    const user = sessionData.user;
+    // בדיקת URL: auto-login רק אם המשתמש שייך לחברה הנכונה
+    if (COMPANY_SLUG && user.role !== 'admin') {
+      if (user.company && user.company !== COMPANY_SLUG) {
+        setToken(null);
+        showLoadingOverlay(false);
+        return;
+      }
     }
-    await loadAndInjectData(sessionData.user);
+    await loadAndInjectData(user);
     showLoadingOverlay(false);
   } catch(err) {
     console.error('Init error:', err);
@@ -1844,9 +1849,28 @@ async function loadAndInjectData(user) {
     } catch {}
   }
 
-  // Auto-login
-  const appUser = DATA.users.find(u => u.id === user.id);
-  if (appUser) login(appUser);
+  // Auto-login — השתמש ב-== לא === כי id יכול להיות number או string
+  const appUser = DATA.users.find(u => u.id == user.id);
+  if (appUser) {
+    login(appUser);
+  } else {
+    // fallback: בנה user object ישירות מה-API response
+    const fallback = {
+      id:           user.id,
+      username:     user.username,
+      name:         user.name,
+      role:         user.role,
+      company:      user.company || user.company_id || null,
+      avatar:       user.avatar        || '💼',
+      avatarColor:  user.avatarColor   || user.avatar_color || '#60a5fa',
+      ceoInterface: user.ceoInterface  || user.ceo_interface || false,
+      fieldWorker:  user.fieldWorker   || user.field_worker  || false,
+      idType:       user.idType        || user.id_type       || 'id',
+      idNumber:     user.idNumber      || user.id_number     || '',
+      passwordPlain: '',
+    };
+    login(fallback);
+  }
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -2172,26 +2196,45 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('loginSubtitle').textContent = 'כניסה לעובדי ' + COMPANY_SLUG;
     document.title = COMPANY_SLUG + ' — WorkFlow Pro';
   }
+  // ── הפעל בדיקת session שמור בכל טעינת דף ──
+  initSupabaseData();
 });
 
 async function doLogin() {
   const u = document.getElementById('loginUser').value.trim();
   const p = document.getElementById('loginPass').value.trim();
-  if (!u || !p) { document.getElementById('loginError').style.display = 'block'; return; }
+  const errEl = document.getElementById('loginError');
+  if (!u || !p) { errEl.textContent = 'שם משתמש או סיסמה שגויים'; errEl.style.display = 'block'; return; }
 
   const btn = document.querySelector('#loginScreen .btn-primary');
   if (btn) { btn.disabled = true; btn.textContent = '⏳ מתחבר...'; }
+  errEl.style.display = 'none';
   showLoadingOverlay(true);
 
   try {
     const dbUser = await sbDoLogin(u, p);
+
+    // ── בדיקת URL: אם המשתמש ניגש ל-/techcorp אבל שייך לחברה אחרת ──
+    if (COMPANY_SLUG && dbUser.role !== 'admin') {
+      const userSlug = dbUser.companySlug || dbUser.company;
+      if (userSlug && userSlug !== COMPANY_SLUG) {
+        setToken(null); // בטל token — המשתמש לא שייך לכאן
+        showLoadingOverlay(false);
+        if (btn) { btn.disabled = false; btn.textContent = 'כניסה למערכת'; }
+        errEl.textContent = 'משתמש זה אינו שייך לחברה זו';
+        errEl.style.display = 'block';
+        return;
+      }
+    }
+
     showLoadingOverlay(false);
-    if (btn) { btn.disabled = false; btn.textContent = '🔐 כניסה'; }
+    if (btn) { btn.disabled = false; btn.textContent = 'כניסה למערכת'; }
     await loadAndInjectData(dbUser);
   } catch(e) {
     showLoadingOverlay(false);
-    if (btn) { btn.disabled = false; btn.textContent = '🔐 כניסה'; }
-    document.getElementById('loginError').style.display = 'block';
+    if (btn) { btn.disabled = false; btn.textContent = 'כניסה למערכת'; }
+    errEl.textContent = 'שם משתמש או סיסמה שגויים';
+    errEl.style.display = 'block';
   }
 }
 
@@ -2383,7 +2426,8 @@ window.addEventListener('popstate', () => {
 // RENDER PAGES
 // ═══════════════════════════════════════════
 function renderPage(pageId) {
-  if (pageId === 'admin-companies') renderAdminCompanies();
+  if (pageId === 'admin-dashboard') renderAdminDashboard();
+  else if (pageId === 'admin-companies') renderAdminCompanies();
   else if (pageId === 'admin-users') renderAdminUsers();
   else if (pageId === 'admin-notes') renderNotes('admin');
   else if (pageId === 'admin-calendar') renderCalendar('admin');
@@ -2405,6 +2449,13 @@ function renderPage(pageId) {
 }
 
 // ── ADMIN ──
+function renderAdminDashboard() {
+  const el_c = document.getElementById('stat-companies');
+  const el_u = document.getElementById('stat-users');
+  if (el_c) el_c.textContent = DATA.companies.length;
+  if (el_u) el_u.textContent = DATA.users.filter(u => u.role !== 'admin').length;
+}
+
 let companySortState = { field: 'name', dir: 1 };
 
 function setCompanySort(field) {
@@ -6580,3 +6631,7 @@ function openCalTimePicker(targetId) {
     }, 30);
   }
 }
+
+</script>
+</body>
+</html>
