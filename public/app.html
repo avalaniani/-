@@ -1798,12 +1798,14 @@ async function loadAndInjectData(user) {
   const isWorker   = user.role === 'worker';
 
   // טען במקביל — הרבה יותר מהיר
+  const uid = user.id || 'anon';
+  const noteTypeKey = (user.role) + '_' + uid;
   const [companies, users, tasks, requests, notesData] = await Promise.all([
     apiFetch('/companies'),
     apiFetch('/users'),
     apiFetch('/tasks'),
     apiFetch('/requests'),
-    apiFetch('/notes').catch(() => ({ content: '' })),
+    apiFetch('/notes?note_type=' + noteTypeKey).catch(() => ({ content: '' })),
   ]);
 
   // שעות — רק אם יש פועלים
@@ -1839,15 +1841,10 @@ async function loadAndInjectData(user) {
   DATA.workerHours = buildHoursMap(hoursRows);
   // הערות — נטען לפי role כדי להפריד ceo מ-emp (עובד עם ממשק מורחב)
   if (notesData?.content) {
+    // שמור תחת role-id כדי ש-renderNotes ימצא אותן
     DATA.notes[`${user.role}-${user.id}`] = notesData.content;
   }
-  // טעינת הערות נוספות לממשק עובד מורחב (fieldWorker = גם ceo גם emp)
-  if (user.ceoInterface || user.fieldWorker) {
-    try {
-      const empNotes = await apiFetch('/notes?note_type=emp').catch(() => null);
-      if (empNotes?.content) DATA.notes[`emp-${user.id}`] = empNotes.content;
-    } catch {}
-  }
+  // כל משתמש טוען הערות לפי role_userId — מבודל לחלוטין, אין שיתוף
 
   // Auto-login — השתמש ב-== לא === כי id יכול להיות number או string
   const appUser = DATA.users.find(u => u.id == user.id);
@@ -2055,7 +2052,10 @@ const _notesTimer = {};
 function sbSaveNote(content, noteType) {
   clearTimeout(_notesTimer._t);
   _notesTimer._t = setTimeout(async () => {
-    await apiFetch('/notes', 'POST', { content, note_type: noteType || currentUser?.role || 'user' })
+    // note_type = role_userId כדי שכל משתמש מבודל לחלוטין
+    const uid = currentUser?.id || 'anon';
+    const nt = (noteType || currentUser?.role || 'user') + '_' + uid;
+    await apiFetch('/notes', 'POST', { content, note_type: nt })
       .catch(e => console.error('שגיאת שמירת הערות:', e));
   }, 1000);
 }
