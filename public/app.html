@@ -1238,7 +1238,7 @@
           </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>שם</th><th>שם משתמש</th><th>ת"ז / דרכון</th><th>סיסמה</th><th>עריכה</th></tr></thead>
+              <thead><tr><th>שם</th><th>שם משתמש</th><th>ת"ז / דרכון</th><th>סיסמה</th><th>קישור אישי</th><th>עריכה</th></tr></thead>
               <tbody id="ceo-emp-creds-table"></tbody>
             </table>
           </div>
@@ -1249,7 +1249,7 @@
           </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>שם</th><th>שם משתמש</th><th>ת"ז / דרכון</th><th>סיסמה</th><th>עריכה</th></tr></thead>
+              <thead><tr><th>שם</th><th>שם משתמש</th><th>ת"ז / דרכון</th><th>סיסמה</th><th>קישור אישי</th><th>עריכה</th></tr></thead>
               <tbody id="ceo-worker-creds-table"></tbody>
             </table>
           </div>
@@ -1777,8 +1777,17 @@ async function initSupabaseData() {
     const sessionData = await apiFetchSafe('/auth');
     if (!sessionData?.user) { showLoadingOverlay(false); return; }
     const user = sessionData.user;
-    // בדיקת URL: auto-login רק אם המשתמש שייך לחברה הנכונה
-    if (COMPANY_SLUG && user.role !== 'admin') {
+    const _isAdmin = user.role === 'admin';
+
+    // חסום auto-login דרך כתובת ראשית (/app.html) לכולם חוץ מאדמין
+    if (IS_MAIN_DOMAIN && !_isAdmin) {
+      setToken(null);
+      showLoadingOverlay(false);
+      return;
+    }
+
+    // חסום auto-login אם המשתמש לא שייך לחברה בכתובת
+    if (COMPANY_SLUG && !_isAdmin) {
       if (user.company && user.company !== COMPANY_SLUG) {
         setToken(null);
         showLoadingOverlay(false);
@@ -1798,14 +1807,13 @@ async function loadAndInjectData(user) {
   const isWorker   = user.role === 'worker';
 
   // טען במקביל — הרבה יותר מהיר
-  const uid = user.id || 'anon';
-  const noteTypeKey = (user.role) + '_' + uid;
   const [companies, users, tasks, requests, notesData] = await Promise.all([
     apiFetch('/companies'),
     apiFetch('/users'),
     apiFetch('/tasks'),
     apiFetch('/requests'),
-    apiFetch('/notes?note_type=' + noteTypeKey).catch(() => ({ content: '' })),
+    // טען הערות לפי user_id — ייחודי לכל משתמש
+    apiFetch('/notes?note_type=user_' + (user.id || 'anon')).catch(() => ({ content: '' })),
   ]);
 
   // שעות — רק אם יש פועלים
@@ -1841,8 +1849,8 @@ async function loadAndInjectData(user) {
   DATA.workerHours = buildHoursMap(hoursRows);
   // הערות — נטען לפי role כדי להפריד ceo מ-emp (עובד עם ממשק מורחב)
   if (notesData?.content) {
-    // שמור תחת role-id כדי ש-renderNotes ימצא אותן
-    DATA.notes[`${user.role}-${user.id}`] = notesData.content;
+    // שמור תחת user-id כדי ש-renderNotes ימצא אותן
+    DATA.notes[`user-${user.id}`] = notesData.content;
   }
   // כל משתמש טוען הערות לפי role_userId — מבודל לחלוטין, אין שיתוף
 
@@ -2052,10 +2060,9 @@ const _notesTimer = {};
 function sbSaveNote(content, noteType) {
   clearTimeout(_notesTimer._t);
   _notesTimer._t = setTimeout(async () => {
-    // note_type = role_userId כדי שכל משתמש מבודל לחלוטין
+    // note_type = user_ID — ייחודי לכל משתמש ללא תלות ב-role
     const uid = currentUser?.id || 'anon';
-    const nt = (noteType || currentUser?.role || 'user') + '_' + uid;
-    await apiFetch('/notes', 'POST', { content, note_type: nt })
+    await apiFetch('/notes', 'POST', { content, note_type: 'user_' + uid })
       .catch(e => console.error('שגיאת שמירת הערות:', e));
   }, 1000);
 }
@@ -2177,17 +2184,29 @@ const COMPANY_SLUG = (() => {
   const knownRoots = ['workflowpro.vercel.app', 'workflowproo.vercel.app', 'localhost'];
   for (const root of knownRoots) {
     if (hostname.endsWith('.' + root)) {
-      return hostname.slice(0, hostname.length - root.length - 1); // e.g. "techcorp"
+      return hostname.slice(0, hostname.length - root.length - 1);
     }
   }
 
-  // אופציה 2: pathname — workflowpro.vercel.app/techcorp
+  // אופציה 2: pathname — workflowpro.vercel.app/techcorp  או /techcorp/username
+  const BLOCKED_PATHS = ['app.html', 'app', 'index.html', 'index', ''];
   const slug = parts[0];
-  return (slug && slug !== 'app.html') ? slug : null;
+  return (slug && !BLOCKED_PATHS.includes(slug)) ? slug : null;
 })();
 
 // האם זו כתובת ראשית (ללא חברה)?
 const IS_MAIN_DOMAIN = !COMPANY_SLUG;
+
+// קישור אישי: /company/username — אוטו-פיל שם המשתמש
+const PERSONAL_USERNAME = (() => {
+  const parts = window.location.pathname.split('/').filter(Boolean);
+  const BLOCKED = ['app.html', 'app', 'index.html', 'index'];
+  // parts[0] = company slug, parts[1] = username
+  if (parts.length >= 2 && !BLOCKED.includes(parts[0]) && !BLOCKED.includes(parts[1])) {
+    return parts[1];
+  }
+  return null;
+})();
 
 // עדכן כותרת דף הכניסה לפי החברה
 window.addEventListener('DOMContentLoaded', () => {
@@ -2195,6 +2214,15 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('loginTitle').textContent = COMPANY_SLUG.charAt(0).toUpperCase() + COMPANY_SLUG.slice(1) + ' ⚡';
     document.getElementById('loginSubtitle').textContent = 'כניסה לעובדי ' + COMPANY_SLUG;
     document.title = COMPANY_SLUG + ' — WorkFlow Pro';
+  }
+  // ── אוטו-פיל שם משתמש מקישור אישי ──
+  if (PERSONAL_USERNAME) {
+    const uField = document.getElementById('loginUser');
+    if (uField) {
+      uField.value = PERSONAL_USERNAME;
+      // קפוץ לשדה הסיסמה
+      setTimeout(() => document.getElementById('loginPass')?.focus(), 50);
+    }
   }
   // ── Enter להתחברות ──
   ['loginUser', 'loginPass'].forEach(id => {
@@ -2220,11 +2248,24 @@ async function doLogin() {
   try {
     const dbUser = await sbDoLogin(u, p);
 
-    // ── בדיקת URL: אם המשתמש ניגש ל-/techcorp אבל שייך לחברה אחרת ──
-    if (COMPANY_SLUG && dbUser.role !== 'admin') {
+    // ── בדיקת URL ──
+    const isAdmin = dbUser.role === 'admin';
+
+    // 1. כתובת ראשית (/app.html) — רק אדמין מורשה
+    if (IS_MAIN_DOMAIN && !isAdmin) {
+      setToken(null);
+      showLoadingOverlay(false);
+      if (btn) { btn.disabled = false; btn.textContent = 'כניסה למערכת'; }
+      errEl.textContent = 'יש להיכנס דרך הקישור הספציפי של החברה שלך';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    // 2. כתובת חברה — ודא שהמשתמש שייך לחברה הזו
+    if (COMPANY_SLUG && !isAdmin) {
       const userSlug = dbUser.companySlug || dbUser.company;
       if (userSlug && userSlug !== COMPANY_SLUG) {
-        setToken(null); // בטל token — המשתמש לא שייך לכאן
+        setToken(null);
         showLoadingOverlay(false);
         if (btn) { btn.disabled = false; btn.textContent = 'כניסה למערכת'; }
         errEl.textContent = 'משתמש זה אינו שייך לחברה זו';
@@ -2632,8 +2673,16 @@ function copyCompanyUrl(companyId) {
   navigator.clipboard.writeText(url).then(() => {
     showToast('✅ הכתובת הועתקה: ' + url);
   }).catch(() => {
-    // fallback אם clipboard לא זמין
     prompt('העתק את הכתובת:', url);
+  });
+}
+
+function copyUserUrl(companyId, username) {
+  const url = window.location.origin + '/' + companyId + '/' + username;
+  navigator.clipboard.writeText(url).then(() => {
+    showToast('✅ קישור אישי הועתק!');
+  }).catch(() => {
+    prompt('הקישור האישי שלך:', url);
   });
 }
 
@@ -3195,7 +3244,15 @@ function renderCeoCredentials(searchQ) {
     const idDisplay = u.idNumber
       ? `<span style="font-size:12px;display:flex;align-items:center;gap:4px;">${idIcon} <span style="font-family:monospace;">${u.idNumber}</span> <span style="font-size:10px;color:var(--text3);">(${idLabel})</span></span>`
       : `<span style="color:var(--text3);font-size:12px;">—</span>`;
-    // כולם רואים כפתורי עריכה ומחיקה
+    // קישור אישי
+    const userUrl = window.location.origin + '/' + (u.company || currentUser.company) + '/' + u.username;
+    const linkHtml = `<td>
+      <div style="display:flex;align-items:center;gap:6px;max-width:220px;">
+        <span style="font-size:11px;color:var(--text3);font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;" title="${userUrl}">${userUrl.replace(window.location.origin,'')}</span>
+        <button onclick="copyUserUrl('${u.company || currentUser.company}','${u.username}')"
+          style="background:#f0f7ff;border:1px solid #93c5fd;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:12px;color:#2563eb;white-space:nowrap;flex-shrink:0;" title="העתק קישור אישי">🔗 העתק</button>
+      </div>
+    </td>`;
     const actionsHtml = `<td><div style="display:flex;gap:6px;">
           <button class="btn btn-primary btn-sm" onclick="ceoEditCredentials(${u.id})" title="ערוך פרטי כניסה">✏️ ערוך</button>
           <button class="btn btn-danger btn-sm" onclick="ceoDeleteMember(${u.id})" title="מחק">🗑️</button>
@@ -3211,6 +3268,7 @@ function renderCeoCredentials(searchQ) {
         <span id="ceo-pass-${prefix}-${u.id}" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:3px 12px;font-size:12px;font-family:monospace;letter-spacing:2px;">••••••••</span>
         <button onclick="ceoPwToggle('${prefix}',${u.id})" id="ceo-eye-${prefix}-${u.id}" data-pass="${u.passwordPlain||''}" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:3px 8px;cursor:pointer;font-size:13px;color:var(--text2);">👁️</button>
       </div></td>
+      ${linkHtml}
       ${actionsHtml}
     </tr>`;
   }
@@ -5726,7 +5784,9 @@ function deleteRequest(reqId) {
 
 function renderNotes(type) {
   const el = document.getElementById(`${type}-notes`);
-  if (el && DATA.notes[`${type}-${currentUser.id}`]) el.value = DATA.notes[`${type}-${currentUser.id}`];
+  // המפתח הוא userId בלבד — לא role — כדי שכל משתמש מבודל לחלוטין
+  const key = `user-${currentUser.id}`;
+  if (el) el.value = DATA.notes[key] || '';
   renderQuickNotes(type);
 }
 
@@ -5734,7 +5794,9 @@ async function saveNotes(type) {
   const el = document.getElementById(`${type}-notes`);
   if (!el) return;
   const content = el.value;
-  DATA.notes[`${type}-${currentUser.id}`] = content;
+  // שמור לפי userId בלבד
+  const key = `user-${currentUser.id}`;
+  DATA.notes[key] = content;
   sbSaveNote(content, type);
   showToast('✅ הערות נשמרו!');
 }
