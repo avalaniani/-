@@ -955,8 +955,8 @@
             </select>
             <div style="margin-right:auto;display:flex;gap:6px;align-items:center;">
               <span style="font-size:12px;color:var(--text2);">מיון לפי:</span>
-              <button class="sort-btn btn btn-outline btn-sm active-sort" id="sort-name" onclick="setSort('name')">שם ↕</button>
-              <button class="sort-btn btn btn-outline btn-sm" id="sort-role" onclick="setSort('role')">תפקיד ↕</button>
+              <button class="sort-btn btn btn-outline btn-sm" id="sort-name" onclick="setSort('name')">שם ↕</button>
+              <button class="sort-btn btn btn-outline btn-sm active-sort" id="sort-role" onclick="setSort('role')">תפקיד ↕</button>
               <button class="sort-btn btn btn-outline btn-sm" id="sort-company" onclick="setSort('company')">חברה ↕</button>
             </div>
           </div>
@@ -977,9 +977,9 @@
         <div class="card">
           <div class="card-header">
             <div class="card-title">📝 הערות אישיות - מנהל המערכת</div>
-            <button class="btn btn-success btn-sm" onclick="saveNotes('admin')">💾 שמור</button>
+            <span id="notes-save-indicator-admin" style="font-size:12px;color:var(--green);opacity:0;transition:opacity 0.3s;margin-left:8px;"></span><button class="btn btn-success btn-sm" onclick="saveNotes('admin')">💾 שמור</button>
           </div>
-          <textarea class="notes-area" id="admin-notes" placeholder="כתוב כאן הערות אישיות..." rows="12"></textarea>
+          <textarea class="notes-area" id="admin-notes" placeholder="כתוב כאן הערות אישיות..." rows="12" oninput="autoSaveNotes('admin', this)"></textarea>
         </div>
         <div id="admin-quick-notes" style="margin-top:16px;"></div>
         <button class="btn btn-outline btn-sm" onclick="addQuickNote('admin')" style="margin-top:10px;">+ הוסף פתק מהיר</button>
@@ -1261,9 +1261,9 @@
         <div class="card">
           <div class="card-header">
             <div class="card-title">📝 הערות אישיות - מנכ"ל</div>
-            <button class="btn btn-success btn-sm" onclick="saveNotes('ceo')">💾 שמור</button>
+            <span id="notes-save-indicator-ceo" style="font-size:12px;color:var(--green);opacity:0;transition:opacity 0.3s;margin-left:8px;"></span><button class="btn btn-success btn-sm" onclick="saveNotes('ceo')">💾 שמור</button>
           </div>
-          <textarea class="notes-area" id="ceo-notes" placeholder="כתוב כאן הערות עסקיות, תזכורות, ודברים חשובים..." rows="12"></textarea>
+          <textarea class="notes-area" id="ceo-notes" placeholder="כתוב כאן הערות עסקיות, תזכורות, ודברים חשובים..." rows="12" oninput="autoSaveNotes('ceo', this)"></textarea>
         </div>
         <div id="ceo-quick-notes" style="margin-top:16px;"></div>
         <button class="btn btn-outline btn-sm" onclick="addQuickNote('ceo')" style="margin-top:10px;">+ הוסף פתק מהיר</button>
@@ -1352,9 +1352,9 @@
         <div class="card">
           <div class="card-header">
             <div class="card-title">📝 הערות אישיות</div>
-            <button class="btn btn-success btn-sm" onclick="saveNotes('emp')">💾 שמור</button>
+            <span id="notes-save-indicator-emp" style="font-size:12px;color:var(--green);opacity:0;transition:opacity 0.3s;margin-left:8px;"></span><button class="btn btn-success btn-sm" onclick="saveNotes('emp')">💾 שמור</button>
           </div>
-          <textarea class="notes-area" id="emp-notes" placeholder="כתוב כאן הערות, תזכורות, ורעיונות..." rows="12"></textarea>
+          <textarea class="notes-area" id="emp-notes" placeholder="כתוב כאן הערות, תזכורות, ורעיונות..." rows="12" oninput="autoSaveNotes('emp', this)"></textarea>
         </div>
         <div id="emp-quick-notes" style="margin-top:16px;"></div>
         <button class="btn btn-outline btn-sm" onclick="addQuickNote('emp')" style="margin-top:10px;">+ הוסף פתק מהיר</button>
@@ -2628,7 +2628,7 @@ function renderAdminCompanies() {
   }).join('');
 }
 
-let adminUserSort = { field: 'name', dir: 1 };
+let adminUserSort = { field: 'role', dir: 1 };
 
 function setSort(field) {
   if (adminUserSort.field === field) {
@@ -5756,12 +5756,31 @@ function renderNotes(type) {
 async function saveNotes(type) {
   const el = document.getElementById(`${type}-notes`);
   if (!el) return;
-  const content = el.value;
-  // שמור לפי userId בלבד
+  const noteContent = el.value;
   const key = `user-${currentUser.id}`;
-  DATA.notes[key] = content;
-  sbSaveNote(content, type);
+  DATA.notes[key] = noteContent;
+  sbSaveNote(noteContent, type);
   showToast('✅ הערות נשמרו!');
+}
+
+// שמירה אוטומטית — debounce 1.2 שניות אחרי עצירת הכתיבה
+const _autoSaveTimers = {};
+function autoSaveNotes(type, textarea) {
+  const key = `user-${currentUser?.id}`;
+  DATA.notes[key] = textarea.value;
+
+  // הצג אינדיקטור "שומר..."
+  const indicator = document.getElementById(`notes-save-indicator-${type}`);
+  if (indicator) { indicator.textContent = '...שומר'; indicator.style.opacity = '1'; }
+
+  clearTimeout(_autoSaveTimers[type]);
+  _autoSaveTimers[type] = setTimeout(async () => {
+    sbSaveNote(textarea.value, type);
+    if (indicator) {
+      indicator.textContent = '✅ נשמר';
+      setTimeout(() => { indicator.style.opacity = '0'; }, 1500);
+    }
+  }, 1200);
 }
 
 
