@@ -472,6 +472,13 @@
     outline: none;
   }
   .hours-input:focus { border-color: var(--accent); }
+  /* input[type=time] — דחוף את השעה ימינה כדי שהחץ לא יכסה אותה */
+  .hi-time {
+    direction: ltr;
+    text-align: right;
+    padding-left: 2px;
+    padding-right: 6px;
+  }
 
   /* Modal */
   .modal-overlay {
