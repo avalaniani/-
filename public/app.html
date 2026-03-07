@@ -477,7 +477,16 @@
     text-align: center;
     -webkit-appearance: none;
     appearance: none;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    min-width: 72px;
   }
+  /* ודא שכל חלקי ה-time edit מוצגים */
+  .hi-time::-webkit-datetime-edit         { padding: 0; }
+  .hi-time::-webkit-datetime-edit-fields-wrapper { padding: 0; }
+  .hi-time::-webkit-datetime-edit-hour-field,
+  .hi-time::-webkit-datetime-edit-colon,
+  .hi-time::-webkit-datetime-edit-minute-field { font-size: 13px; }
   .hi-time::-webkit-calendar-picker-indicator { display:none !important; width:0; padding:0; margin:0; opacity:0; }
   .hi-time::-webkit-inner-spin-button         { display:none !important; }
   .hi-time::-webkit-clear-button             { display:none !important; }
@@ -758,7 +767,7 @@
     /* Worker page tablet */
     #page-worker-hours .card { padding: 14px; }
     .hours-input { width: 70px !important; font-size: 11px; padding: 3px 3px; }
-    .hi-time { width: 70px !important; }
+    .hi-time { width: 78px !important; }
     .hours-table th, .hours-table td { padding: 6px 3px; font-size: 11px; }
     #worker-name-display { font-size: 18px !important; }
     #worker-total-hours, #worker-work-days, #worker-avg-hours { font-size: 22px !important; }
@@ -807,7 +816,7 @@
     .hours-table { font-size: 11px; }
     .hours-table th, .hours-table td { padding: 5px 2px; }
     .hours-input { width: 58px !important; font-size: 10px !important; padding: 2px 2px !important; }
-    .hi-time { width: 58px !important; }
+    .hi-time { width: 72px !important; }
 
     /* Signature inputs full width */
     .sig-box input.search-input { width: 100% !important; box-sizing: border-box; }
@@ -829,7 +838,7 @@
     #page-worker-hours { padding: 6px !important; }
     #page-worker-hours > .card { padding: 10px 8px !important; }
     .hours-input { width: 50px !important; font-size: 10px !important; padding: 2px 1px !important; }
-    .hi-time { width: 50px !important; }
+    .hi-time { width: 68px !important; }
     .hours-table th, .hours-table td { padding: 3px 2px; }
     /* Hide notes column on very small screens */
     .hours-table th:last-child, .hours-table td:last-child { display: none; }
