@@ -1238,7 +1238,7 @@
           </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>שם</th><th>שם משתמש</th><th>ת"ז / דרכון</th><th>סיסמה</th><th>קישור אישי</th><th>עריכה</th></tr></thead>
+              <thead><tr><th>שם</th><th>שם משתמש</th><th>ת"ז / דרכון</th><th>סיסמה</th><th>עריכה</th></tr></thead>
               <tbody id="ceo-emp-creds-table"></tbody>
             </table>
           </div>
@@ -1249,7 +1249,7 @@
           </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>שם</th><th>שם משתמש</th><th>ת"ז / דרכון</th><th>סיסמה</th><th>קישור אישי</th><th>עריכה</th></tr></thead>
+              <thead><tr><th>שם</th><th>שם משתמש</th><th>ת"ז / דרכון</th><th>סיסמה</th><th>עריכה</th></tr></thead>
               <tbody id="ceo-worker-creds-table"></tbody>
             </table>
           </div>
@@ -2197,16 +2197,6 @@ const COMPANY_SLUG = (() => {
 // האם זו כתובת ראשית (ללא חברה)?
 const IS_MAIN_DOMAIN = !COMPANY_SLUG;
 
-// קישור אישי: /company/username — אוטו-פיל שם המשתמש
-const PERSONAL_USERNAME = (() => {
-  const parts = window.location.pathname.split('/').filter(Boolean);
-  const BLOCKED = ['app.html', 'app', 'index.html', 'index'];
-  // parts[0] = company slug, parts[1] = username
-  if (parts.length >= 2 && !BLOCKED.includes(parts[0]) && !BLOCKED.includes(parts[1])) {
-    return parts[1];
-  }
-  return null;
-})();
 
 // עדכן כותרת דף הכניסה לפי החברה
 window.addEventListener('DOMContentLoaded', () => {
@@ -2214,15 +2204,6 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('loginTitle').textContent = COMPANY_SLUG.charAt(0).toUpperCase() + COMPANY_SLUG.slice(1) + ' ⚡';
     document.getElementById('loginSubtitle').textContent = 'כניסה לעובדי ' + COMPANY_SLUG;
     document.title = COMPANY_SLUG + ' — WorkFlow Pro';
-  }
-  // ── אוטו-פיל שם משתמש מקישור אישי ──
-  if (PERSONAL_USERNAME) {
-    const uField = document.getElementById('loginUser');
-    if (uField) {
-      uField.value = PERSONAL_USERNAME;
-      // קפוץ לשדה הסיסמה
-      setTimeout(() => document.getElementById('loginPass')?.focus(), 50);
-    }
   }
   // ── Enter להתחברות ──
   ['loginUser', 'loginPass'].forEach(id => {
@@ -2677,14 +2658,6 @@ function copyCompanyUrl(companyId) {
   });
 }
 
-function copyUserUrl(companyId, username) {
-  const url = window.location.origin + '/' + companyId + '/' + username;
-  navigator.clipboard.writeText(url).then(() => {
-    showToast('✅ קישור אישי הועתק!');
-  }).catch(() => {
-    prompt('הקישור האישי שלך:', url);
-  });
-}
 
 function renderAdminUsers() {
   // Populate company filter dropdown
@@ -3244,15 +3217,6 @@ function renderCeoCredentials(searchQ) {
     const idDisplay = u.idNumber
       ? `<span style="font-size:12px;display:flex;align-items:center;gap:4px;">${idIcon} <span style="font-family:monospace;">${u.idNumber}</span> <span style="font-size:10px;color:var(--text3);">(${idLabel})</span></span>`
       : `<span style="color:var(--text3);font-size:12px;">—</span>`;
-    // קישור אישי
-    const userUrl = window.location.origin + '/' + (u.company || currentUser.company) + '/' + u.username;
-    const linkHtml = `<td>
-      <div style="display:flex;align-items:center;gap:6px;max-width:220px;">
-        <span style="font-size:11px;color:var(--text3);font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;" title="${userUrl}">${userUrl.replace(window.location.origin,'')}</span>
-        <button onclick="copyUserUrl('${u.company || currentUser.company}','${u.username}')"
-          style="background:#f0f7ff;border:1px solid #93c5fd;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:12px;color:#2563eb;white-space:nowrap;flex-shrink:0;" title="העתק קישור אישי">🔗 העתק</button>
-      </div>
-    </td>`;
     const actionsHtml = `<td><div style="display:flex;gap:6px;">
           <button class="btn btn-primary btn-sm" onclick="ceoEditCredentials(${u.id})" title="ערוך פרטי כניסה">✏️ ערוך</button>
           <button class="btn btn-danger btn-sm" onclick="ceoDeleteMember(${u.id})" title="מחק">🗑️</button>
@@ -3268,7 +3232,6 @@ function renderCeoCredentials(searchQ) {
         <span id="ceo-pass-${prefix}-${u.id}" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:3px 12px;font-size:12px;font-family:monospace;letter-spacing:2px;">••••••••</span>
         <button onclick="ceoPwToggle('${prefix}',${u.id})" id="ceo-eye-${prefix}-${u.id}" data-pass="${u.passwordPlain||''}" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:3px 8px;cursor:pointer;font-size:13px;color:var(--text2);">👁️</button>
       </div></td>
-      ${linkHtml}
       ${actionsHtml}
     </tr>`;
   }
