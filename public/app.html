@@ -4237,8 +4237,8 @@ function renderWorkerHours(viewWorkerId, viewMonth, viewYear) {
     <tr data-day="${d}" style="${rowBg}${(locked && !isFuture) ? 'opacity:0.75;' : ''}${isFuture ? 'opacity:0.45;' : ''}${leftBorder}${isToday ? 'font-weight:600;' : ''}">
       <td style="font-weight:${isToday?'700':'600'};">${todayBadge}${futureBadge}${d}/${month+1} ${signedBadge}</td>
       <td style="color:${isWeekend ? '#c0506a' : 'var(--text2)'};">${dayNames[dayIdx]}</td>
-      <td><input class="hours-input hi-time" type="text" inputmode="numeric" placeholder="08:00" maxlength="5" value="${entry.start||''}" oninput="fmtHourInput(this)" onblur="commitHourEntry(this,${d},'start','${workerId}')" ${locked || isViewer ? 'disabled' : ''}></td>
-      <td><input class="hours-input hi-time" type="text" inputmode="numeric" placeholder="17:00" maxlength="5" value="${entry.end||''}" oninput="fmtHourInput(this)" onblur="commitHourEntry(this,${d},'end','${workerId}')" ${locked || isViewer ? 'disabled' : ''}></td>
+      <td><input class="hours-input hi-time" type="text" inputmode="none" readonly placeholder="" maxlength="5" value="${entry.start||''}" ${locked || isViewer ? 'disabled style="cursor:default;"' : `onclick="openWorkerTimePicker(this,${d},'start','${workerId}')" style="cursor:pointer;"`}></td>
+      <td><input class="hours-input hi-time" type="text" inputmode="none" readonly placeholder="" maxlength="5" value="${entry.end||''}" ${locked || isViewer ? 'disabled style="cursor:default;"' : `onclick="openWorkerTimePicker(this,${d},'end','${workerId}')" style="cursor:pointer;"`}></td>
       <td style="font-weight:700;color:#4a88b8;text-align:center;" class="computed-hours">${computed > 0 ? computed.toFixed(1) : '—'}</td>
       <td><input class="hours-input" type="text" value="${entry.note||''}" onchange="updateHourEntry(${d},'note',this.value,'${workerId}')" placeholder="הערה..." ${locked || isViewer ? 'disabled' : ''}></td>
     </tr>`;
@@ -4309,6 +4309,25 @@ function renderWorkerHours(viewWorkerId, viewMonth, viewYear) {
       }
     }
   }
+}
+
+function openWorkerTimePicker(inputEl, day, field, workerId) {
+  // תן ל-input id זמני כדי ש-openCalTimePicker יוכל למצוא אותו
+  const tmpId = 'wtp-tmp-' + day + '-' + field;
+  inputEl.id = tmpId;
+
+  // פתח את השעון הקיים
+  openCalTimePicker(tmpId);
+
+  // אחרי בחירה — שמור ב-updateHourEntry
+  const observer = new MutationObserver(() => {
+    if (!document.getElementById('tp-overlay')) {
+      const val = inputEl.value;
+      updateHourEntry(day, field, val, workerId);
+      observer.disconnect();
+    }
+  });
+  observer.observe(document.body, { childList: true, subtree: false });
 }
 
 function fmtHourInput(input) {
