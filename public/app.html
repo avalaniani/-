@@ -477,15 +477,6 @@
     text-align: center;
     -webkit-appearance: none;
     appearance: none;
-    /* הרחב את ה-input מעבר לגבול ה-wrap — החלק הריק ייחתך */
-    width: 110px !important;
-    margin-right: -26px;
-  }
-  .hi-time-wrap {
-    display: inline-block;
-    overflow: hidden;
-    width: 72px;
-    border-radius: 6px;
   }
   .hi-time::-webkit-calendar-picker-indicator { display:none !important; width:0; padding:0; margin:0; opacity:0; }
   .hi-time::-webkit-inner-spin-button         { display:none !important; }
@@ -4256,8 +4247,8 @@ function renderWorkerHours(viewWorkerId, viewMonth, viewYear) {
     <tr data-day="${d}" style="${rowBg}${(locked && !isFuture) ? 'opacity:0.75;' : ''}${isFuture ? 'opacity:0.45;' : ''}${leftBorder}${isToday ? 'font-weight:600;' : ''}">
       <td style="font-weight:${isToday?'700':'600'};">${todayBadge}${futureBadge}${d}/${month+1} ${signedBadge}</td>
       <td style="color:${isWeekend ? '#c0506a' : 'var(--text2)'};">${dayNames[dayIdx]}</td>
-      <td><div class="hi-time-wrap"><input class="hours-input hi-time" type="time" value="${entry.start||''}" onchange="updateHourEntry(${d},'start',this.value,'${workerId}')" ${locked || isViewer ? 'disabled' : ''}></div></td>
-      <td><div class="hi-time-wrap"><input class="hours-input hi-time" type="time" value="${entry.end||''}" onchange="updateHourEntry(${d},'end',this.value,'${workerId}')" ${locked || isViewer ? 'disabled' : ''}></div></td>
+      <td><input class="hours-input hi-time" type="time" value="${entry.start||''}" onchange="updateHourEntry(${d},'start',this.value,'${workerId}')" ${locked || isViewer ? 'disabled' : ''}></td>
+      <td><input class="hours-input hi-time" type="time" value="${entry.end||''}" onchange="updateHourEntry(${d},'end',this.value,'${workerId}')" ${locked || isViewer ? 'disabled' : ''}></td>
       <td style="font-weight:700;color:#4a88b8;text-align:center;" class="computed-hours">${computed > 0 ? computed.toFixed(1) : '—'}</td>
       <td><input class="hours-input" type="text" value="${entry.note||''}" onchange="updateHourEntry(${d},'note',this.value,'${workerId}')" placeholder="הערה..." ${locked || isViewer ? 'disabled' : ''}></td>
     </tr>`;
