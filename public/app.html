@@ -6591,9 +6591,17 @@ function openCalEventEdit(eventId) {
     renderCalendar(calState.role);
     showToast('✅ האירוע עודכן!');
   };
-  document.getElementById('cal-delete-btn').onclick = () => {
+  document.getElementById('cal-delete-btn').onclick = async () => {
+    // הסר מ-calState (אירועי לוח)
     calState.events = calState.events.filter(e => e.id !== eventId);
     calSave(calState.role, calState.events);
+
+    // אם האירוע הגיע ממשימה — מחק גם את המשימה עצמה
+    if (String(eventId).startsWith('task_')) {
+      const taskId = parseInt(eventId.replace('task_', ''));
+      await sbDeleteTask(taskId).catch(() => {});
+    }
+
     closeModal();
     renderCalendar(calState.role);
     showToast('🗑️ האירוע נמחק');
