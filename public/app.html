@@ -472,13 +472,14 @@
     outline: none;
   }
   .hours-input:focus { border-color: var(--accent); }
-  /* input[type=time] — דחוף את השעה ימינה כדי שהחץ לא יכסה אותה */
+  /* input[type=time] — הסתר את החץ בכל הדפדפנים */
   .hi-time {
     direction: ltr;
-    text-align: right;
-    padding-left: 2px;
-    padding-right: 6px;
+    text-align: center;
   }
+  .hi-time::-webkit-calendar-picker-indicator { display: none; opacity: 0; width: 0; }
+  .hi-time::-webkit-inner-spin-button          { display: none; }
+  .hi-time::-webkit-clear-button              { display: none; }
 
   /* Modal */
   .modal-overlay {
