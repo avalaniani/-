@@ -977,7 +977,7 @@
         <div class="card">
           <div class="card-header">
             <div class="card-title">📝 הערות אישיות - מנהל המערכת</div>
-            <span id="notes-save-indicator-admin" style="font-size:12px;color:var(--green);opacity:0;transition:opacity 0.3s;margin-left:8px;"></span><button class="btn btn-success btn-sm" onclick="saveNotes('admin')">💾 שמור</button>
+            <button class="btn btn-success btn-sm" id="notes-save-btn-admin" onclick="saveNotes('admin')">💾 שמור</button>
           </div>
           <textarea class="notes-area" id="admin-notes" placeholder="כתוב כאן הערות אישיות..." rows="12" oninput="autoSaveNotes('admin', this)"></textarea>
         </div>
@@ -1261,7 +1261,7 @@
         <div class="card">
           <div class="card-header">
             <div class="card-title">📝 הערות אישיות - מנכ"ל</div>
-            <span id="notes-save-indicator-ceo" style="font-size:12px;color:var(--green);opacity:0;transition:opacity 0.3s;margin-left:8px;"></span><button class="btn btn-success btn-sm" onclick="saveNotes('ceo')">💾 שמור</button>
+            <button class="btn btn-success btn-sm" id="notes-save-btn-ceo" onclick="saveNotes('ceo')">💾 שמור</button>
           </div>
           <textarea class="notes-area" id="ceo-notes" placeholder="כתוב כאן הערות עסקיות, תזכורות, ודברים חשובים..." rows="12" oninput="autoSaveNotes('ceo', this)"></textarea>
         </div>
@@ -1352,7 +1352,7 @@
         <div class="card">
           <div class="card-header">
             <div class="card-title">📝 הערות אישיות</div>
-            <span id="notes-save-indicator-emp" style="font-size:12px;color:var(--green);opacity:0;transition:opacity 0.3s;margin-left:8px;"></span><button class="btn btn-success btn-sm" onclick="saveNotes('emp')">💾 שמור</button>
+            <button class="btn btn-success btn-sm" id="notes-save-btn-emp" onclick="saveNotes('emp')">💾 שמור</button>
           </div>
           <textarea class="notes-area" id="emp-notes" placeholder="כתוב כאן הערות, תזכורות, ורעיונות..." rows="12" oninput="autoSaveNotes('emp', this)"></textarea>
         </div>
@@ -5759,28 +5759,33 @@ async function saveNotes(type) {
   const noteContent = el.value;
   const key = `user-${currentUser.id}`;
   DATA.notes[key] = noteContent;
+  clearTimeout(_autoSaveTimers[type]);
   sbSaveNote(noteContent, type);
-  showToast('✅ הערות נשמרו!');
+  const btn = document.getElementById(`notes-save-btn-${type}`);
+  if (btn) {
+    btn.textContent = '✅ נשמר';
+    setTimeout(() => { btn.textContent = '💾 שמור'; }, 1500);
+  }
 }
 
-// שמירה אוטומטית — debounce 1.2 שניות אחרי עצירת הכתיבה
+// שמירה אוטומטית — debounce 400ms, מוצג על הכפתור עצמו
 const _autoSaveTimers = {};
 function autoSaveNotes(type, textarea) {
   const key = `user-${currentUser?.id}`;
   DATA.notes[key] = textarea.value;
 
-  // הצג אינדיקטור "שומר..."
-  const indicator = document.getElementById(`notes-save-indicator-${type}`);
-  if (indicator) { indicator.textContent = '...שומר'; indicator.style.opacity = '1'; }
+  const btn = document.getElementById(`notes-save-btn-${type}`);
+  if (btn) { btn.textContent = '...שומר'; btn.style.opacity = '0.7'; }
 
   clearTimeout(_autoSaveTimers[type]);
   _autoSaveTimers[type] = setTimeout(async () => {
     sbSaveNote(textarea.value, type);
-    if (indicator) {
-      indicator.textContent = '✅ נשמר';
-      setTimeout(() => { indicator.style.opacity = '0'; }, 1500);
+    if (btn) {
+      btn.textContent = '✅ נשמר';
+      btn.style.opacity = '1';
+      setTimeout(() => { btn.textContent = '💾 שמור'; }, 1500);
     }
-  }, 1200);
+  }, 400);
 }
 
 
