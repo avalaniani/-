@@ -4650,10 +4650,12 @@ function openBulkImportWorkers() {
       <table id="bulk-table" style="width:100%;border-collapse:collapse;font-size:13px;">
         <thead>
           <tr style="background:#f0f4f8;">
-            <th style="padding:8px 10px;border-bottom:2px solid var(--border);border-left:1px solid var(--border);font-weight:700;text-align:right;color:var(--text);min-width:140px;">שם מלא</th>
-            <th style="padding:8px 10px;border-bottom:2px solid var(--border);border-left:1px solid var(--border);font-weight:700;text-align:right;color:var(--text);min-width:130px;">שם משתמש</th>
-            <th style="padding:8px 10px;border-bottom:2px solid var(--border);border-left:1px solid var(--border);font-weight:700;text-align:right;color:var(--text);min-width:110px;">סיסמה</th>
-            <th id="bulk-doc-header" style="padding:8px 10px;border-bottom:2px solid var(--border);font-weight:700;text-align:right;color:var(--text);min-width:130px;">🛂 דרכון</th>
+            <th style="padding:8px 10px;border-bottom:2px solid var(--border);border-left:1px solid var(--border);font-weight:700;text-align:right;color:var(--text);min-width:130px;">שם מלא</th>
+            <th style="padding:8px 10px;border-bottom:2px solid var(--border);border-left:1px solid var(--border);font-weight:700;text-align:right;color:var(--text);min-width:120px;">שם משתמש</th>
+            <th style="padding:8px 10px;border-bottom:2px solid var(--border);border-left:1px solid var(--border);font-weight:700;text-align:right;color:var(--text);min-width:100px;">סיסמה</th>
+            <th id="bulk-doc-header" style="padding:8px 10px;border-bottom:2px solid var(--border);border-left:1px solid var(--border);font-weight:700;text-align:right;color:var(--text);min-width:110px;">🛂 דרכון</th>
+            <th id="bulk-contractor-header" style="padding:8px 10px;border-bottom:2px solid var(--border);border-left:1px solid var(--border);font-weight:700;text-align:right;color:var(--text);min-width:110px;">קבלן</th>
+            <th id="bulk-site-header" style="padding:8px 10px;border-bottom:2px solid var(--border);font-weight:700;text-align:right;color:var(--text);min-width:120px;">אתר עבודה</th>
           </tr>
         </thead>
         <tbody id="bulk-tbody"></tbody>
@@ -4669,7 +4671,7 @@ function openBulkImportWorkers() {
     </div>`;
 
   // Build initial empty rows
-  buildBulkRows(BULK_ROWS);
+  buildBulkRows(BULK_ROWS); // 6-column rows
   openModal();
 
   // Handle paste on whole modal
@@ -4688,25 +4690,68 @@ function buildBulkRows(count) {
   for (let i = 0; i < count; i++) addBulkRow();
 }
 
-function addBulkRow(values = ['','','','']) {
+function addBulkRow(values = ['','','','','','']) {
   const tbody = document.getElementById('bulk-tbody');
   const rowIdx = tbody.rows.length;
   const tr = document.createElement('tr');
   tr.style.cssText = 'border-bottom:1px solid var(--border);';
-  tr.innerHTML = values.map((v, ci) => `
-    <td style="padding:0;border-left:${ci < 3 ? '1px solid var(--border)' : 'none'};">
-      <input type="${ci === 2 ? 'text' : 'text'}" value="${v.replace(/"/g,'&quot;')}"
+  const NUM_COLS = 6;
+  // עמודות 4,5 (קבלן, אתר) — autocomplete מנתוני החברה
+  const company = currentUser?.company;
+  const contractors = [...new Set((DATA.workSites||[]).filter(s=>s.companyId===company).map(s=>s.contractor).filter(Boolean))];
+  const sites = (DATA.workSites||[]).filter(s=>s.companyId===company);
+
+  tr.innerHTML = values.map((v, ci) => {
+    const isLast = ci === NUM_COLS - 1;
+    const border = isLast ? 'none' : '1px solid var(--border)';
+    if (ci === 4) {
+      // קבלן — datalist
+      return `<td style="padding:0;border-left:${border};position:relative;">
+        <input list="bulk-contractors-list" value="${v.replace(/"/g,'&quot;')}"
+          style="width:100%;border:none;outline:none;padding:7px 10px;font-size:13px;background:transparent;font-family:inherit;box-sizing:border-box;"
+          onkeydown="bulkCellKeydown(event,this,${rowIdx},${ci})"
+          oninput="bulkSyncSite(this);validateBulkTable()"
+          onfocus="this.style.background='#f0f4ff'" onblur="this.style.background='transparent'">
+        <datalist id="bulk-contractors-list">${contractors.map(c=>`<option value="${c}">`).join('')}</datalist>
+      </td>`;
+    }
+    if (ci === 5) {
+      // אתר עבודה — datalist
+      return `<td style="padding:0;border-left:${border};">
+        <input list="bulk-sites-list" value="${v.replace(/"/g,'&quot;')}"
+          style="width:100%;border:none;outline:none;padding:7px 10px;font-size:13px;background:transparent;font-family:inherit;box-sizing:border-box;"
+          onkeydown="bulkCellKeydown(event,this,${rowIdx},${ci})"
+          oninput="validateBulkTable()"
+          onfocus="this.style.background='#f0f4ff'" onblur="this.style.background='transparent'">
+        <datalist id="bulk-sites-list">${sites.map(s=>`<option value="${s.name}" data-id="${s.id}" data-contractor="${s.contractor||''}">`).join('')}</datalist>
+      </td>`;
+    }
+    return `<td style="padding:0;border-left:${border};">
+      <input value="${v.replace(/"/g,'&quot;')}"
         style="width:100%;border:none;outline:none;padding:7px 10px;font-size:13px;background:transparent;font-family:inherit;box-sizing:border-box;"
         onkeydown="bulkCellKeydown(event,this,${rowIdx},${ci})"
         oninput="validateBulkTable()"
         onfocus="this.style.background='#f0f4ff'" onblur="this.style.background='transparent'">
-    </td>`).join('');
+    </td>`;
+  }).join('');
   tbody.appendChild(tr);
+}
+
+// כשמזינים קבלן — מלא אוטומטית את אתר העבודה אם יש רק אחד
+function bulkSyncSite(contractorInput) {
+  const tr = contractorInput.closest('tr');
+  const inputs = tr.querySelectorAll('input');
+  const contractor = contractorInput.value.trim();
+  const siteInput = inputs[5];
+  if (!siteInput || siteInput.value) return; // לא דורס שדה מלא
+  const company = currentUser?.company;
+  const matching = (DATA.workSites||[]).filter(s=>s.companyId===company && s.contractor===contractor);
+  if (matching.length === 1) siteInput.value = matching[0].name;
 }
 
 function bulkCellKeydown(e, input, row, col) {
   const tbody = document.getElementById('bulk-tbody');
-  const numCols = 4;
+  const numCols = 6;
   if (e.key === 'Tab') {
     e.preventDefault();
     const next = e.shiftKey ? (col - 1 + numCols * (row + 1)) : (col + 1 + numCols * row);
@@ -4737,9 +4782,9 @@ function getBulkTableData() {
   const tbody = document.getElementById('bulk-tbody');
   const rows = [];
   for (const tr of tbody.rows) {
-    const inputs = tr.querySelectorAll('input');
-    const vals = [...inputs].map(i => i.value.trim());
-    if (vals.some(v => v)) rows.push(vals); // skip fully empty rows
+    const inputs = [...tr.querySelectorAll('input')].slice(0,6);
+    const vals = inputs.map(i => i.value.trim());
+    if (vals.slice(0,4).some(v => v)) rows.push(vals); // skip fully empty rows
   }
   return rows;
 }
@@ -4756,7 +4801,7 @@ function validateBulkTable() {
   const validRows = [];
 
   rows.forEach((cols, idx) => {
-    const [name, username, password, idNumber] = cols;
+    const [name, username, password, idNumber, contractor, siteName] = cols;
     const rowErrors = [];
     if (!name) rowErrors.push('שם מלא חסר');
     if (!username) rowErrors.push('שם משתמש חסר');
@@ -4776,7 +4821,7 @@ function validateBulkTable() {
     }
 
     if (rowErrors.length) errors.push(`שורה ${idx+1} (${name||'?'}): ${rowErrors.join(', ')}`);
-    else validRows.push({ name, username, password, idType: docType, idNumber });
+    else validRows.push({ name, username, password, idType: docType, idNumber, contractor: contractor||'', siteName: siteName||'' });
   });
 
   if (errors.length) {
@@ -4824,7 +4869,7 @@ function handleBulkPaste(e) {
   tbody.innerHTML = '';
   dataLines.forEach(line => {
     const cols = line.split('\t');
-    addBulkRow([cols[0]||'', cols[1]||'', cols[2]||'', cols[3]||'']);
+    addBulkRow([cols[0]||'', cols[1]||'', cols[2]||'', cols[3]||'', cols[4]||'', cols[5]||'']);
   });
   // Add 3 empty rows at bottom for extra entry
   for (let i = 0; i < 3; i++) addBulkRow();
@@ -4835,7 +4880,7 @@ function copyBulkTable() {
   const docType = getBulkDocType();
   const docLabel = docType === 'passport' ? 'דרכון' : 'ת"ז';
   // Copy header + all current rows (including empty ones) as TSV
-  const header = `שם מלא\tשם משתמש\tסיסמה\t${docLabel}`;
+  const header = `שם מלא\tשם משתמש\tסיסמה\t${docLabel}\tקבלן\tאתר עבודה`;
   const tbody = document.getElementById('bulk-tbody');
   const allRows = [...tbody.rows].map(tr => {
     const inputs = tr.querySelectorAll('input');
@@ -4861,7 +4906,7 @@ function copyBulkTable() {
 }
 
 function clearBulkTable() {
-  buildBulkRows(BULK_ROWS);
+  buildBulkRows(BULK_ROWS); // 6-column rows
   document.getElementById('bulk-validation').style.display = 'none';
   const btn = document.getElementById('bulk-import-btn');
   btn.disabled = true; btn.style.opacity = '0.5'; btn.textContent = '📥 ייבא פועלים';
@@ -4873,10 +4918,10 @@ async function executeBulkImport() {
   const valid = [];
 
   rows.forEach(cols => {
-    const [name, username, password, idNumber] = cols;
+    const [name, username, password, idNumber, contractor, siteName] = cols;
     if (!name || !username || !password || password.length < 4 || /\s/.test(username)) return;
     if (DATA.users.find(u => u.username === username)) return;
-    valid.push({ name, username, password, idType: docType, idNumber });
+    valid.push({ name, username, password, idType: docType, idNumber, contractor: contractor||'', siteName: siteName||'' });
   });
 
   if (!valid.length) { showToast('❌ אין פועלים תקינים לייבוא', 'error'); return; }
@@ -4890,7 +4935,20 @@ async function executeBulkImport() {
         avatar: '🔧', avatar_color: '#fb923c',
         id_type: w.idType, id_number: w.idNumber,
       });
-      if (res.ok) success++;
+      if (res.ok) {
+        success++;
+        // שייך לאתר עבודה אם הוזן
+        if (w.siteName) {
+          const company = currentUser.company;
+          let site = DATA.workSites.find(s=>s.companyId===company && s.name===w.siteName);
+          if (!site && w.siteName) {
+            // צור אתר חדש אם לא קיים
+            await sbCreateWorkSite({ companyId: company, name: w.siteName, contractor: w.contractor||'', address:'', phone:'' });
+            site = DATA.workSites.find(s=>s.companyId===company && s.name===w.siteName);
+          }
+          if (site && res.data?.id) await sbAssignWorkerSite(res.data.id, site.id);
+        }
+      }
     }
     closeBulkModal();
     renderCeoWorkers();
@@ -4899,9 +4957,23 @@ async function executeBulkImport() {
   } else {
     let maxId = Math.max(...DATA.users.map(u => u.id));
     valid.forEach(w => {
-      DATA.users.push({ id: ++maxId, username: w.username, password: w.password, name: w.name,
-        role: 'worker', company: currentUser.company, avatar: '🔧', avatarColor: '#fb923c',
-        idType: w.idType, idNumber: w.idNumber });
+      const company = currentUser.company;
+      let siteId = null;
+      if (w.siteName) {
+        let site = DATA.workSites.find(s=>s.companyId===company && s.name===w.siteName);
+        if (!site) {
+          const newSite = { companyId:company, name:w.siteName, contractor:w.contractor||'', address:'', phone:'', id:Date.now()+Math.random() };
+          DATA.workSites.push(newSite);
+          _saveWorkSitesLocal(company);
+          site = newSite;
+        }
+        siteId = site.id;
+      }
+      const newUser = { id: ++maxId, username: w.username, password: w.password, name: w.name,
+        role: 'worker', company: company, avatar: '🔧', avatarColor: '#fb923c',
+        idType: w.idType, idNumber: w.idNumber, siteId };
+      DATA.users.push(newUser);
+      if (siteId) _saveWorkerSitesLocal(company);
     });
     closeBulkModal();
     renderCeoWorkers();
