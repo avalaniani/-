@@ -1118,7 +1118,7 @@
             </div>
             <div class="table-wrap">
               <table>
-                <thead><tr><th>פועל</th><th>סה"כ שעות</th><th>שעות חתומות ✅</th><th>שעות לא חתומות ⏳</th><th>סטטוס</th><th>צפייה</th><th>פעולות</th></tr></thead>
+                <thead><tr><th>פועל</th><th>אתר עבודה</th><th>סה"כ שעות</th><th>שעות חתומות ✅</th><th>שעות לא חתומות ⏳</th><th>סטטוס</th><th>צפייה</th><th>פעולות</th></tr></thead>
                 <tbody id="ceo-workers-table"></tbody>
               </table>
             </div>
@@ -1270,6 +1270,36 @@
       </div>
 
 
+
+      <!-- ════════════════ CEO WORK SITES PAGE ════════════════ -->
+      <div class="page" id="page-ceo-sites">
+        <!-- Header card -->
+        <div class="card" style="margin-bottom:16px;background:linear-gradient(135deg,#f0f7ff,#e8f0ff);border-color:#c8d8f0;">
+          <div style="display:flex;align-items:center;gap:14px;">
+            <div style="font-size:36px;">🏗️</div>
+            <div style="flex:1;">
+              <div style="font-size:18px;font-weight:800;color:var(--text);">אתרי עבודה וקבלנים</div>
+              <div style="font-size:13px;color:var(--text2);margin-top:2px;">ניהול אתרי עבודה ושיוך פועלים</div>
+            </div>
+            <button class="btn btn-primary" onclick="openAddSiteModal()" style="gap:6px;">+ הוסף אתר</button>
+          </div>
+        </div>
+
+        <!-- Sites list -->
+        <div id="sites-list-container"></div>
+
+        <!-- Bulk assign section -->
+        <div class="card" id="bulk-assign-card" style="display:none;margin-top:16px;border:2px solid var(--accent);background:#f0f7ff;">
+          <div class="card-header">
+            <div class="card-title">✅ שיוך מרובה — <span id="bulk-count">0</span> פועלים נבחרו</div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-outline btn-sm" onclick="clearBulkSelection()">ביטול בחירה</button>
+              <button class="btn btn-primary btn-sm" onclick="openBulkAssignModal()">שייך לאתר ←</button>
+            </div>
+          </div>
+          <div id="bulk-selected-names" style="font-size:12px;color:var(--text2);margin-top:6px;"></div>
+        </div>
+      </div>
 
       <!-- ════════════════ CEO REQUESTS PAGE ════════════════ -->
       <div class="page" id="page-ceo-requests">
@@ -1677,6 +1707,7 @@ function mapUser(u) {
     idNumber:     u.id_number     || '',
     ceoInterface: u.ceo_interface || false,
     fieldWorker:  u.field_worker  || false,
+    siteId:       u.site_id       || null,
   };
 }
 
@@ -2043,6 +2074,43 @@ async function sbDeleteRequest(id) {
   return { ok: true };
 }
 
+// ── Work Sites ─────────────────────────────────────────────────
+async function sbCreateWorkSite(payload) {
+  try {
+    const data = await apiFetch('/work-sites', 'POST', payload);
+    DATA.workSites.push(data);
+    return { ok:true, data };
+  } catch(e) {
+    // fallback: שמור מקומית
+    const site = { ...payload, id: Date.now() };
+    DATA.workSites.push(site);
+    return { ok:true, data:site };
+  }
+}
+async function sbUpdateWorkSite(id, updates) {
+  try {
+    const data = await apiFetch('/work-sites', 'PATCH', { id, ...updates });
+    const idx = DATA.workSites.findIndex(s => s.id === id);
+    if (idx !== -1) DATA.workSites[idx] = { ...DATA.workSites[idx], ...data };
+  } catch(e) {
+    const idx = DATA.workSites.findIndex(s => s.id === id);
+    if (idx !== -1) DATA.workSites[idx] = { ...DATA.workSites[idx], ...updates };
+  }
+  return { ok:true };
+}
+async function sbDeleteWorkSite(id) {
+  try { await apiFetch('/work-sites', 'DELETE', { id }); } catch(e) {}
+  const idx = DATA.workSites.findIndex(s => s.id === id);
+  if (idx !== -1) DATA.workSites.splice(idx, 1);
+  return { ok:true };
+}
+async function sbAssignWorkerSite(workerId, siteId) {
+  try { await apiFetch('/users', 'PATCH', { id: workerId, site_id: siteId }); } catch(e) {}
+  const u = DATA.users.find(u => u.id === workerId);
+  if (u) u.siteId = siteId;
+  return { ok:true };
+}
+
 // ── Notes ──────────────────────────────────────────────────────
 const _notesTimer = {};
 function sbSaveNote(content, noteType) {
@@ -2092,6 +2160,7 @@ const DATA = {
   notes: {},
   quickNotes: {},
   requests: [],
+  workSites: [],   // { id, companyId, name, contractor, address, phone }
   workerHours: (function() {
     const d = {};
     const now = new Date();
@@ -2381,6 +2450,7 @@ const navConfigs = {
     { page:'ceo-tasks', icon:'📋', label:'משימות' },
     { page:'ceo-notes', icon:'📝', label:'הערות אישיות' },
     { page:'ceo-calendar', icon:'📅', label:'יומן' },
+    { page:'ceo-sites', icon:'🏗️', label:'אתרי עבודה' },
     { page:'ceo-requests', icon:'📬', label:'פניות פועלים' },
     { page:'ceo-credentials', icon:'🔑', label:'שמות משתמש וסיסמאות' },
   ],
@@ -2441,7 +2511,7 @@ function goPage(pageId) {
   if (nav) nav.classList.add('active');
 
   const labels = { 'admin-dashboard':'לוח בקרה','admin-companies':'ניהול חברות','admin-users':'משתמשים','admin-notes':'הערות',
-    'ceo-dashboard':'לוח בקרה','ceo-employees':'עובדים','ceo-workers':'פועלים','ceo-tasks':'משימות','ceo-credentials':'סיסמאות הצוות','ceo-notes':'הערות','ceo-analytics':'ניתוח וביצועים','ceo-requests':'פניות פועלים',
+    'ceo-dashboard':'לוח בקרה','ceo-employees':'עובדים','ceo-workers':'פועלים','ceo-tasks':'משימות','ceo-credentials':'סיסמאות הצוות','ceo-notes':'הערות','ceo-analytics':'ניתוח וביצועים','ceo-requests':'פניות פועלים','ceo-sites':'אתרי עבודה',
     'emp-dashboard':'ראשי','emp-tasks':'המשימות שלי','emp-calendar':'לוח זמנים','emp-notes':'הערות',
     'worker-hours':'דוח שעות','worker-requests':'פניות ובקשות' };
   document.getElementById('pageTitle').textContent = labels[pageId] || pageId;
@@ -2509,6 +2579,7 @@ function renderPage(pageId) {
   else if (pageId === 'ceo-workers') { renderCeoWorkers(); renderCeoWorkersGrid(false); setTimeout(() => { fitGridToScreen(false); updateSliderFill(document.getElementById('grid-zoom-slider')); }, 80); }
   else if (pageId === 'ceo-tasks') renderCeoTasks();
   else if (pageId === 'ceo-credentials') renderCeoCredentials();
+  else if (pageId === 'ceo-sites') renderWorkSites();
   else if (pageId === 'ceo-notes') renderNotes('ceo');
   else if (pageId === 'ceo-calendar') renderCalendar('ceo');
   else if (pageId === 'ceo-requests') renderCeoRequests();
@@ -3650,6 +3721,11 @@ function renderCeoWorkers() {
           ${w.idNumber ? `<div style="font-size:10px;color:var(--text3);">${w.idType==='passport'?'🛂':'🪪'} ${w.idNumber}</div>` : ''}
         </div>
       </div></td>
+      <td>
+        <div class="site-tag-cell" onclick="openAssignSiteModal(${w.id})" title="לחץ לשינוי אתר">
+          ${(function(){ const s = DATA.workSites.find(s=>s.id===w.siteId && s.companyId===currentUser.company); return s ? `<span style="display:inline-flex;align-items:center;gap:5px;background:#e8f4fd;color:#2a6496;border-radius:20px;padding:3px 10px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #b8d8f0;white-space:nowrap;" onclick="event.stopPropagation();openAssignSiteModal(${w.id})">🏗️ ${s.name}</span>` : `<span style="color:var(--text3);font-size:12px;cursor:pointer;padding:3px 8px;border-radius:20px;border:1px dashed var(--border);display:inline-block;" onclick="event.stopPropagation();openAssignSiteModal(${w.id})">+ שייך אתר</span>`; })()}
+        </div>
+      </td>
       <td><span style="font-size:16px;font-weight:800;color:#4a6080;">${totalH.toFixed(1)}</span> <span style="color:var(--text2);font-size:11px;">שע'</span></td>
       <td><span style="font-size:15px;font-weight:700;color:#3a9a7a;">${signedH > 0 ? signedH.toFixed(1) : '—'}</span>${signedH > 0 ? ' <span style="color:var(--text2);font-size:11px;">שע\'</span>' : ''}</td>
       <td><span style="font-size:15px;font-weight:700;color:${unsignedH > 0 ? '#c07030' : 'var(--text3)'};">${unsignedH > 0 ? unsignedH.toFixed(1) : '—'}</span>${unsignedH > 0 ? ' <span style="color:var(--text2);font-size:11px;">שע\'</span>' : ''}</td>
@@ -5776,6 +5852,364 @@ function autoSaveNotes(type, textarea) {
   }, 150);
 }
 
+
+// ══════════════════════════════════════════════════════════════
+// 🏗️  WORK SITES — ניהול אתרי עבודה
+// ══════════════════════════════════════════════════════════════
+
+let _bulkSelected = new Set(); // מזהי פועלים נבחרים לשיוך מרובה
+
+// ── הצג את עמוד אתרי העבודה ──
+function renderWorkSites() {
+  const company = currentUser.company;
+  const sites = DATA.workSites.filter(s => s.companyId === company);
+  const workers = DATA.users.filter(u => u.company === company && u.role === 'worker');
+  _bulkSelected.clear();
+  updateBulkBar();
+
+  const container = document.getElementById('sites-list-container');
+  if (!container) return;
+
+  if (!sites.length) {
+    container.innerHTML = `
+      <div class="card" style="text-align:center;padding:40px 20px;color:var(--text3);">
+        <div style="font-size:48px;margin-bottom:12px;">🏗️</div>
+        <div style="font-size:16px;font-weight:600;margin-bottom:6px;">אין אתרי עבודה עדיין</div>
+        <div style="font-size:13px;margin-bottom:20px;">הוסף את אתר העבודה הראשון</div>
+        <button class="btn btn-primary" onclick="openAddSiteModal()">+ הוסף אתר עבודה</button>
+      </div>`;
+    return;
+  }
+
+  // קבץ לפי קבלן
+  const byContractor = {};
+  sites.forEach(s => {
+    const k = s.contractor || 'ללא קבלן';
+    if (!byContractor[k]) byContractor[k] = [];
+    byContractor[k].push(s);
+  });
+
+  container.innerHTML = Object.entries(byContractor).map(([contractor, cSites]) => `
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-header" style="border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:14px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🏢</div>
+          <div>
+            <div style="font-size:15px;font-weight:700;color:var(--text);">קבלן: ${contractor}</div>
+            <div style="font-size:12px;color:var(--text3);">${cSites.length} אתר${cSites.length!==1?'ים':''}</div>
+          </div>
+        </div>
+      </div>
+      ${cSites.map(site => {
+        const siteWorkers = workers.filter(w => w.siteId === site.id);
+        return `
+        <div style="border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:12px;background:var(--bg3);">
+          <div style="display:flex;align-items:flex-start;gap:12px;">
+            <div style="flex:1;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                <span style="font-size:15px;font-weight:700;color:var(--text);">📍 ${site.name}</span>
+                ${site.address ? `<span style="font-size:11px;color:var(--text3);background:white;border-radius:6px;padding:2px 7px;border:1px solid var(--border);">📌 ${site.address}</span>` : ''}
+              </div>
+              ${site.phone ? `<div style="font-size:12px;color:var(--text2);margin-bottom:8px;">📞 ${site.phone}</div>` : ''}
+              <!-- פועלים באתר -->
+              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:6px;">
+                <span style="font-size:11px;color:var(--text3);font-weight:600;">פועלים:</span>
+                ${siteWorkers.length ? siteWorkers.map(w => `
+                  <span style="display:inline-flex;align-items:center;gap:4px;background:white;border:1px solid var(--border);border-radius:20px;padding:3px 8px;font-size:12px;">
+                    <span style="width:18px;height:18px;border-radius:50%;background:${w.avatarColor}33;color:${w.avatarColor};display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;">${w.name[0]}</span>
+                    ${w.name}
+                    <button onclick="removeWorkerFromSite(${w.id})" title="הסר מאתר" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:0 2px;line-height:1;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'">×</button>
+                  </span>`).join('') : `<span style="font-size:12px;color:var(--text3);font-style:italic;">אין פועלים משויכים</span>`}
+                <button onclick="openAssignToSiteFromList(${site.id})" title="הוסף פועל לאתר" style="display:inline-flex;align-items:center;gap:3px;background:none;border:1px dashed var(--accent);color:var(--accent);border-radius:20px;padding:3px 8px;font-size:12px;cursor:pointer;">+ הוסף פועל</button>
+              </div>
+            </div>
+            <!-- כפתורי פעולה -->
+            <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
+              <button class="btn btn-outline btn-sm" onclick="openEditSiteModal(${site.id})" style="white-space:nowrap;">✏️ ערוך</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteSite(${site.id})" style="white-space:nowrap;">🗑️ מחק</button>
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  `).join('');
+
+  // גם רנדר את פועלים ללא אתר
+  const unassigned = workers.filter(w => !w.siteId || !sites.find(s=>s.id===w.siteId));
+  if (unassigned.length) {
+    container.innerHTML += `
+      <div class="card" style="border:2px dashed var(--border);background:#fafbfc;">
+        <div class="card-header" style="margin-bottom:10px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="font-size:20px;">⚠️</div>
+            <div class="card-title">פועלים ללא אתר עבודה (${unassigned.length})</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          ${unassigned.map(w => `
+            <div style="display:inline-flex;align-items:center;gap:8px;background:white;border:1px solid var(--border);border-radius:10px;padding:8px 12px;">
+              <input type="checkbox" id="bulk-cb-${w.id}" onchange="toggleBulkSelect(${w.id})" style="width:16px;height:16px;cursor:pointer;accent-color:var(--accent);">
+              <span style="width:28px;height:28px;border-radius:50%;background:${w.avatarColor}33;color:${w.avatarColor};display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">${w.name[0]}</span>
+              <span style="font-size:13px;font-weight:600;">${w.name}</span>
+              <button onclick="openAssignSiteModal(${w.id})" class="btn btn-primary btn-sm" style="font-size:11px;padding:3px 8px;">שייך</button>
+            </div>`).join('')}
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px;align-items:center;">
+          <button onclick="selectAllUnassigned()" class="btn btn-outline btn-sm">בחר הכל</button>
+          <button onclick="clearBulkSelection()" class="btn btn-outline btn-sm">נקה בחירה</button>
+        </div>
+      </div>`;
+  }
+}
+
+// ── שיוך מרובה ──
+function toggleBulkSelect(workerId) {
+  if (_bulkSelected.has(workerId)) _bulkSelected.delete(workerId);
+  else _bulkSelected.add(workerId);
+  updateBulkBar();
+}
+
+function selectAllUnassigned() {
+  const company = currentUser.company;
+  const sites = DATA.workSites.filter(s => s.companyId === company);
+  const unassigned = DATA.users.filter(u => u.company === company && u.role === 'worker' && (!u.siteId || !sites.find(s=>s.id===u.siteId)));
+  unassigned.forEach(w => {
+    _bulkSelected.add(w.id);
+    const cb = document.getElementById(`bulk-cb-${w.id}`);
+    if (cb) cb.checked = true;
+  });
+  updateBulkBar();
+}
+
+function clearBulkSelection() {
+  _bulkSelected.forEach(id => {
+    const cb = document.getElementById(`bulk-cb-${id}`);
+    if (cb) cb.checked = false;
+  });
+  _bulkSelected.clear();
+  updateBulkBar();
+}
+
+function updateBulkBar() {
+  const card = document.getElementById('bulk-assign-card');
+  const countEl = document.getElementById('bulk-count');
+  const namesEl = document.getElementById('bulk-selected-names');
+  if (!card) return;
+  if (_bulkSelected.size > 0) {
+    card.style.display = 'block';
+    countEl.textContent = _bulkSelected.size;
+    const names = [..._bulkSelected].map(id => DATA.users.find(u=>u.id===id)?.name).filter(Boolean);
+    namesEl.textContent = names.join(' • ');
+  } else {
+    card.style.display = 'none';
+  }
+}
+
+// ── מודל הוספת/עריכת אתר ──
+function openAddSiteModal() { openSiteModal(null); }
+function openEditSiteModal(siteId) { openSiteModal(siteId); }
+
+function openSiteModal(siteId) {
+  const site = siteId ? DATA.workSites.find(s=>s.id===siteId) : null;
+  const isEdit = !!site;
+  const company = currentUser.company;
+
+  // קבלנים קיימים של החברה
+  const contractors = [...new Set(DATA.workSites.filter(s=>s.companyId===company).map(s=>s.contractor).filter(Boolean))];
+
+  showModal(`
+    <div style="padding:24px;max-width:420px;width:100%;">
+      <div style="font-size:18px;font-weight:800;margin-bottom:20px;display:flex;align-items:center;gap:10px;">
+        <span style="font-size:28px;">🏗️</span>
+        ${isEdit ? 'עריכת אתר עבודה' : 'הוספת אתר עבודה חדש'}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div>
+          <label style="font-size:13px;font-weight:600;color:var(--text2);display:block;margin-bottom:5px;">שם האתר *</label>
+          <input id="site-name" class="search-input" placeholder="לדוגמה: פרויקט רמת גן" value="${site?.name||''}" style="width:100%;font-size:14px;">
+        </div>
+        <div>
+          <label style="font-size:13px;font-weight:600;color:var(--text2);display:block;margin-bottom:5px;">קבלן *</label>
+          ${contractors.length ? `
+            <div style="display:flex;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
+              ${contractors.map(c=>`<button onclick="document.getElementById('site-contractor').value='${c}'" style="background:#f0f7ff;border:1px solid #c8d8f0;border-radius:20px;padding:4px 12px;font-size:12px;cursor:pointer;color:#2a6496;">${c}</button>`).join('')}
+            </div>` : ''}
+          <input id="site-contractor" class="search-input" placeholder="שם הקבלן" value="${site?.contractor||''}" style="width:100%;font-size:14px;">
+        </div>
+        <div>
+          <label style="font-size:13px;font-weight:600;color:var(--text2);display:block;margin-bottom:5px;">כתובת</label>
+          <input id="site-address" class="search-input" placeholder="כתובת האתר" value="${site?.address||''}" style="width:100%;font-size:14px;">
+        </div>
+        <div>
+          <label style="font-size:13px;font-weight:600;color:var(--text2);display:block;margin-bottom:5px;">טלפון קבלן</label>
+          <input id="site-phone" class="search-input" placeholder="מספר טלפון" value="${site?.phone||''}" style="width:100%;font-size:14px;direction:ltr;text-align:right;">
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:22px;">
+        <button class="btn btn-primary" style="flex:1;" onclick="saveSite(${siteId||'null'})">
+          ${isEdit ? '💾 שמור שינויים' : '+ הוסף אתר'}
+        </button>
+        <button class="btn btn-outline" onclick="closeModal()">ביטול</button>
+      </div>
+    </div>
+  `);
+  setTimeout(() => document.getElementById('site-name')?.focus(), 100);
+}
+
+async function saveSite(siteId) {
+  const name       = document.getElementById('site-name')?.value.trim();
+  const contractor = document.getElementById('site-contractor')?.value.trim();
+  const address    = document.getElementById('site-address')?.value.trim();
+  const phone      = document.getElementById('site-phone')?.value.trim();
+
+  if (!name || !contractor) { showToast('יש למלא שם אתר וקבלן', 'error'); return; }
+
+  const payload = { companyId: currentUser.company, name, contractor, address, phone };
+  if (siteId) {
+    await sbUpdateWorkSite(siteId, payload);
+    showToast('✅ האתר עודכן');
+  } else {
+    await sbCreateWorkSite(payload);
+    showToast('✅ האתר נוסף');
+  }
+  closeModal();
+  renderWorkSites();
+}
+
+async function deleteSite(siteId) {
+  const site = DATA.workSites.find(s=>s.id===siteId);
+  if (!site) return;
+  const workers = DATA.users.filter(u=>u.siteId===siteId);
+  const msg = workers.length
+    ? `מחיקת "${site.name}" תסיר שיוך מ-${workers.length} פועלים. להמשיך?`
+    : `למחוק את "${site.name}"?`;
+  if (!confirm(msg)) return;
+  // הסר שיוך מפועלים
+  for (const w of workers) await sbAssignWorkerSite(w.id, null);
+  await sbDeleteWorkSite(siteId);
+  showToast('🗑️ האתר נמחק');
+  renderWorkSites();
+}
+
+// ── מודל שיוך פועל לאתר ──
+function openAssignSiteModal(workerId) {
+  const worker = DATA.users.find(u=>u.id===workerId);
+  if (!worker) return;
+  const company = currentUser.company;
+  const sites = DATA.workSites.filter(s=>s.companyId===company);
+
+  showModal(`
+    <div style="padding:24px;max-width:380px;width:100%;">
+      <div style="font-size:17px;font-weight:800;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+        <span style="width:36px;height:36px;border-radius:50%;background:${worker.avatarColor}33;color:${worker.avatarColor};display:inline-flex;align-items:center;justify-content:center;font-weight:700;">${worker.name[0]}</span>
+        שיוך אתר — ${worker.name}
+      </div>
+      ${!sites.length ? `<div style="color:var(--text3);font-size:13px;margin-bottom:16px;">אין אתרי עבודה. <button onclick="closeModal();openAddSiteModal()" class="btn btn-primary btn-sm">+ הוסף אתר</button></div>` : `
+      <div style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;margin-bottom:16px;">
+        <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;border:2px solid ${!worker.siteId?'var(--accent)':'var(--border)'};background:${!worker.siteId?'#f0f7ff':'white'};" onclick="assignWorkerToSite(${workerId},null)">
+          <span style="font-size:18px;">🚫</span>
+          <span style="font-weight:600;">הסר שיוך</span>
+          ${!worker.siteId?'<span style="margin-right:auto;font-size:11px;color:var(--accent);">✓ נוכחי</span>':''}
+        </label>
+        ${sites.map(s => {
+          const siteWorkers = DATA.users.filter(u=>u.siteId===s.id);
+          const isCurrent = worker.siteId===s.id;
+          return `
+          <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;border:2px solid ${isCurrent?'var(--accent)':'var(--border)'};background:${isCurrent?'#f0f7ff':'white'};" onclick="assignWorkerToSite(${workerId},${s.id})">
+            <span style="font-size:18px;">📍</span>
+            <div style="flex:1;">
+              <div style="font-weight:600;font-size:13px;">${s.name}</div>
+              <div style="font-size:11px;color:var(--text3);">${s.contractor}${s.address?' • '+s.address:''} • ${siteWorkers.length} פועלים</div>
+            </div>
+            ${isCurrent?'<span style="font-size:11px;color:var(--accent);font-weight:600;">✓ נוכחי</span>':''}
+          </label>`}).join('')}
+      </div>`}
+      <button class="btn btn-outline" style="width:100%;" onclick="closeModal()">סגור</button>
+    </div>
+  `);
+}
+
+function openAssignToSiteFromList(siteId) {
+  const company = currentUser.company;
+  const site = DATA.workSites.find(s=>s.id===siteId);
+  const unassigned = DATA.users.filter(u => u.company===company && u.role==='worker' && u.siteId!==siteId);
+  if (!unassigned.length) { showToast('כל הפועלים כבר משויכים לאתר זה'); return; }
+
+  showModal(`
+    <div style="padding:24px;max-width:380px;width:100%;">
+      <div style="font-size:17px;font-weight:800;margin-bottom:16px;">הוסף פועל ל: 📍 ${site?.name}</div>
+      <div style="display:flex;flex-direction:column;gap:8px;max-height:350px;overflow-y:auto;margin-bottom:16px;">
+        ${unassigned.map(w=>`
+          <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;border:1px solid var(--border);background:white;" onclick="assignWorkerToSite(${w.id},${siteId});closeModal();renderWorkSites();">
+            <span style="width:30px;height:30px;border-radius:50%;background:${w.avatarColor}33;color:${w.avatarColor};display:inline-flex;align-items:center;justify-content:center;font-weight:700;">${w.name[0]}</span>
+            <span style="font-weight:600;">${w.name}</span>
+            ${w.siteId ? `<span style="font-size:11px;color:var(--text3);margin-right:auto;">${DATA.workSites.find(s=>s.id===w.siteId)?.name||''}</span>` : ''}
+          </label>`).join('')}
+      </div>
+      <button class="btn btn-outline" style="width:100%;" onclick="closeModal()">סגור</button>
+    </div>
+  `);
+}
+
+async function assignWorkerToSite(workerId, siteId) {
+  await sbAssignWorkerSite(workerId, siteId);
+  const site = siteId ? DATA.workSites.find(s=>s.id===siteId) : null;
+  showToast(site ? `✅ שויך ל${site.name}` : '✅ שיוך הוסר');
+  closeModal();
+  if (currentPage==='ceo-sites') renderWorkSites();
+  if (currentPage==='ceo-workers') renderCeoWorkers();
+}
+
+async function removeWorkerFromSite(workerId) {
+  await sbAssignWorkerSite(workerId, null);
+  showToast('✅ הפועל הוסר מהאתר');
+  renderWorkSites();
+}
+
+// ── שיוך מרובה ──
+function openBulkAssignModal() {
+  if (_bulkSelected.size === 0) return;
+  const company = currentUser.company;
+  const sites = DATA.workSites.filter(s=>s.companyId===company);
+  const names = [..._bulkSelected].map(id=>DATA.users.find(u=>u.id===id)?.name).filter(Boolean);
+
+  showModal(`
+    <div style="padding:24px;max-width:400px;width:100%;">
+      <div style="font-size:17px;font-weight:800;margin-bottom:6px;">שיוך מרובה — ${_bulkSelected.size} פועלים</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:16px;">${names.join(' • ')}</div>
+      ${!sites.length ? `<div style="color:var(--text3);font-size:13px;">אין אתרים. <button onclick="closeModal();openAddSiteModal()" class="btn btn-primary btn-sm">+ הוסף אתר</button></div>` : `
+      <div style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;margin-bottom:16px;">
+        ${sites.map(s=>{
+          const cnt = DATA.users.filter(u=>u.siteId===s.id).length;
+          return `
+          <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:10px;cursor:pointer;border:1px solid var(--border);background:white;transition:border-color 0.15s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'" onclick="bulkAssignToSite(${s.id})">
+            <span style="font-size:22px;">📍</span>
+            <div>
+              <div style="font-weight:700;">${s.name}</div>
+              <div style="font-size:11px;color:var(--text3);">${s.contractor} • ${cnt} פועלים</div>
+            </div>
+          </label>`}).join('')}
+      </div>`}
+      <button class="btn btn-outline" style="width:100%;" onclick="closeModal()">ביטול</button>
+    </div>
+  `);
+}
+
+async function bulkAssignToSite(siteId) {
+  const site = DATA.workSites.find(s=>s.id===siteId);
+  const ids = [..._bulkSelected];
+  for (const id of ids) await sbAssignWorkerSite(id, siteId);
+  clearBulkSelection();
+  closeModal();
+  showToast(`✅ ${ids.length} פועלים שויכו ל${site?.name}`);
+  renderWorkSites();
+}
+
+function openAssignSiteModalFromWorkers(workerId) {
+  openAssignSiteModal(workerId);
+}
+
+// ── END WORK SITES ──
 
 function addQuickNote(type) {
   document.getElementById('modalBody').innerHTML = `
