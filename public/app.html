@@ -5781,7 +5781,7 @@ async function saveNotes(type) {
   }
 }
 
-// שמירה אוטומטית — debounce 400ms, מוצג על הכפתור עצמו
+// שמירה אוטומטית — debounce 150ms, מוצג על הכפתור עצמו
 const _autoSaveTimers = {};
 function autoSaveNotes(type, textarea) {
   const key = `user-${currentUser?.id}`;
@@ -5798,7 +5798,7 @@ function autoSaveNotes(type, textarea) {
       btn.style.opacity = '1';
       setTimeout(() => { btn.textContent = '💾 שמור'; }, 1500);
     }
-  }, 400);
+  }, 150);
 }
 
 
