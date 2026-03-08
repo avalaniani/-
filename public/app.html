@@ -6007,34 +6007,34 @@ function openSiteModal(siteId) {
   const contractors = [...new Set(DATA.workSites.filter(s=>s.companyId===company).map(s=>s.contractor).filter(Boolean))];
 
   showModal(`
-    <div style="padding:24px;max-width:420px;width:100%;">
-      <div style="font-size:18px;font-weight:800;margin-bottom:20px;display:flex;align-items:center;gap:10px;">
-        <span style="font-size:28px;">🏗️</span>
+    <div style="padding:18px 20px;max-width:340px;width:100%;">
+      <div style="font-size:16px;font-weight:800;margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+        <span style="font-size:22px;">🏗️</span>
         ${isEdit ? 'עריכת אתר עבודה' : 'הוספת אתר עבודה חדש'}
       </div>
-      <div style="display:flex;flex-direction:column;gap:14px;">
+      <div style="display:flex;flex-direction:column;gap:12px;">
         <div>
-          <label style="font-size:13px;font-weight:600;color:var(--text2);display:block;margin-bottom:5px;">שם האתר *</label>
-          <input id="site-name" class="search-input" placeholder="לדוגמה: פרויקט רמת גן" value="${site?.name||''}" style="width:100%;font-size:14px;">
-        </div>
-        <div>
-          <label style="font-size:13px;font-weight:600;color:var(--text2);display:block;margin-bottom:5px;">קבלן *</label>
+          <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">קבלן *</label>
           ${contractors.length ? `
-            <div style="display:flex;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
-              ${contractors.map(c=>`<button onclick="document.getElementById('site-contractor').value='${c}'" style="background:#f0f7ff;border:1px solid #c8d8f0;border-radius:20px;padding:4px 12px;font-size:12px;cursor:pointer;color:#2a6496;">${c}</button>`).join('')}
+            <div style="display:flex;gap:6px;margin-bottom:5px;flex-wrap:wrap;">
+              ${contractors.map(c=>`<button onclick="document.getElementById('site-contractor').value='${c}'" style="background:#f0f7ff;border:1px solid #c8d8f0;border-radius:20px;padding:3px 10px;font-size:12px;cursor:pointer;color:#2a6496;">${c}</button>`).join('')}
             </div>` : ''}
-          <input id="site-contractor" class="search-input" placeholder="שם הקבלן" value="${site?.contractor||''}" style="width:100%;font-size:14px;">
+          <input id="site-contractor" class="search-input" placeholder="שם הקבלן" value="${site?.contractor||''}" style="width:100%;font-size:13px;">
         </div>
         <div>
-          <label style="font-size:13px;font-weight:600;color:var(--text2);display:block;margin-bottom:5px;">כתובת</label>
-          <input id="site-address" class="search-input" placeholder="כתובת האתר" value="${site?.address||''}" style="width:100%;font-size:14px;">
+          <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">שם האתר *</label>
+          <input id="site-name" class="search-input" placeholder="לדוגמה: פרויקט רמת גן" value="${site?.name||''}" style="width:100%;font-size:13px;">
         </div>
         <div>
-          <label style="font-size:13px;font-weight:600;color:var(--text2);display:block;margin-bottom:5px;">טלפון קבלן</label>
-          <input id="site-phone" class="search-input" placeholder="מספר טלפון" value="${site?.phone||''}" style="width:100%;font-size:14px;direction:ltr;text-align:right;">
+          <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">כתובת</label>
+          <input id="site-address" class="search-input" placeholder="כתובת האתר" value="${site?.address||''}" style="width:100%;font-size:13px;">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">טלפון קבלן</label>
+          <input id="site-phone" class="search-input" placeholder="מספר טלפון" value="${site?.phone||''}" style="width:100%;font-size:13px;direction:ltr;text-align:right;">
         </div>
       </div>
-      <div style="display:flex;gap:10px;margin-top:22px;">
+      <div style="display:flex;gap:8px;margin-top:18px;">
         <button class="btn btn-primary" style="flex:1;" onclick="saveSite(${siteId||'null'})">
           ${isEdit ? '💾 שמור שינויים' : '+ הוסף אתר'}
         </button>
