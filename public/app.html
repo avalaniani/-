@@ -1877,6 +1877,12 @@ async function loadAndInjectData(user) {
     const assignMap = savedAssign ? JSON.parse(savedAssign) : {};
     DATA.users.forEach(u => { if (assignMap[u.id] !== undefined) u.siteId = assignMap[u.id]; });
   } catch(e) {}
+  // טען היסטוריית שיוכים
+  try {
+    const histKey = 'workerSiteHistory_' + (user.company || 'global');
+    const savedHist = localStorage.getItem(histKey);
+    DATA.workerSiteHistory = savedHist ? JSON.parse(savedHist) : [];
+  } catch(e) { DATA.workerSiteHistory = []; }
   // הערות — נטען לפי role כדי להפריד ceo מ-emp (עובד עם ממשק מורחב)
   if (notesData?.content) {
     // שמור תחת user-id כדי ש-renderNotes ימצא אותן
@@ -2086,6 +2092,16 @@ async function sbDeleteRequest(id) {
 }
 
 // ── Work Sites ─────────────────────────────────────────────────
+function _saveWorkerSiteHistoryLocal(companyId) {
+  try {
+    const relevant = DATA.workerSiteHistory.filter(h => {
+      const w = DATA.users.find(u=>u.id===h.workerId);
+      return w && w.company === companyId;
+    });
+    localStorage.setItem('workerSiteHistory_' + companyId, JSON.stringify(relevant));
+  } catch(e) {}
+}
+
 function _saveWorkSitesLocal(companyId) {
   try {
     localStorage.setItem('workSites_' + companyId, JSON.stringify(DATA.workSites.filter(s=>s.companyId===companyId)));
@@ -2188,7 +2204,8 @@ const DATA = {
   notes: {},
   quickNotes: {},
   requests: [],
-  workSites: [],   // { id, companyId, name, contractor, address, phone }
+  workSites: [],       // { id, companyId, name, contractor, address, phone }
+  workerSiteHistory: [], // { workerId, siteId, siteName, contractor, fromMonth, toMonth }
   workerHours: (function() {
     const d = {};
     const now = new Date();
@@ -3750,8 +3767,9 @@ function renderCeoWorkers() {
         </div>
       </div></td>
       <td>
-        <div class="site-tag-cell" onclick="openAssignSiteModal(${w.id})" title="לחץ לשינוי אתר">
-          ${(function(){ const s = DATA.workSites.find(s=>s.id===w.siteId && s.companyId===currentUser.company); return s ? `<span style="display:inline-flex;align-items:center;gap:5px;background:#e8f4fd;color:#2a6496;border-radius:20px;padding:3px 10px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #b8d8f0;white-space:nowrap;" onclick="event.stopPropagation();openAssignSiteModal(${w.id})">🏗️ ${s.name}</span>` : `<span style="color:var(--text3);font-size:12px;cursor:pointer;padding:3px 8px;border-radius:20px;border:1px dashed var(--border);display:inline-block;" onclick="event.stopPropagation();openAssignSiteModal(${w.id})">+ שייך אתר</span>`; })()}
+        <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
+          ${(function(){ const s = DATA.workSites.find(s=>s.id===w.siteId && s.companyId===currentUser.company); return s ? `<span style="display:inline-flex;align-items:center;gap:5px;background:#e8f4fd;color:#2a6496;border-radius:20px;padding:3px 10px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #b8d8f0;white-space:nowrap;" onclick="openAssignSiteModal(${w.id})">🏗️ ${s.name}</span>` : `<span style="color:var(--text3);font-size:12px;cursor:pointer;padding:3px 8px;border-radius:20px;border:1px dashed var(--border);display:inline-block;" onclick="openAssignSiteModal(${w.id})">+ שייך אתר</span>`; })()}
+          ${(function(){ const hist = (DATA.workerSiteHistory||[]).filter(h=>h.workerId===w.id); return hist.length ? `<button onclick="openWorkerSiteHistory(${w.id})" title="היסטוריית שיוכים (${hist.length})" style="background:none;border:1px solid var(--border);border-radius:20px;padding:2px 7px;font-size:11px;color:var(--text3);cursor:pointer;">📋 ${hist.length}</button>` : ''; })()}
         </div>
       </td>
       <td><span style="font-size:16px;font-weight:800;color:#4a6080;">${totalH.toFixed(1)}</span> <span style="color:var(--text2);font-size:11px;">שע'</span></td>
@@ -6009,6 +6027,7 @@ function renderWorkSites() {
                   <span style="display:inline-flex;align-items:center;gap:4px;background:white;border:1px solid var(--border);border-radius:20px;padding:3px 8px;font-size:12px;">
                     <span style="width:18px;height:18px;border-radius:50%;background:${w.avatarColor}33;color:${w.avatarColor};display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;">${w.name[0]}</span>
                     ${w.name}
+                    <button onclick="openWorkerSiteHistory(${w.id})" title="היסטוריית שיוכים" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:11px;padding:0 2px;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text3)'">📋</button>
                     <button onclick="removeWorkerFromSite(${w.id})" title="הסר מאתר" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:0 2px;line-height:1;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'">×</button>
                   </span>`).join('') : `<span style="font-size:12px;color:var(--text3);font-style:italic;">אין פועלים משויכים</span>`}
                 <button onclick="openAssignToSiteFromList(${site.id})" title="הוסף פועל לאתר" style="display:inline-flex;align-items:center;gap:3px;background:none;border:1px dashed var(--accent);color:var(--accent);border-radius:20px;padding:3px 8px;font-size:12px;cursor:pointer;">+ הוסף פועל</button>
@@ -6243,12 +6262,171 @@ function openAssignToSiteFromList(siteId) {
 }
 
 async function assignWorkerToSite(workerId, siteId) {
+  // עבור ישירות ללא דיאלוג — ניהול היסטוריה נעשה ידנית
   await sbAssignWorkerSite(workerId, siteId);
   const site = siteId ? DATA.workSites.find(s=>s.id===siteId) : null;
   showToast(site ? `✅ שויך ל${site.name}` : '✅ שיוך הוסר');
   closeModal();
   if (currentPage==='ceo-sites') renderWorkSites();
   if (currentPage==='ceo-workers') renderCeoWorkers();
+}
+
+function openWorkerSiteHistory(workerId) {
+  const worker = DATA.users.find(u=>u.id===workerId);
+  if (!worker) return;
+  const history = (DATA.workerSiteHistory||[]).filter(h=>h.workerId===workerId);
+  const currentSite = DATA.workSites.find(s=>s.id===worker.siteId);
+
+  const fmtDate = (d) => {
+    if (!d) return '—';
+    // תמיכה הן ב-YYYY-MM-DD והן ב-YYYY-MM
+    const parts = d.split('-');
+    const months = ['','ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+    if (parts.length === 3) return `${parseInt(parts[2])} ב${months[parseInt(parts[1])]} ${parts[0]}`;
+    if (parts.length === 2) return `${months[parseInt(parts[1])]} ${parts[0]}`;
+    return d;
+  };
+
+  showModal(`
+    <div style="padding:22px;max-width:420px;width:100%;">
+      <div style="font-size:17px;font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:10px;">
+        <span style="width:34px;height:34px;border-radius:50%;background:${worker.avatarColor}33;color:${worker.avatarColor};display:inline-flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;">${worker.name[0]}</span>
+        היסטוריית אתרי עבודה — ${worker.name}
+      </div>
+      ${currentSite ? `<div style="font-size:12px;color:var(--accent);margin-bottom:16px;padding-right:44px;">🔵 אתר נוכחי: ${currentSite.name}</div>` : '<div style="font-size:12px;color:var(--text3);margin-bottom:16px;padding-right:44px;">אין אתר עבודה נוכחי</div>'}
+
+      ${!history.length ? `<div style="text-align:center;padding:24px;color:var(--text3);font-size:13px;">אין היסטוריית שיוכים</div>` : `
+      <div style="display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;">
+        ${history.slice().reverse().map((h,i) => `
+          <div style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;background:${!h.toMonth?'#f0f7ff':'var(--bg3)'};">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+              <div style="flex:1;">
+                <div style="font-weight:700;font-size:13px;">📍 ${h.siteName}</div>
+                <div style="font-size:11px;color:var(--text3);margin-top:2px;">קבלן: ${h.contractor||'—'}</div>
+                <div style="font-size:12px;color:var(--text2);margin-top:4px;">
+                  🗓️ החל מ: <strong>${fmtDate(h.fromDate || h.fromMonth)}</strong>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
+                <button onclick="editHistoryEntry(${workerId},${history.length-1-i})" style="background:none;border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;color:var(--text2);">✏️ ערוך</button>
+                <button onclick="deleteHistoryEntry(${workerId},${history.length-1-i})" style="background:none;border:1px solid #f0c0c8;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;color:var(--red);">🗑️</button>
+              </div>
+            </div>
+          </div>`).join('')}
+      </div>`}
+
+      <div style="margin-top:16px;display:flex;gap:8px;">
+        <button class="btn btn-outline btn-sm" onclick="openAddHistoryEntry(${workerId})">+ הוסף תקופה ידנית</button>
+        <button class="btn btn-outline" style="margin-right:auto;" onclick="closeModal()">סגור</button>
+      </div>
+    </div>
+  `);
+}
+
+function openAddHistoryEntry(workerId) {
+  const company = currentUser.company;
+  const sites = DATA.workSites.filter(s=>s.companyId===company);
+
+  showModal(`
+    <div style="padding:22px;max-width:360px;width:100%;">
+      <div style="font-size:16px;font-weight:800;margin-bottom:16px;">+ הוסף תקופת עבודה</div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div>
+          <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">קבלן</label>
+          <select id="hist-add-site" onchange="updateHistAddContractor(this)"
+            style="width:100%;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;background:var(--bg3);font-family:inherit;">
+            <option value="">— בחר אתר עבודה —</option>
+            ${sites.map(s=>`<option value="${s.id}" data-contractor="${s.contractor||''}" data-site="${s.name}">${s.contractor||'ללא קבלן'} — ${s.name}</option>`).join('')}
+          </select>
+        </div>
+        <div id="hist-add-contractor-display" style="font-size:12px;color:var(--text2);display:none;">
+          קבלן: <strong id="hist-add-contractor-name"></strong> &nbsp;|&nbsp; אתר: <strong id="hist-add-site-name"></strong>
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">תאריך התחלה *</label>
+          <input type="date" id="hist-add-from"
+            style="width:100%;border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;background:var(--bg3);direction:ltr;">
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:18px;">
+        <button class="btn btn-primary" style="flex:1;" onclick="saveAddHistoryEntry(${workerId})">💾 שמור</button>
+        <button class="btn btn-outline" onclick="openWorkerSiteHistory(${workerId})">ביטול</button>
+      </div>
+    </div>
+  `);
+}
+
+function updateHistAddContractor(sel) {
+  const opt = sel.options[sel.selectedIndex];
+  const disp = document.getElementById('hist-add-contractor-display');
+  if (opt.value) {
+    document.getElementById('hist-add-contractor-name').textContent = opt.dataset.contractor || '—';
+    document.getElementById('hist-add-site-name').textContent = opt.dataset.site || '—';
+    disp.style.display = 'block';
+  } else {
+    disp.style.display = 'none';
+  }
+}
+
+function saveAddHistoryEntry(workerId) {
+  const siteEl = document.getElementById('hist-add-site');
+  const siteId = siteEl?.value ? parseInt(siteEl.value) || siteEl.value : null;
+  const site = DATA.workSites.find(s=>String(s.id)===String(siteId));
+  const fromDate = document.getElementById('hist-add-from')?.value || null;
+  if (!site) { showToast('בחר אתר עבודה', 'error'); return; }
+  if (!fromDate) { showToast('יש להזין תאריך התחלה', 'error'); return; }
+
+  DATA.workerSiteHistory.push({ workerId, siteId: site.id, siteName: site.name, contractor: site.contractor||'', fromDate, toDate: null });
+  const worker = DATA.users.find(u=>u.id===workerId);
+  if (worker) _saveWorkerSiteHistoryLocal(worker.company);
+  showToast('✅ תקופה נוספה');
+  openWorkerSiteHistory(workerId);
+}
+
+function editHistoryEntry(workerId, idx) {
+  const entry = DATA.workerSiteHistory.filter(h=>h.workerId===workerId)[idx];
+  if (!entry) return;
+  showModal(`
+    <div style="padding:22px;max-width:360px;width:100%;">
+      <div style="font-size:16px;font-weight:800;margin-bottom:4px;">✏️ עריכת תקופה</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:16px;">📍 ${entry.siteName} &nbsp;|&nbsp; קבלן: ${entry.contractor||'—'}</div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div>
+          <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">תאריך התחלה *</label>
+          <input type="date" id="hist-edit-from" value="${entry.fromDate||entry.fromMonth||''}"
+            style="width:100%;border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;background:var(--bg3);direction:ltr;">
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:18px;">
+        <button class="btn btn-primary" style="flex:1;" onclick="saveEditHistoryEntry(${workerId},${idx})">💾 שמור</button>
+        <button class="btn btn-outline" onclick="openWorkerSiteHistory(${workerId})">ביטול</button>
+      </div>
+    </div>
+  `);
+}
+
+function saveEditHistoryEntry(workerId, idx) {
+  const allEntries = DATA.workerSiteHistory.filter(h=>h.workerId===workerId);
+  const entry = allEntries[idx];
+  if (!entry) return;
+  entry.fromDate = document.getElementById('hist-edit-from')?.value || null;
+  entry.fromMonth = null; // נקה שדה ישן
+  const worker = DATA.users.find(u=>u.id===workerId);
+  if (worker) _saveWorkerSiteHistoryLocal(worker.company);
+  showToast('✅ התקופה עודכנה');
+  openWorkerSiteHistory(workerId);
+}
+
+function deleteHistoryEntry(workerId, idx) {
+  const allEntries = DATA.workerSiteHistory.filter(h=>h.workerId===workerId);
+  const entry = allEntries[idx];
+  if (!entry || !confirm(`למחוק את התקופה ב${entry.siteName}?`)) return;
+  const globalIdx = DATA.workerSiteHistory.indexOf(entry);
+  if (globalIdx !== -1) DATA.workerSiteHistory.splice(globalIdx, 1);
+  const worker = DATA.users.find(u=>u.id===workerId);
+  if (worker) _saveWorkerSiteHistoryLocal(worker.company);
+  showToast('🗑️ התקופה נמחקה');
+  openWorkerSiteHistory(workerId);
 }
 
 async function removeWorkerFromSite(workerId) {
