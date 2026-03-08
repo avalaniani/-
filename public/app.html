@@ -1275,12 +1275,10 @@
       <div class="page" id="page-ceo-sites">
         <!-- Header card -->
         <div class="card" style="margin-bottom:16px;background:linear-gradient(135deg,#f0f7ff,#e8f0ff);border-color:#c8d8f0;">
-          <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
-            <div style="font-size:36px;">🏗️</div>
-            <div>
-              <div style="font-size:18px;font-weight:800;color:var(--text);">אתרי עבודה וקבלנים</div>
-              <div style="font-size:13px;color:var(--text2);margin-top:2px;">ניהול אתרי עבודה ושיוך פועלים</div>
-            </div>
+          <div style="text-align:center;margin-bottom:14px;">
+            <div style="font-size:36px;margin-bottom:6px;">🏗️</div>
+            <div style="font-size:18px;font-weight:800;color:var(--text);">אתרי עבודה וקבלנים</div>
+            <div style="font-size:13px;color:var(--text2);margin-top:2px;">ניהול אתרי עבודה ושיוך פועלים</div>
           </div>
           <button class="btn btn-primary" onclick="openAddSiteModal()" style="width:100%;justify-content:center;">+ הוסף אתר עבודה חדש</button>
         </div>
@@ -5870,16 +5868,7 @@ function renderWorkSites() {
   const container = document.getElementById('sites-list-container');
   if (!container) return;
 
-  if (!sites.length) {
-    container.innerHTML = `
-      <div class="card" style="text-align:center;padding:40px 20px;color:var(--text3);">
-        <div style="font-size:48px;margin-bottom:12px;">🏗️</div>
-        <div style="font-size:16px;font-weight:600;margin-bottom:6px;">אין אתרי עבודה עדיין</div>
-        <div style="font-size:13px;margin-bottom:20px;">הוסף את אתר העבודה הראשון</div>
-        <button class="btn btn-primary" onclick="openAddSiteModal()">+ הוסף אתר עבודה</button>
-      </div>`;
-    return;
-  }
+  // (no separate empty card — header card already shows the add button)
 
   // קבץ לפי קבלן
   const byContractor = {};
