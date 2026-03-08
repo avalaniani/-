@@ -831,8 +831,7 @@
     .hours-input { width: 50px !important; font-size: 10px !important; padding: 2px 1px !important; }
     .hi-time { width: 60px !important; }
     .hours-table th, .hours-table td { padding: 3px 2px; }
-    /* Hide notes column on very small screens */
-    .hours-table th:last-child, .hours-table td:last-child { display: none; }
+    /* כל העמודות גלויות */
     .btn-sm { padding: 5px 7px; font-size: 11px; }
     .topbar-title { font-size: 14px; }
   }
@@ -6802,10 +6801,11 @@ function openWheelTimePicker(inputEl, day, field, workerId) {
   ov.innerHTML = `
     <div style="background:var(--card);width:280px;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.22);overflow:hidden;animation:wtpSlideUp 0.18s ease;">
       <div style="display:flex;align-items:center;position:relative;padding:0 16px;">
-        ${buildWheel('wtp-h', 24, initH)}
-        <div style="font-size:28px;font-weight:700;color:var(--text);margin:0 4px;flex-shrink:0;">:</div>
         ${buildWheel('wtp-m', 60, initM)}
-        <div style="position:absolute;left:16px;right:16px;top:50%;transform:translateY(-50%);height:${ITEM_H}px;background:var(--bg3);border-radius:10px;pointer-events:none;"></div>
+        <div style="font-size:28px;font-weight:700;color:var(--text);margin:0 4px;flex-shrink:0;">:</div>
+        ${buildWheel('wtp-h', 24, initH)}
+        <!-- רצועת בחירה — ממוקמת בדיוק באמצע הגלגלות -->
+        <div style="position:absolute;left:16px;right:16px;top:calc(50% - ${ITEM_H/2}px);height:${ITEM_H}px;background:var(--bg3);border-radius:10px;pointer-events:none;"></div>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px 16px;">
         <button id="wtp-clear" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--text3);font-family:inherit;padding:6px 10px;">נקה</button>
