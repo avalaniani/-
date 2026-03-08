@@ -1275,14 +1275,14 @@
       <div class="page" id="page-ceo-sites">
         <!-- Header card -->
         <div class="card" style="margin-bottom:16px;background:linear-gradient(135deg,#f0f7ff,#e8f0ff);border-color:#c8d8f0;">
-          <div style="display:flex;align-items:center;gap:14px;">
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
             <div style="font-size:36px;">🏗️</div>
-            <div style="flex:1;">
+            <div>
               <div style="font-size:18px;font-weight:800;color:var(--text);">אתרי עבודה וקבלנים</div>
               <div style="font-size:13px;color:var(--text2);margin-top:2px;">ניהול אתרי עבודה ושיוך פועלים</div>
             </div>
-            <button class="btn btn-primary" onclick="openAddSiteModal()" style="gap:6px;">+ הוסף אתר</button>
           </div>
+          <button class="btn btn-primary" onclick="openAddSiteModal()" style="width:100%;justify-content:center;">+ הוסף אתר עבודה חדש</button>
         </div>
 
         <!-- Sites list -->
@@ -6284,6 +6284,10 @@ function togglePassView(userId) {
 }
 
 
+function showModal(html) {
+  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('modalOverlay').classList.add('open');
+}
 function openModal() { document.getElementById('modalOverlay').classList.add('open'); }
 function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
 document.getElementById('modalOverlay').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
