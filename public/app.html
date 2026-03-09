@@ -3837,13 +3837,13 @@ function switchTeamTab(tab) {
     panelEmps.style.display  = 'none';
     btnTasks.style.cssText   = activeStyle;
     btnEmps.style.cssText    = inactiveStyle;
-    actionEl.innerHTML = '<button class="btn btn-primary btn-sm" onclick="openAddTask('ceo')">+ הוסף משימה</button>';
+    actionEl.innerHTML = '<button class="btn btn-primary btn-sm" onclick="openAddTask(&quot;ceo&quot;)">+ הוסף משימה</button>';
   } else {
     panelTasks.style.display = 'none';
     panelEmps.style.display  = '';
     btnTasks.style.cssText   = inactiveStyle;
     btnEmps.style.cssText    = activeStyle;
-    actionEl.innerHTML = '<button class="btn btn-primary btn-sm" onclick="ceoOpenAddMember('employee')">+ הוסף עובד</button>';
+    actionEl.innerHTML = '<button class="btn btn-primary btn-sm" onclick="ceoOpenAddMember(&quot;employee&quot;)">+ הוסף עובד</button>';
   }
 }
 
