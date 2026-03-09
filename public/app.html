@@ -3916,24 +3916,24 @@ function renderCeoWorkers() {
   const now = new Date();
   const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
 
-  // קבץ לפי קבלן
-  const contractors_w = [...new Set(workers.map(w => {
-    const site = DATA.workSites.find(s=>s.id===w.siteId && s.companyId===currentUser.company);
-    return site ? (site.contractor||'ללא קבלן') : 'ללא שיוך';
-  }))].sort((a,b)=>{
+  // קבץ לפי קבלן → אתר
+  const _sortContractors = arr => arr.sort((a,b)=>{
     if (a==='ללא שיוך') return 1; if (b==='ללא שיוך') return -1;
     if (a==='ללא קבלן') return 1; if (b==='ללא קבלן') return -1;
     return a.localeCompare(b,'he');
   });
+  const _getWorkerContr = w => { const s=DATA.workSites.find(s=>s.id===w.siteId&&s.companyId===currentUser.company); return s?(s.contractor||'ללא קבלן'):'ללא שיוך'; };
+  const _getWorkerSite  = w => { const s=DATA.workSites.find(s=>s.id===w.siteId&&s.companyId===currentUser.company); return s?s.name:'ללא אתר'; };
+  const contractors_w = _sortContractors([...new Set(workers.map(_getWorkerContr))]);
 
   const workerRowsByContr = contractors_w.map(contr => {
-    const group = workers.filter(w => {
-      const site = DATA.workSites.find(s=>s.id===w.siteId && s.companyId===currentUser.company);
-      const wContr = site ? (site.contractor||'ללא קבלן') : 'ללא שיוך';
-      return wContr === contr;
-    });
-    const headerRow = '<tr style="background:var(--bg3);"><td colspan="8" style="padding:6px 12px;font-size:11px;font-weight:700;color:var(--text2);border-bottom:1px solid var(--border);">🏢 ' + contr + ' <span style=\'font-weight:400;color:var(--text3);\'>(' + group.length + ' פועלים)</span></td></tr>';
-    const rows = group.map(w => {
+    const contrWorkers = workers.filter(w=>_getWorkerContr(w)===contr);
+    const siteNames = [...new Set(contrWorkers.map(_getWorkerSite))].sort((a,b)=>a.localeCompare(b,'he'));
+    const contrHeader = '<tr style="background:#e8edf2;"><td colspan="8" style="padding:7px 12px;font-size:12px;font-weight:800;color:#2a4a6a;border-bottom:2px solid #c0ccd8;">🏢 ' + contr + ' <span style=\'font-weight:400;font-size:11px;color:#6a8aaa;\'>(' + contrWorkers.length + ' פועלים)</span></td></tr>';
+    const siteRows = siteNames.map(siteName => {
+      const group = contrWorkers.filter(w=>_getWorkerSite(w)===siteName);
+      const siteHeader = '<tr style="background:#f4f7fa;"><td colspan="8" style="padding:4px 20px;font-size:11px;font-weight:600;color:#4a6a8a;border-bottom:1px solid var(--border);">🏗️ ' + siteName + ' <span style=\'font-weight:400;color:var(--text3);\'>(' + group.length + ')</span></td></tr>';
+      const rows = group.map(w => {
     const key = `${w.id}-${now.getFullYear()}-${now.getMonth()}`;
     const hours = DATA.workerHours[key] || {};
     const signedInfo = company && company.signed[key];
@@ -3990,8 +3990,10 @@ function renderCeoWorkers() {
         <button class="btn btn-danger btn-sm" onclick="removeWorker(${w.id})">🗑️</button>
       </div></td>
     </tr>`;
-    });
-    return headerRow + rows.join('');
+      });
+      return siteHeader + rows.join('');
+    }).join('');
+    return contrHeader + siteRows;
   }).join('');
 
   tbody.innerHTML = workerRowsByContr;
@@ -4213,26 +4215,23 @@ function renderCeoWorkersGrid(fullscreen) {
   let workerRows = '';
   const dayTotals = new Array(daysInMonth + 1).fill(0);
 
-  const contractors_g = [...new Set(workers.map(w => {
-    const site = DATA.workSites.find(s=>s.id===w.siteId && s.companyId===currentUser.company);
-    return site ? (site.contractor||'ללא קבלן') : 'ללא שיוך';
-  }))].sort((a,b)=>{
+  const colSpan_g = daysInMonth + 2;
+  const _gc = w => { const s=DATA.workSites.find(s=>s.id===w.siteId&&s.companyId===currentUser.company); return s?(s.contractor||'ללא קבלן'):'ללא שיוך'; };
+  const _gs = w => { const s=DATA.workSites.find(s=>s.id===w.siteId&&s.companyId===currentUser.company); return s?s.name:'ללא אתר'; };
+  const contractors_g = [...new Set(workers.map(_gc))].sort((a,b)=>{
     if (a==='ללא שיוך') return 1; if (b==='ללא שיוך') return -1;
     if (a==='ללא קבלן') return 1; if (b==='ללא קבלן') return -1;
     return a.localeCompare(b,'he');
   });
 
-  const workersList_g = workers;
-  const colSpan_g = daysInMonth + 2;
-
   contractors_g.forEach(contr => {
-    const group = workersList_g.filter(w => {
-      const site = DATA.workSites.find(s=>s.id===w.siteId && s.companyId===currentUser.company);
-      const wContr = site ? (site.contractor||'ללא קבלן') : 'ללא שיוך';
-      return wContr === contr;
-    });
-    workerRows += '<tr style="background:var(--bg3);"><td colspan="' + colSpan_g + '" style="padding:5px 10px;font-size:11px;font-weight:700;color:var(--text2);border-bottom:1px solid var(--border);">🏢 ' + contr + ' <span style=\'font-weight:400;color:var(--text3);\'>(' + group.length + ')</span></td></tr>';
-    group.forEach(w => {
+    const contrWorkers_g = workers.filter(w=>_gc(w)===contr);
+    const siteNames_g = [...new Set(contrWorkers_g.map(_gs))].sort((a,b)=>a.localeCompare(b,'he'));
+    workerRows += '<tr style="background:#e8edf2;"><td colspan="' + colSpan_g + '" style="padding:6px 10px;font-size:12px;font-weight:800;color:#2a4a6a;border-bottom:2px solid #c0ccd8;">🏢 ' + contr + ' <span style=\'font-weight:400;font-size:11px;color:#6a8aaa;\'>(' + contrWorkers_g.length + ')</span></td></tr>';
+    siteNames_g.forEach(siteName => {
+      const group = contrWorkers_g.filter(w=>_gs(w)===siteName);
+      workerRows += '<tr style="background:#f4f7fa;"><td colspan="' + colSpan_g + '" style="padding:3px 20px;font-size:11px;font-weight:600;color:#4a6a8a;border-bottom:1px solid var(--border);">🏗️ ' + siteName + ' <span style=\'font-weight:400;color:var(--text3);\'>(' + group.length + ')</span></td></tr>';
+      group.forEach(w => {
     const key = `${w.id}-${gridYear}-${gridMonth}`;
     const hours = DATA.workerHours[key] || {};
     const signedInfo = company && company.signed[key];
@@ -4280,6 +4279,7 @@ function renderCeoWorkersGrid(fullscreen) {
       ${dayCells}
       <td class="total-td" title="סה&quot;כ שעות חודשי">${workerTotal > 0 ? workerTotal.toFixed(1) : '—'}</td>
     </tr>`;
+      });
     });
   });
 
