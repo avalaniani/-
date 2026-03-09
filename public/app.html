@@ -6261,11 +6261,50 @@ function openAssignToSiteFromList(siteId) {
   `);
 }
 
-async function assignWorkerToSite(workerId, siteId) {
-  // עבור ישירות ללא דיאלוג — ניהול היסטוריה נעשה ידנית
+function assignWorkerToSite(workerId, siteId) {
+  const worker = DATA.users.find(u=>u.id===workerId);
+  const site = siteId ? DATA.workSites.find(s=>s.id===siteId) : null;
+
+  // אם מסירים שיוך — ישירות ללא דיאלוג
+  if (!siteId) { _confirmAssignWorker(workerId, null, null); return; }
+
+  // שאל ממתי הפועל מתחיל באתר החדש
+  const today = new Date().toISOString().split('T')[0];
+  const workerName = worker ? worker.name : '';
+  const siteName = site ? site.name : '';
+  showModal(
+    '<div style="padding:22px;max-width:340px;width:100%;">' +
+    '<div style="font-size:16px;font-weight:800;margin-bottom:6px;display:flex;align-items:center;gap:10px;">' +
+    '<span style="font-size:24px;">📅</span> תאריך כניסה לאתר</div>' +
+    '<div style="font-size:13px;color:var(--text2);margin-bottom:18px;">מאיזה תאריך <strong>' + workerName + '</strong> עובד ב<strong>' + siteName + '</strong>?</div>' +
+    '<div><label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px;">תאריך התחלה *</label>' +
+    '<input type="date" id="assign-from-date" value="' + today + '" style="width:100%;border:2px solid var(--accent);border-radius:10px;padding:10px 12px;font-size:15px;font-family:inherit;background:white;direction:ltr;outline:none;box-sizing:border-box;"></div>' +
+    '<div style="display:flex;gap:10px;margin-top:20px;">' +
+    '<button class="btn btn-primary" style="flex:1;" onclick="_confirmAssignWorker(' + workerId + ',' + siteId + ',\'assign-from-date\')">✅ אשר מעבר</button>' +
+    '<button class="btn btn-outline" onclick="closeModal()">ביטול</button></div></div>'
+  );
+  setTimeout(() => document.getElementById('assign-from-date') && document.getElementById('assign-from-date').focus(), 80);
+}
+
+async function _confirmAssignWorker(workerId, siteId, dateInputId) {
+  const fromDate = dateInputId ? (document.getElementById(dateInputId) ? document.getElementById(dateInputId).value : null) : null;
+  if (siteId && !fromDate) { showToast('יש לבחור תאריך התחלה', 'error'); return; }
+
+  // שמור בהיסטוריה
+  if (siteId && fromDate) {
+    const site = DATA.workSites.find(s=>s.id===siteId);
+    DATA.workerSiteHistory.push({
+      workerId: workerId, siteId: siteId,
+      siteName: site ? site.name : '', contractor: site ? (site.contractor||'') : '',
+      fromDate: fromDate, toDate: null,
+    });
+    const worker = DATA.users.find(u=>u.id===workerId);
+    if (worker) _saveWorkerSiteHistoryLocal(worker.company);
+  }
+
   await sbAssignWorkerSite(workerId, siteId);
   const site = siteId ? DATA.workSites.find(s=>s.id===siteId) : null;
-  showToast(site ? `✅ שויך ל${site.name}` : '✅ שיוך הוסר');
+  showToast(site ? ('\u2705 שויך ל' + site.name) : '\u2705 שיוך הוסר');
   closeModal();
   if (currentPage==='ceo-sites') renderWorkSites();
   if (currentPage==='ceo-workers') renderCeoWorkers();
