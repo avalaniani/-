@@ -1114,7 +1114,7 @@
               </select>
               <input type="text" id="workers-search-input" placeholder="חפש פועל..." oninput="filterWorkersTable()"
                 style="border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px;background:white;color:var(--text);min-width:160px;font-family:inherit;outline:none;">
-              <select id="workers-filter-contractor" onchange="filterWorkersTable()" style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;background:var(--bg3);color:var(--text);cursor:pointer;font-family:inherit;">
+              <select id="workers-filter-contractor" onchange="_refreshContractorFilter('workers-filter-contractor','workers-filter-site',filterWorkersTable)" style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;background:var(--bg3);color:var(--text);cursor:pointer;font-family:inherit;">
                 <option value="">🏢 כל הקבלנים</option>
               </select>
               <select id="workers-filter-site" onchange="filterWorkersTable()" style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;background:var(--bg3);color:var(--text);cursor:pointer;font-family:inherit;">
@@ -1166,7 +1166,7 @@
               </select>
               <input type="text" id="grid-search-input" placeholder="הקלד לחיפוש..." oninput="renderCeoWorkersGrid(false)"
                 style="border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px;background:white;color:var(--text);min-width:150px;font-family:inherit;">
-              <select id="grid-filter-contractor" onchange="renderCeoWorkersGrid(false)" style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;background:var(--bg3);color:var(--text);cursor:pointer;">
+              <select id="grid-filter-contractor" onchange="_refreshContractorFilter('grid-filter-contractor','grid-filter-site',()=>renderCeoWorkersGrid(false))" style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;background:var(--bg3);color:var(--text);cursor:pointer;">
                 <option value="">🏢 כל הקבלנים</option>
               </select>
               <select id="grid-filter-site" onchange="renderCeoWorkersGrid(false)" style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;background:var(--bg3);color:var(--text);cursor:pointer;">
@@ -1627,10 +1627,10 @@
         </select>
         <select id="fs-grid-filter-site" onchange="renderCeoWorkersGrid(true)" style="border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:11px;background:var(--bg3);color:var(--text);cursor:pointer;">
           <option value="">🏗️ כל האתרים</option>
-        </select><select id="fs-grid-filter-contractor" onchange="renderCeoWorkersGrid(true)" style="border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:11px;background:var(--bg3);color:var(--text);cursor:pointer;">
+        </select><select id="fs-grid-filter-contractor" onchange="_refreshContractorFilter('fs-grid-filter-contractor','fs-grid-filter-site',()=>renderCeoWorkersGrid(true))" style="border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:11px;background:var(--bg3);color:var(--text);cursor:pointer;">
           <option value="">🏢 כל הקבלנים</option>
         </select>
-        <select id="fs-grid-filter-contractor" onchange="renderCeoWorkersGrid(true)" style="border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:11px;background:var(--bg3);color:var(--text);cursor:pointer;">
+        <select id="fs-grid-filter-contractor" onchange="_refreshContractorFilter('fs-grid-filter-contractor','fs-grid-filter-site',()=>renderCeoWorkersGrid(true))" style="border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:11px;background:var(--bg3);color:var(--text);cursor:pointer;">
           <option value="">🏢 כל הקבלנים</option>
         </select>
         <select id="fs-grid-sort" onchange="renderCeoWorkersGrid(true)" style="border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:11px;background:var(--bg3);color:var(--text);cursor:pointer;">
@@ -3719,31 +3719,54 @@ function toggleSection(sectionId, iconId) {
 }
 
 function _populateSiteFilters() {
-  // מלא את כל רשימות הסינון (אתר + קבלן) בכל ה-selects
   const company = currentUser?.company;
-  const sites = (DATA.workSites||[]).filter(s=>s.companyId===company);
-  const contractors = [...new Set(sites.map(s=>s.contractor).filter(Boolean))].sort();
+  const allSites = (DATA.workSites||[]).filter(s=>s.companyId===company);
+  const contractors = [...new Set(allSites.map(s=>s.contractor).filter(Boolean))].sort();
 
-  const siteSelects = ['workers-filter-site','grid-filter-site','fs-grid-filter-site'];
-  const contractorSelects = ['workers-filter-contractor','grid-filter-contractor','fs-grid-filter-contractor'];
+  // זוגות: contractor-select ← site-select
+  const pairs = [
+    { contr: 'workers-filter-contractor', site: 'workers-filter-site' },
+    { contr: 'grid-filter-contractor',    site: 'grid-filter-site'    },
+    { contr: 'fs-grid-filter-contractor', site: 'fs-grid-filter-site' },
+  ];
 
-  siteSelects.forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    const cur = el.value;
-    el.innerHTML = '<option value="">🏗️ כל האתרים</option>' +
-      sites.map(s=>`<option value="${s.id}" ${String(s.id)===cur?'selected':''}>${s.name}</option>`).join('') +
-      '<option value="__none__" '+(cur==='__none__'?'selected':'')+'>— ללא אתר</option>';
+  pairs.forEach(({ contr, site }) => {
+    const contrEl = document.getElementById(contr);
+    const siteEl  = document.getElementById(site);
+    if (!contrEl || !siteEl) return;
+
+    // מלא קבלנים תמיד (כדי לשקף נתונים עדכניים)
+    const curC = contrEl.value;
+    contrEl.innerHTML = '<option value="">🏢 כל הקבלנים</option>' +
+      contractors.map(c=>`<option value="${c}" ${c===curC?'selected':''}>${c}</option>`).join('') +
+      '<option value="__none__" '+(curC==='__none__'?'selected':'')+'>— ללא קבלן</option>';
+
+    // מלא אתרים — מסונן לפי הקבלן הנבחר
+    const selectedContr = contrEl.value;
+    const curS = siteEl.value;
+    const filteredSites = selectedContr === '__none__'
+      ? allSites.filter(s=>!s.contractor)
+      : selectedContr
+        ? allSites.filter(s=>s.contractor===selectedContr)
+        : allSites;
+
+    siteEl.innerHTML = '<option value="">🏗️ כל האתרים</option>' +
+      filteredSites.map(s=>`<option value="${s.id}" ${String(s.id)===curS?'selected':''}>${s.name}</option>`).join('') +
+      (selectedContr ? '' : '<option value="__none__" '+(curS==='__none__'?'selected':'')+'>— ללא אתר</option>');
+
+    // אם האתר הנבחר לא קיים ברשימה החדשה — אפס אותו
+    if (curS && curS !== '__none__' && !filteredSites.find(s=>String(s.id)===curS)) {
+      siteEl.value = '';
+    }
   });
+}
 
-  contractorSelects.forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    const cur = el.value;
-    el.innerHTML = '<option value="">🏢 כל הקבלנים</option>' +
-      contractors.map(c=>`<option value="${c}" ${c===cur?'selected':''}>${c}</option>`).join('') +
-      '<option value="__none__" '+(cur==='__none__'?'selected':'')+'>— ללא קבלן</option>';
-  });
+function _refreshContractorFilter(contrElId, siteElId, triggerFn) {
+  // קרא בעת שינוי קבלן — מרענן את אתרי העבודה ואז מריץ סינון
+  const contrEl = document.getElementById(contrElId);
+  if (contrEl) contrEl.options.length = 0; // אפס כדי ש-_populateSiteFilters ימלא מחדש
+  _populateSiteFilters();
+  triggerFn();
 }
 
 function _applyWorkerFiltersAndSort(workers, siteFilterId, contractorFilterId, sortId) {
