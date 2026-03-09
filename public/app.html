@@ -1106,14 +1106,8 @@
             </div>
           </div>
           <div id="workers-section">
-            <!-- Workers search + filter + sort -->
+            <!-- Workers filter + sort -->
             <div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-              <select id="workers-search-type" onchange="filterWorkersTable()" style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;background:var(--bg3);color:var(--text);cursor:pointer;font-family:inherit;">
-                <option value="name">🔎 שם</option>
-                <option value="idpassport" selected>🪪 ת"ז / דרכון</option>
-              </select>
-              <input type="text" id="workers-search-input" placeholder="חפש פועל..." oninput="filterWorkersTable()"
-                style="border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px;background:white;color:var(--text);min-width:160px;font-family:inherit;outline:none;">
               <select id="workers-filter-contractor" onchange="_refreshContractorFilter('workers-filter-contractor','workers-filter-site',filterWorkersTable)" style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;background:var(--bg3);color:var(--text);cursor:pointer;font-family:inherit;">
                 <option value="">🏢 כל הקבלנים</option>
               </select>
@@ -1160,12 +1154,6 @@
           <div id="grid-section">
             <!-- Search + filter bar -->
             <div style="padding:10px 0 4px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-              <select id="grid-search-type" onchange="renderCeoWorkersGrid(false)" style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;background:var(--bg3);color:var(--text);cursor:pointer;">
-                <option value="name">🔎 חיפוש לפי שם</option>
-                <option value="idpassport" selected>🪪 חיפוש לפי ת"ז / דרכון</option>
-              </select>
-              <input type="text" id="grid-search-input" placeholder="הקלד לחיפוש..." oninput="renderCeoWorkersGrid(false)"
-                style="border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px;background:white;color:var(--text);min-width:150px;font-family:inherit;">
               <select id="grid-filter-contractor" onchange="_refreshContractorFilter('grid-filter-contractor','grid-filter-site',()=>renderCeoWorkersGrid(false))" style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;background:var(--bg3);color:var(--text);cursor:pointer;">
                 <option value="">🏢 כל הקבלנים</option>
               </select>
@@ -1616,12 +1604,6 @@
       <span style="font-size:11px;display:flex;align-items:center;gap:4px;"><span style="width:14px;height:14px;background:white;border-radius:3px;display:inline-block;border:1px solid var(--border);color:#3366aa;font-weight:700;text-align:center;line-height:14px;font-size:9px;">8</span>שעות עבודה</span>
       <!-- Search in FS -->
       <div style="display:flex;gap:6px;align-items:center;margin-right:auto;flex-wrap:wrap;">
-        <select id="fs-grid-search-type" onchange="renderCeoWorkersGrid(true)" style="border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:11px;background:var(--bg3);color:var(--text);cursor:pointer;">
-          <option value="name">🔎 שם</option>
-          <option value="idpassport" selected>🪪 ת"ז / דרכון</option>
-        </select>
-        <input type="text" id="fs-grid-search-input" placeholder="חיפוש..." oninput="renderCeoWorkersGrid(true)"
-          style="border:1px solid var(--border);border-radius:8px;padding:4px 10px;font-size:12px;background:white;color:var(--text);width:120px;font-family:inherit;">
         <select id="fs-grid-filter-contractor" onchange="_refreshContractorFilter('fs-grid-filter-contractor','fs-grid-filter-site',()=>renderCeoWorkersGrid(true))" style="border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:11px;background:var(--bg3);color:var(--text);cursor:pointer;">
           <option value="">🏢 כל הקבלנים</option>
         </select>
