@@ -1101,12 +1101,16 @@
             <select id="ceo-task-employee-filter" onchange="renderCeoTasks()" style="border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px;background:var(--bg3);color:var(--text);cursor:pointer;font-family:inherit;">
               <option value="">👥 כל העובדים</option>
             </select>
+            <button class="btn btn-primary btn-sm" onclick="openAddTask('ceo')">+ הוסף משימה</button>
           </div>
           <div class="tasks-grid" id="ceo-tasks-grid"></div>
         </div>
 
         <!-- תוכן: עובדים -->
         <div id="team-panel-employees" style="display:none;">
+          <div style="margin-bottom:16px;display:flex;justify-content:flex-end;">
+            <button class="btn btn-primary btn-sm" onclick="ceoOpenAddMember('employee')">+ הוסף עובד</button>
+          </div>
           <div id="ceo-employees-cards"></div>
         </div>
       </div>
