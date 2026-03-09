@@ -1106,14 +1106,26 @@
             </div>
           </div>
           <div id="workers-section">
-            <!-- Workers search -->
+            <!-- Workers search + filter + sort -->
             <div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
               <select id="workers-search-type" onchange="filterWorkersTable()" style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;background:var(--bg3);color:var(--text);cursor:pointer;font-family:inherit;">
                 <option value="name">🔎 שם</option>
                 <option value="idpassport" selected>🪪 ת"ז / דרכון</option>
               </select>
               <input type="text" id="workers-search-input" placeholder="חפש פועל..." oninput="filterWorkersTable()"
-                style="border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px;background:white;color:var(--text);min-width:180px;font-family:inherit;outline:none;">
+                style="border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px;background:white;color:var(--text);min-width:160px;font-family:inherit;outline:none;">
+              <select id="workers-filter-site" onchange="filterWorkersTable()" style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;background:var(--bg3);color:var(--text);cursor:pointer;font-family:inherit;">
+                <option value="">🏗️ כל האתרים</option>
+              </select>
+              <select id="workers-filter-contractor" onchange="filterWorkersTable()" style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;background:var(--bg3);color:var(--text);cursor:pointer;font-family:inherit;">
+                <option value="">🏢 כל הקבלנים</option>
+              </select>
+              <select id="workers-sort" onchange="renderCeoWorkers()" style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;background:var(--bg3);color:var(--text);cursor:pointer;font-family:inherit;">
+                <option value="name">מיון: שם</option>
+                <option value="site">מיון: אתר עבודה</option>
+                <option value="contractor">מיון: קבלן</option>
+                <option value="hours_desc">מיון: שעות (רב לפחות)</option>
+              </select>
               <span id="workers-search-count" style="font-size:12px;color:var(--text2);"></span>
             </div>
             <div class="table-wrap">
@@ -1146,14 +1158,25 @@
           </div>
 
           <div id="grid-section">
-            <!-- Search bar -->
+            <!-- Search + filter bar -->
             <div style="padding:10px 0 4px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
               <select id="grid-search-type" onchange="renderCeoWorkersGrid(false)" style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;background:var(--bg3);color:var(--text);cursor:pointer;">
                 <option value="name">🔎 חיפוש לפי שם</option>
                 <option value="idpassport" selected>🪪 חיפוש לפי ת"ז / דרכון</option>
               </select>
               <input type="text" id="grid-search-input" placeholder="הקלד לחיפוש..." oninput="renderCeoWorkersGrid(false)"
-                style="border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px;background:white;color:var(--text);min-width:180px;font-family:inherit;">
+                style="border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px;background:white;color:var(--text);min-width:150px;font-family:inherit;">
+              <select id="grid-filter-site" onchange="renderCeoWorkersGrid(false)" style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;background:var(--bg3);color:var(--text);cursor:pointer;">
+                <option value="">🏗️ כל האתרים</option>
+              </select>
+              <select id="grid-filter-contractor" onchange="renderCeoWorkersGrid(false)" style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;background:var(--bg3);color:var(--text);cursor:pointer;">
+                <option value="">🏢 כל הקבלנים</option>
+              </select>
+              <select id="grid-sort" onchange="renderCeoWorkersGrid(false)" style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;background:var(--bg3);color:var(--text);cursor:pointer;">
+                <option value="name">מיון: שם</option>
+                <option value="site">מיון: אתר עבודה</option>
+                <option value="contractor">מיון: קבלן</option>
+              </select>
               <span id="grid-search-count" style="font-size:12px;color:var(--text2);"></span>
             </div>
 
@@ -1592,13 +1615,24 @@
       <span style="font-size:11px;display:flex;align-items:center;gap:4px;"><span style="width:14px;height:14px;background:#f0fff4;border-radius:3px;display:inline-block;border:1px solid #a8e0b8;"></span>יום חתום ✓</span>
       <span style="font-size:11px;display:flex;align-items:center;gap:4px;"><span style="width:14px;height:14px;background:white;border-radius:3px;display:inline-block;border:1px solid var(--border);color:#3366aa;font-weight:700;text-align:center;line-height:14px;font-size:9px;">8</span>שעות עבודה</span>
       <!-- Search in FS -->
-      <div style="display:flex;gap:6px;align-items:center;margin-right:auto;">
+      <div style="display:flex;gap:6px;align-items:center;margin-right:auto;flex-wrap:wrap;">
         <select id="fs-grid-search-type" onchange="renderCeoWorkersGrid(true)" style="border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:11px;background:var(--bg3);color:var(--text);cursor:pointer;">
           <option value="name">🔎 שם</option>
           <option value="idpassport" selected>🪪 ת"ז / דרכון</option>
         </select>
         <input type="text" id="fs-grid-search-input" placeholder="חיפוש..." oninput="renderCeoWorkersGrid(true)"
-          style="border:1px solid var(--border);border-radius:8px;padding:4px 10px;font-size:12px;background:white;color:var(--text);width:150px;font-family:inherit;">
+          style="border:1px solid var(--border);border-radius:8px;padding:4px 10px;font-size:12px;background:white;color:var(--text);width:120px;font-family:inherit;">
+        <select id="fs-grid-filter-site" onchange="renderCeoWorkersGrid(true)" style="border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:11px;background:var(--bg3);color:var(--text);cursor:pointer;">
+          <option value="">🏗️ כל האתרים</option>
+        </select>
+        <select id="fs-grid-filter-contractor" onchange="renderCeoWorkersGrid(true)" style="border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:11px;background:var(--bg3);color:var(--text);cursor:pointer;">
+          <option value="">🏢 כל הקבלנים</option>
+        </select>
+        <select id="fs-grid-sort" onchange="renderCeoWorkersGrid(true)" style="border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:11px;background:var(--bg3);color:var(--text);cursor:pointer;">
+          <option value="name">מיון: שם</option>
+          <option value="site">מיון: אתר</option>
+          <option value="contractor">מיון: קבלן</option>
+        </select>
         <span id="fs-grid-search-count" style="font-size:11px;color:var(--text2);white-space:nowrap;"></span>
         <button class="btn btn-success btn-sm" onclick="copyGridToExcelFS()" style="font-size:11px;padding:4px 10px;">📋 העתק לאקסל</button>
       </div>
@@ -3679,13 +3713,97 @@ function toggleSection(sectionId, iconId) {
   if (icon) icon.style.transform = isOpen ? 'rotate(-90deg)' : 'rotate(0deg)';
 }
 
+function _populateSiteFilters() {
+  // מלא את כל רשימות הסינון (אתר + קבלן) בכל ה-selects
+  const company = currentUser?.company;
+  const sites = (DATA.workSites||[]).filter(s=>s.companyId===company);
+  const contractors = [...new Set(sites.map(s=>s.contractor).filter(Boolean))].sort();
+
+  const siteSelects = ['workers-filter-site','grid-filter-site','fs-grid-filter-site'];
+  const contractorSelects = ['workers-filter-contractor','grid-filter-contractor','fs-grid-filter-contractor'];
+
+  siteSelects.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const cur = el.value;
+    el.innerHTML = '<option value="">🏗️ כל האתרים</option>' +
+      sites.map(s=>`<option value="${s.id}" ${String(s.id)===cur?'selected':''}>${s.name}</option>`).join('') +
+      '<option value="__none__" '+(cur==='__none__'?'selected':'')+'>— ללא אתר</option>';
+  });
+
+  contractorSelects.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const cur = el.value;
+    el.innerHTML = '<option value="">🏢 כל הקבלנים</option>' +
+      contractors.map(c=>`<option value="${c}" ${c===cur?'selected':''}>${c}</option>`).join('') +
+      '<option value="__none__" '+(cur==='__none__'?'selected':'')+'>— ללא קבלן</option>';
+  });
+}
+
+function _applyWorkerFiltersAndSort(workers, siteFilterId, contractorFilterId, sortId) {
+  const siteVal   = document.getElementById(siteFilterId)?.value   || '';
+  const contrVal  = document.getElementById(contractorFilterId)?.value || '';
+  const sortVal   = document.getElementById(sortId)?.value || 'name';
+  const company   = currentUser?.company;
+  const sites     = (DATA.workSites||[]).filter(s=>s.companyId===company);
+
+  // סינון אתר
+  if (siteVal === '__none__') {
+    workers = workers.filter(w => !w.siteId || !sites.find(s=>s.id===w.siteId));
+  } else if (siteVal) {
+    const sid = parseInt(siteVal) || siteVal;
+    workers = workers.filter(w => String(w.siteId) === String(sid));
+  }
+
+  // סינון קבלן
+  if (contrVal === '__none__') {
+    workers = workers.filter(w => {
+      const s = sites.find(s=>s.id===w.siteId);
+      return !s || !s.contractor;
+    });
+  } else if (contrVal) {
+    workers = workers.filter(w => {
+      const s = sites.find(s=>s.id===w.siteId);
+      return s && s.contractor === contrVal;
+    });
+  }
+
+  // מיון
+  workers = [...workers].sort((a,b) => {
+    if (sortVal === 'site') {
+      const sa = sites.find(s=>s.id===a.siteId)?.name || 'תתת';
+      const sb = sites.find(s=>s.id===b.siteId)?.name || 'תתת';
+      return sa.localeCompare(sb, 'he');
+    }
+    if (sortVal === 'contractor') {
+      const ca = sites.find(s=>s.id===a.siteId)?.contractor || 'תתת';
+      const cb = sites.find(s=>s.id===b.siteId)?.contractor || 'תתת';
+      return ca.localeCompare(cb, 'he');
+    }
+    if (sortVal === 'hours_desc') {
+      // מיון לפי שעות חודש נוכחי
+      const now = new Date();
+      const getH = w => { const h=DATA.workerHours[`${w.id}-${now.getFullYear()}-${now.getMonth()}`]||{}; let t=0; Object.values(h).forEach(v=>{ t+=(v.start&&v.end)?calcHoursFromTime(v.start,v.end):(parseFloat(v.hours)||0); }); return t; };
+      return getH(b) - getH(a);
+    }
+    return a.name.localeCompare(b.name, 'he');
+  });
+
+  return workers;
+}
+
 function filterWorkersTable() {
   const searchType = document.getElementById('workers-search-type')?.value || 'name';
   const searchQ = (document.getElementById('workers-search-input')?.value || '').trim().toLowerCase();
+  const siteVal = document.getElementById('workers-filter-site')?.value || '';
+  const contrVal = document.getElementById('workers-filter-contractor')?.value || '';
   const countEl = document.getElementById('workers-search-count');
 
   const tbody = document.getElementById('ceo-workers-table');
   if (!tbody) return;
+  const company = currentUser?.company;
+  const sites = (DATA.workSites||[]).filter(s=>s.companyId===company);
 
   const rows = tbody.querySelectorAll('tr');
   let visible = 0;
@@ -3701,6 +3819,17 @@ function filterWorkersTable() {
       if (searchType === 'name') match = worker.name.toLowerCase().includes(searchQ);
       else match = (worker.idNumber || '').toLowerCase().includes(searchQ);
     }
+    // סינון אתר
+    if (match && siteVal) {
+      if (siteVal === '__none__') match = !worker.siteId || !sites.find(s=>s.id===worker.siteId);
+      else match = String(worker.siteId) === String(siteVal);
+    }
+    // סינון קבלן
+    if (match && contrVal) {
+      const s = sites.find(s=>s.id===worker.siteId);
+      if (contrVal === '__none__') match = !s || !s.contractor;
+      else match = s && s.contractor === contrVal;
+    }
 
     tr.style.display = match ? '' : 'none';
     if (match) visible++;
@@ -3708,7 +3837,8 @@ function filterWorkersTable() {
 
   if (countEl) {
     const total = rows.length;
-    countEl.textContent = searchQ ? `${visible} מתוך ${total} פועלים` : '';
+    const hasFilter = searchQ || siteVal || contrVal;
+    countEl.textContent = hasFilter ? `${visible} מתוך ${total} פועלים` : '';
   }
 }
 
@@ -3718,10 +3848,12 @@ function renderCeoWorkers() {
   const actionBtns = document.getElementById('workers-action-btns');
   if (actionBtns) actionBtns.style.display = isFieldWorker ? 'none' : 'flex';
 
+  _populateSiteFilters();
   const tbody = document.getElementById('ceo-workers-table');
-  const workers = DATA.users.filter(u => u.company === currentUser.company && u.role === 'worker');
+  let workers = DATA.users.filter(u => u.company === currentUser.company && u.role === 'worker');
+  workers = _applyWorkerFiltersAndSort(workers, 'workers-filter-site', 'workers-filter-contractor', 'workers-sort');
   const company = DATA.companies.find(c => c.id === currentUser.company);
-  if (!workers.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:24px;">אין פועלים</td></tr>'; return; }
+  if (!workers.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:24px;">אין פועלים תואמים לסינון</td></tr>'; return; }
   const now = new Date();
   const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
 
@@ -3948,12 +4080,19 @@ function renderCeoWorkersGrid(fullscreen) {
   const company = DATA.companies.find(c => c.id === currentUser.company);
 
   // Apply search filter (inline or fullscreen)
-  const searchTypeId = fullscreen ? 'fs-grid-search-type' : 'grid-search-type';
-  const searchInputId = fullscreen ? 'fs-grid-search-input' : 'grid-search-input';
-  const searchCountId = fullscreen ? 'fs-grid-search-count' : 'grid-search-count';
+  const prefix = fullscreen ? 'fs-' : '';
+  const searchTypeId    = prefix + 'grid-search-type';
+  const searchInputId   = prefix + 'grid-search-input';
+  const searchCountId   = prefix + 'grid-search-count';
+  const siteFilterId    = prefix + 'grid-filter-site';
+  const contrFilterId   = prefix + 'grid-filter-contractor';
+  const sortId          = prefix + 'grid-sort';
+
+  _populateSiteFilters();
+
   const searchType = document.getElementById(searchTypeId)?.value || 'name';
   const searchQ = (document.getElementById(searchInputId)?.value || '').trim().toLowerCase();
-  const showIdInCell = searchType === 'idpassport'; // show ID number column regardless of search text
+  const showIdInCell = searchType === 'idpassport';
 
   if (searchQ) {
     workers = workers.filter(w => {
@@ -3962,10 +4101,13 @@ function renderCeoWorkersGrid(fullscreen) {
       return true;
     });
   }
+  workers = _applyWorkerFiltersAndSort(workers, siteFilterId, contrFilterId, sortId);
+
   const countEl = document.getElementById(searchCountId);
   if (countEl) {
     const totalWorkers = DATA.users.filter(u => u.company === currentUser.company && u.role === 'worker').length;
-    countEl.textContent = searchQ ? `${workers.length} מתוך ${totalWorkers} פועלים` : '';
+    const hasFilter = searchQ || document.getElementById(siteFilterId)?.value || document.getElementById(contrFilterId)?.value;
+    countEl.textContent = hasFilter ? `${workers.length} מתוך ${totalWorkers} פועלים` : '';
   }
 
   if (!workers.length) { wrap.innerHTML = '<div style="text-align:center;color:var(--text3);padding:24px;">לא נמצאו פועלים תואמים לחיפוש</div>'; return; }
@@ -4084,8 +4226,8 @@ function _copyGridToExcelImpl(fullscreen) {
   const m = gridMonth + 1;
 
   // Apply same search filter as the current view
-  const searchTypeId = fullscreen ? 'fs-grid-search-type' : 'grid-search-type';
-  const searchInputId = fullscreen ? 'fs-grid-search-input' : 'grid-search-input';
+  const searchTypeId = (fullscreen ? 'fs-' : '') + 'grid-search-type';
+  const searchInputId = (fullscreen ? 'fs-' : '') + 'grid-search-input';
   const searchType = document.getElementById(searchTypeId)?.value || 'name';
   const searchQ = (document.getElementById(searchInputId)?.value || '').trim().toLowerCase();
   let workers = DATA.users.filter(u => u.company === currentUser.company && u.role === 'worker');
