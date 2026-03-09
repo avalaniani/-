@@ -3740,6 +3740,8 @@ function _populateSiteFilters() {
     contrEl.innerHTML = '<option value="">🏢 כל הקבלנים</option>' +
       contractors.map(c=>`<option value="${c}" ${c===curC?'selected':''}>${c}</option>`).join('') +
       '<option value="__none__" '+(curC==='__none__'?'selected':'')+'>— ללא קבלן</option>';
+    // שחזר ערך — innerHTML מאפס את .value
+    if (curC) contrEl.value = curC;
 
     // מלא אתרים — מסונן לפי הקבלן הנבחר
     const selectedContr = contrEl.value;
