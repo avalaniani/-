@@ -1074,37 +1074,40 @@
 
       <!-- CEO Employees -->
       <div class="page" id="page-ceo-employees">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:flex-start;">
-
-          <!-- ימין: משימות -->
-          <div style="min-width:0;">
-            <div class="card-header" style="margin-bottom:16px;flex-wrap:nowrap;gap:8px;">
-              <div class="card-title" style="font-size:18px;white-space:nowrap;">📋 ניהול משימות</div>
-              <button class="btn btn-primary btn-sm" onclick="openAddTask('ceo')">+ הוסף משימה</button>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
-              <div class="tabs" style="margin-bottom:0;flex:1;">
-                <div class="tab active" onclick="filterTasks('all',this)">הכל</div>
-                <div class="tab" onclick="filterTasks('open',this)">פתוחות</div>
-                <div class="tab" onclick="filterTasks('done',this)">הושלמו</div>
-                <div class="tab" onclick="filterTasks('high',this)">דחוף</div>
-              </div>
-              <select id="ceo-task-employee-filter" onchange="renderCeoTasks()" style="border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px;background:var(--bg3);color:var(--text);cursor:pointer;font-family:inherit;">
-                <option value="">👥 כל העובדים</option>
-              </select>
-            </div>
-            <div class="tasks-grid" id="ceo-tasks-grid"></div>
+        <!-- טאבים -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+          <div style="display:flex;background:var(--bg3);border-radius:12px;padding:4px;gap:2px;">
+            <button id="team-tab-tasks" onclick="switchTeamTab('tasks')"
+              style="padding:8px 22px;border-radius:9px;border:none;cursor:pointer;font-size:14px;font-weight:600;font-family:inherit;transition:all 0.2s;background:var(--accent);color:white;box-shadow:0 2px 8px rgba(0,0,0,0.12);">
+              📋 משימות
+            </button>
+            <button id="team-tab-employees" onclick="switchTeamTab('employees')"
+              style="padding:8px 22px;border-radius:9px;border:none;cursor:pointer;font-size:14px;font-weight:600;font-family:inherit;transition:all 0.2s;background:transparent;color:var(--text2);">
+              💼 עובדים
+            </button>
           </div>
+          <div id="team-tab-action"></div>
+        </div>
 
-          <!-- שמאל: עובדים — כרטיסים במקום טבלה -->
-          <div style="min-width:0;">
-            <div class="card-header" style="margin-bottom:16px;flex-wrap:nowrap;gap:8px;">
-              <div class="card-title" style="font-size:18px;white-space:nowrap;">💼 ניהול עובדים</div>
-              <button class="btn btn-primary btn-sm" onclick="ceoOpenAddMember('employee')" style="white-space:nowrap;">+ הוסף עובד</button>
+        <!-- תוכן: משימות -->
+        <div id="team-panel-tasks">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+            <div class="tabs" style="margin-bottom:0;flex:1;">
+              <div class="tab active" onclick="filterTasks('all',this)">הכל</div>
+              <div class="tab" onclick="filterTasks('open',this)">פתוחות</div>
+              <div class="tab" onclick="filterTasks('done',this)">הושלמו</div>
+              <div class="tab" onclick="filterTasks('high',this)">דחוף</div>
             </div>
-            <div id="ceo-employees-cards"></div>
+            <select id="ceo-task-employee-filter" onchange="renderCeoTasks()" style="border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px;background:var(--bg3);color:var(--text);cursor:pointer;font-family:inherit;">
+              <option value="">👥 כל העובדים</option>
+            </select>
           </div>
+          <div class="tasks-grid" id="ceo-tasks-grid"></div>
+        </div>
 
+        <!-- תוכן: עובדים -->
+        <div id="team-panel-employees" style="display:none;">
+          <div id="ceo-employees-cards"></div>
         </div>
       </div>
 
@@ -2643,7 +2646,11 @@ function renderPage(pageId) {
   else if (pageId === 'admin-notes') renderNotes('admin');
   else if (pageId === 'admin-calendar') renderCalendar('admin');
   else if (pageId === 'ceo-dashboard') renderCeoDashboard();
-  else if (pageId === 'ceo-employees') { renderCeoEmployees(); renderCeoTasks(); }
+  else if (pageId === 'ceo-employees') {
+    renderCeoTasks();
+    renderCeoEmployees();
+    switchTeamTab('tasks');
+  }
   else if (pageId === 'ceo-workers') { renderCeoWorkers(); renderCeoWorkersGrid(false); setTimeout(() => { fitGridToScreen(false); updateSliderFill(document.getElementById('grid-zoom-slider')); }, 80); }
   else if (pageId === 'ceo-credentials') renderCeoCredentials();
   else if (pageId === 'ceo-sites') renderWorkSites();
@@ -3808,6 +3815,32 @@ function _applyWorkerFiltersAndSort(workers, siteFilterId, contractorFilterId, s
   });
 
   return workers;
+}
+
+function switchTeamTab(tab) {
+  const panelTasks = document.getElementById('team-panel-tasks');
+  const panelEmps  = document.getElementById('team-panel-employees');
+  const btnTasks   = document.getElementById('team-tab-tasks');
+  const btnEmps    = document.getElementById('team-tab-employees');
+  const actionEl   = document.getElementById('team-tab-action');
+  if (!panelTasks) return;
+
+  const activeStyle  = 'padding:8px 22px;border-radius:9px;border:none;cursor:pointer;font-size:14px;font-weight:600;font-family:inherit;transition:all 0.2s;background:var(--accent);color:white;box-shadow:0 2px 8px rgba(0,0,0,0.12);';
+  const inactiveStyle= 'padding:8px 22px;border-radius:9px;border:none;cursor:pointer;font-size:14px;font-weight:600;font-family:inherit;transition:all 0.2s;background:transparent;color:var(--text2);';
+
+  if (tab === 'tasks') {
+    panelTasks.style.display = '';
+    panelEmps.style.display  = 'none';
+    btnTasks.style.cssText   = activeStyle;
+    btnEmps.style.cssText    = inactiveStyle;
+    actionEl.innerHTML = '<button class="btn btn-primary btn-sm" onclick="openAddTask('ceo')">+ הוסף משימה</button>';
+  } else {
+    panelTasks.style.display = 'none';
+    panelEmps.style.display  = '';
+    btnTasks.style.cssText   = inactiveStyle;
+    btnEmps.style.cssText    = activeStyle;
+    actionEl.innerHTML = '<button class="btn btn-primary btn-sm" onclick="ceoOpenAddMember('employee')">+ הוסף עובד</button>';
+  }
 }
 
 function filterWorkersTable() {
