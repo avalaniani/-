@@ -5940,21 +5940,26 @@ function loadWorkerReportMonth(workerId) {
   }
 
   // Build rows & stats
+  const nowDate = new Date();
+  const todayDay = (nowDate.getFullYear() === y && nowDate.getMonth() === m) ? nowDate.getDate() : -1;
   let totalH = 0, workDays = 0;
   let rows = '';
   for (let d = 1; d <= daysInMonth; d++) {
     const date = new Date(y, m, d);
     const dayIdx = date.getDay();
     const isWeekend = dayIdx === 5 || dayIdx === 6;
+    const isToday = d === todayDay;
     const entry = hours[d] || {};
     const computed = entry.start && entry.end ? calcHoursFromTime(entry.start, entry.end) : (parseFloat(entry.hours)||0);
     if (computed > 0) { totalH += computed; workDays++; }
     const isDaySigned = isFullSigned || partialDays.includes(d);
-    const rowBg = isDaySigned ? 'background:#f0fff4;' : (isWeekend ? 'background:#fdf0f0;' : '');
+    let rowBg = isDaySigned ? 'background:#f0fff4;' : (isWeekend ? 'background:#fdf0f0;' : '');
+    if (isToday) rowBg = 'background:#fffbe6;';
     const sigMark = isDaySigned ? ' ✓' : '';
+    const todayMark = isToday ? ' <span style="font-size:9px;background:#f5c518;color:#333;border-radius:4px;padding:1px 5px;font-weight:700;vertical-align:middle;">היום</span>' : '';
 
-    rows += `<tr style="${rowBg}">
-      <td style="font-weight:600;font-size:12px;">${d}/${m+1}${sigMark}</td>
+    rows += `<tr style="${rowBg}${isToday ? 'border-right:3px solid #f5c518;' : ''}">
+      <td style="font-weight:${isToday?'800':'600'};font-size:12px;">${d}/${m+1}${sigMark}${todayMark}</td>
       <td style="color:${isWeekend ? '#c0506a' : 'var(--text2)'};font-size:12px;">${dayNames[dayIdx]}</td>
       <td style="font-weight:700;color:#4a88b8;font-size:13px;">${computed > 0 ? computed.toFixed(1) : '—'}</td>
       <td style="font-size:12px;color:var(--text2);">${entry.start || '—'}</td>
