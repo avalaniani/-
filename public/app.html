@@ -1622,13 +1622,11 @@
         </select>
         <input type="text" id="fs-grid-search-input" placeholder="חיפוש..." oninput="renderCeoWorkersGrid(true)"
           style="border:1px solid var(--border);border-radius:8px;padding:4px 10px;font-size:12px;background:white;color:var(--text);width:120px;font-family:inherit;">
-        <select id="fs-grid-filter-site" onchange="renderCeoWorkersGrid(true)" style="border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:11px;background:var(--bg3);color:var(--text);cursor:pointer;">
-          <option value="">🏗️ כל האתרים</option>
+        <select id="fs-grid-filter-contractor" onchange="_refreshContractorFilter('fs-grid-filter-contractor','fs-grid-filter-site',()=>renderCeoWorkersGrid(true))" style="border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:11px;background:var(--bg3);color:var(--text);cursor:pointer;">
+          <option value="">🏢 כל הקבלנים</option>
         </select>
         <select id="fs-grid-filter-site" onchange="renderCeoWorkersGrid(true)" style="border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:11px;background:var(--bg3);color:var(--text);cursor:pointer;">
           <option value="">🏗️ כל האתרים</option>
-        </select><select id="fs-grid-filter-contractor" onchange="_refreshContractorFilter('fs-grid-filter-contractor','fs-grid-filter-site',()=>renderCeoWorkersGrid(true))" style="border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:11px;background:var(--bg3);color:var(--text);cursor:pointer;">
-          <option value="">🏢 כל הקבלנים</option>
         </select>
         <select id="fs-grid-sort" onchange="renderCeoWorkersGrid(true)" style="border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:11px;background:var(--bg3);color:var(--text);cursor:pointer;">
           <option value="name">מיון: שם</option>
