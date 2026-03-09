@@ -6423,23 +6423,24 @@ function openAssignSiteModal(workerId) {
           ${!worker.siteId?'<span style="margin-right:auto;font-size:11px;color:var(--accent);">✓ נוכחי</span>':''}
         </label>
         ${(()=>{
-          // קבץ לפי קבלן, מיין קבלנים א-ב
           const contractors = [...new Set(sites.map(s=>s.contractor||'ללא קבלן'))].sort((a,b)=>a.localeCompare(b,'he'));
           return contractors.map(contr => {
             const contrSites = sites.filter(s=>(s.contractor||'ללא קבלן')===contr);
             const rows = contrSites.map(s => {
               const siteWorkers = DATA.users.filter(u=>u.siteId===s.id);
               const isCurrent = worker.siteId===s.id;
-              return \`<label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;border:2px solid \${isCurrent?'var(--accent)':'var(--border)'};background:\${isCurrent?'#f0f7ff':'white'};" onclick="assignWorkerToSite(\${workerId},\${s.id})">
-                <span style="font-size:18px;">📍</span>
-                <div style="flex:1;">
-                  <div style="font-weight:600;font-size:13px;">\${s.name}</div>
-                  <div style="font-size:11px;color:var(--text3);">\${siteWorkers.length} פועלים\${s.address?' • '+s.address:''}</div>
-                </div>
-                \${isCurrent?'<span style="font-size:11px;color:var(--accent);font-weight:600;">✓ נוכחי</span>':''}
-              </label>\`;
+              const border = isCurrent ? 'var(--accent)' : 'var(--border)';
+              const bg = isCurrent ? '#f0f7ff' : 'white';
+              const check = isCurrent ? '<span style="font-size:11px;color:var(--accent);font-weight:600;">✓ נוכחי</span>' : '';
+              const addr = s.address ? ' • ' + s.address : '';
+              return '<label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;border:2px solid ' + border + ';background:' + bg + ';" onclick="assignWorkerToSite(' + workerId + ',' + s.id + ')">'
+                + '<span style="font-size:18px;">📍</span>'
+                + '<div style="flex:1;">'
+                + '<div style="font-weight:600;font-size:13px;">' + s.name + '</div>'
+                + '<div style="font-size:11px;color:var(--text3);">' + siteWorkers.length + ' פועלים' + addr + '</div>'
+                + '</div>' + check + '</label>';
             }).join('');
-            return \`<div style="font-size:11px;font-weight:700;color:var(--text2);padding:6px 4px 2px;border-bottom:1px solid var(--border);margin-top:4px;">🏢 \${contr}</div>\${rows}\`;
+            return '<div style="font-size:11px;font-weight:700;color:var(--text2);padding:6px 4px 2px;border-bottom:1px solid var(--border);margin-top:4px;">🏢 ' + contr + '</div>' + rows;
           }).join('');
         })()}
       </div>`}
