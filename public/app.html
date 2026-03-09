@@ -3311,27 +3311,36 @@ function renderCeoEmployees() {
     const total = empTasks.length;
     const pct = total ? Math.round(done/total*100) : 0;
     return `
-    <div style="background:white;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;">
-      <div style="width:40px;height:40px;border-radius:50%;background:${emp.avatarColor}22;color:${emp.avatarColor};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;flex-shrink:0;">${emp.name[0]}</div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-weight:700;font-size:14px;">${emp.name}</div>
-        <div style="font-size:11px;color:var(--text3);margin-bottom:6px;">${emp.username}</div>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <div style="background:var(--bg3);border-radius:20px;height:6px;flex:1;overflow:hidden;">
-            <div style="width:${pct}%;height:100%;background:${emp.avatarColor};border-radius:20px;transition:width 0.3s;"></div>
+    <div style="background:white;border:1px solid var(--border);border-radius:16px;padding:18px 20px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,0.05);">
+      <!-- שורה עליונה: אווטאר + שם + כפתור -->
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
+        <div style="width:46px;height:46px;border-radius:50%;background:${emp.avatarColor}22;color:${emp.avatarColor};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;flex-shrink:0;">${emp.name[0]}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${emp.name}</div>
+          <div style="font-size:12px;color:var(--text3);">${emp.username}</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openAssignTask(${emp.id})" style="flex-shrink:0;white-space:nowrap;padding:7px 16px;">+ משימה</button>
+      </div>
+      <!-- שורה תחתונה: סטטיסטיקות + פס -->
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="text-align:center;flex-shrink:0;">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:3px;">פתוחות</div>
+          <span style="background:#fff3cd;color:#856404;border-radius:20px;padding:3px 14px;font-size:14px;font-weight:700;display:inline-block;">${open}</span>
+        </div>
+        <div style="text-align:center;flex-shrink:0;">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:3px;">הושלמו</div>
+          <span style="background:#d4edda;color:#155724;border-radius:20px;padding:3px 14px;font-size:14px;font-weight:700;display:inline-block;">${done}</span>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+            <span style="font-size:11px;color:var(--text3);">הספק</span>
+            <span style="font-size:11px;color:var(--text2);font-weight:600;">${pct}%</span>
           </div>
-          <span style="font-size:11px;color:var(--text2);white-space:nowrap;">${pct}%</span>
+          <div style="background:var(--bg3);border-radius:20px;height:8px;overflow:hidden;">
+            <div style="width:${pct}%;height:100%;background:${emp.avatarColor};border-radius:20px;transition:width 0.4s;"></div>
+          </div>
         </div>
       </div>
-      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex-shrink:0;">
-        <span style="font-size:11px;color:var(--text3);">פתוחות</span>
-        <span style="background:#fff3cd;color:#856404;border-radius:20px;padding:2px 10px;font-size:13px;font-weight:700;">${open}</span>
-      </div>
-      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex-shrink:0;">
-        <span style="font-size:11px;color:var(--text3);">הושלמו</span>
-        <span style="background:#d4edda;color:#155724;border-radius:20px;padding:2px 10px;font-size:13px;font-weight:700;">${done}</span>
-      </div>
-      <button class="btn btn-primary btn-sm" onclick="openAssignTask(${emp.id})" style="flex-shrink:0;white-space:nowrap;">+ משימה</button>
     </div>`;
   }).join('');
 }
