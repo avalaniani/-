@@ -1630,9 +1630,6 @@
         </select><select id="fs-grid-filter-contractor" onchange="_refreshContractorFilter('fs-grid-filter-contractor','fs-grid-filter-site',()=>renderCeoWorkersGrid(true))" style="border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:11px;background:var(--bg3);color:var(--text);cursor:pointer;">
           <option value="">🏢 כל הקבלנים</option>
         </select>
-        <select id="fs-grid-filter-contractor" onchange="_refreshContractorFilter('fs-grid-filter-contractor','fs-grid-filter-site',()=>renderCeoWorkersGrid(true))" style="border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:11px;background:var(--bg3);color:var(--text);cursor:pointer;">
-          <option value="">🏢 כל הקבלנים</option>
-        </select>
         <select id="fs-grid-sort" onchange="renderCeoWorkersGrid(true)" style="border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:11px;background:var(--bg3);color:var(--text);cursor:pointer;">
           <option value="name">מיון: שם</option>
           <option value="site">מיון: אתר</option>
@@ -3719,11 +3716,11 @@ function toggleSection(sectionId, iconId) {
 }
 
 function _populateSiteFilters() {
+  // מלא קבלנים ואתרים בכל זוג — שומר על הבחירה הנוכחית
   const company = currentUser?.company;
   const allSites = (DATA.workSites||[]).filter(s=>s.companyId===company);
   const contractors = [...new Set(allSites.map(s=>s.contractor).filter(Boolean))].sort();
 
-  // זוגות: contractor-select ← site-select
   const pairs = [
     { contr: 'workers-filter-contractor', site: 'workers-filter-site' },
     { contr: 'grid-filter-contractor',    site: 'grid-filter-site'    },
@@ -3735,15 +3732,14 @@ function _populateSiteFilters() {
     const siteEl  = document.getElementById(site);
     if (!contrEl || !siteEl) return;
 
-    // מלא קבלנים תמיד (כדי לשקף נתונים עדכניים)
-    const curC = contrEl.value;
-    contrEl.innerHTML = '<option value="">🏢 כל הקבלנים</option>' +
-      contractors.map(c=>`<option value="${c}" ${c===curC?'selected':''}>${c}</option>`).join('') +
-      '<option value="__none__" '+(curC==='__none__'?'selected':'')+'>— ללא קבלן</option>';
-    // שחזר ערך — innerHTML מאפס את .value
-    if (curC) contrEl.value = curC;
+    // מלא קבלנים — רק אם עוד לא מולאו (כדי לא לדרוס בחירה קיימת)
+    if (contrEl.options.length <= 1) {
+      contrEl.innerHTML = '<option value="">🏢 כל הקבלנים</option>' +
+        contractors.map(c=>`<option value="${c}">${c}</option>`).join('') +
+        '<option value="__none__">— ללא קבלן</option>';
+    }
 
-    // מלא אתרים — מסונן לפי הקבלן הנבחר
+    // סנן אתרים לפי הקבלן הנבחר כרגע
     const selectedContr = contrEl.value;
     const curS = siteEl.value;
     const filteredSites = selectedContr === '__none__'
@@ -3753,20 +3749,17 @@ function _populateSiteFilters() {
         : allSites;
 
     siteEl.innerHTML = '<option value="">🏗️ כל האתרים</option>' +
-      filteredSites.map(s=>`<option value="${s.id}" ${String(s.id)===curS?'selected':''}>${s.name}</option>`).join('') +
-      (selectedContr ? '' : '<option value="__none__" '+(curS==='__none__'?'selected':'')+'>— ללא אתר</option>');
+      filteredSites.map(s=>`<option value="${s.id}">${s.name}</option>`).join('') +
+      (selectedContr ? '' : '<option value="__none__">— ללא אתר</option>');
 
-    // אם האתר הנבחר לא קיים ברשימה החדשה — אפס אותו
-    if (curS && curS !== '__none__' && !filteredSites.find(s=>String(s.id)===curS)) {
-      siteEl.value = '';
-    }
+    // שחזר בחירת אתר אם עדיין רלוונטית
+    if (curS && filteredSites.find(s=>String(s.id)===curS)) siteEl.value = curS;
+    else if (curS === '__none__' && !selectedContr) siteEl.value = '__none__';
   });
 }
 
 function _refreshContractorFilter(contrElId, siteElId, triggerFn) {
-  // קרא בעת שינוי קבלן — מרענן את אתרי העבודה ואז מריץ סינון
-  const contrEl = document.getElementById(contrElId);
-  if (contrEl) contrEl.options.length = 0; // אפס כדי ש-_populateSiteFilters ימלא מחדש
+  // קרא בעת שינוי קבלן — מעדכן את אתרים ואז מריץ סינון
   _populateSiteFilters();
   triggerFn();
 }
