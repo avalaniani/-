@@ -6697,16 +6697,21 @@ function openBulkAssignModal() {
       <div style="font-size:12px;color:var(--text2);margin-bottom:16px;">${names.join(' • ')}</div>
       ${!sites.length ? `<div style="color:var(--text3);font-size:13px;">אין אתרים. <button onclick="closeModal();openAddSiteModal()" class="btn btn-primary btn-sm">+ הוסף אתר</button></div>` : `
       <div style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;margin-bottom:16px;">
-        ${sites.map(s=>{
-          const cnt = DATA.users.filter(u=>u.siteId===s.id).length;
-          return `
-          <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:10px;cursor:pointer;border:1px solid var(--border);background:white;transition:border-color 0.15s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'" onclick="bulkAssignToSite(${s.id})">
-            <span style="font-size:22px;">📍</span>
-            <div>
-              <div style="font-weight:700;">${s.name}</div>
-              <div style="font-size:11px;color:var(--text3);">${s.contractor} • ${cnt} פועלים</div>
-            </div>
-          </label>`}).join('')}
+        ${(()=>{
+          const contractors = [...new Set(sites.map(s=>s.contractor||'ללא קבלן'))].sort((a,b)=>a.localeCompare(b,'he'));
+          return contractors.map(contr => {
+            const contrSites = sites.filter(s=>(s.contractor||'ללא קבלן')===contr);
+            const rows = contrSites.map(s => {
+              const cnt = DATA.users.filter(u=>u.siteId===s.id).length;
+              return '<label style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:10px;cursor:pointer;border:1px solid var(--border);background:white;" onmouseover="this.style.borderColor=&quot;var(--accent)&quot;" onmouseout="this.style.borderColor=&quot;var(--border)&quot;" onclick="bulkAssignToSite(' + s.id + ')">'
+                + '<span style="font-size:22px;">📍</span>'
+                + '<div><div style="font-weight:700;">' + s.name + '</div>'
+                + '<div style="font-size:11px;color:var(--text3);">' + cnt + ' פועלים</div></div>'
+                + '</label>';
+            }).join('');
+            return '<div style="font-size:11px;font-weight:700;color:var(--text2);padding:6px 4px 2px;border-bottom:1px solid var(--border);margin-top:4px;">🏢 ' + contr + '</div>' + rows;
+          }).join('');
+        })()}
       </div>`}
       <button class="btn btn-outline" style="width:100%;" onclick="closeModal()">ביטול</button>
     </div>
