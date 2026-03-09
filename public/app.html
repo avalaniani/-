@@ -3916,7 +3916,24 @@ function renderCeoWorkers() {
   const now = new Date();
   const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
 
-  tbody.innerHTML = workers.map(w => {
+  // קבץ לפי קבלן
+  const contractors_w = [...new Set(workers.map(w => {
+    const site = DATA.workSites.find(s=>s.id===w.siteId && s.companyId===currentUser.company);
+    return site ? (site.contractor||'ללא קבלן') : 'ללא שיוך';
+  }))].sort((a,b)=>{
+    if (a==='ללא שיוך') return 1; if (b==='ללא שיוך') return -1;
+    if (a==='ללא קבלן') return 1; if (b==='ללא קבלן') return -1;
+    return a.localeCompare(b,'he');
+  });
+
+  const workerRowsByContr = contractors_w.map(contr => {
+    const group = workers.filter(w => {
+      const site = DATA.workSites.find(s=>s.id===w.siteId && s.companyId===currentUser.company);
+      const wContr = site ? (site.contractor||'ללא קבלן') : 'ללא שיוך';
+      return wContr === contr;
+    });
+    const headerRow = '<tr style="background:var(--bg3);"><td colspan="8" style="padding:6px 12px;font-size:11px;font-weight:700;color:var(--text2);border-bottom:1px solid var(--border);">🏢 ' + contr + ' <span style=\'font-weight:400;color:var(--text3);\'>(' + group.length + ' פועלים)</span></td></tr>';
+    const rows = group.map(w => {
     const key = `${w.id}-${now.getFullYear()}-${now.getMonth()}`;
     const hours = DATA.workerHours[key] || {};
     const signedInfo = company && company.signed[key];
@@ -3973,7 +3990,11 @@ function renderCeoWorkers() {
         <button class="btn btn-danger btn-sm" onclick="removeWorker(${w.id})">🗑️</button>
       </div></td>
     </tr>`;
+    });
+    return headerRow + rows.join('');
   }).join('');
+
+  tbody.innerHTML = workerRowsByContr;
 
   // Update current sig password display
   if (company) {
@@ -4188,11 +4209,30 @@ function renderCeoWorkersGrid(fullscreen) {
   }
   headerCells += `<th class="total-col">סה"כ</th>`;
 
-  // Build worker rows
+  // Build worker rows — קבץ לפי קבלן
   let workerRows = '';
   const dayTotals = new Array(daysInMonth + 1).fill(0);
 
-  workers.forEach(w => {
+  const contractors_g = [...new Set(workers.map(w => {
+    const site = DATA.workSites.find(s=>s.id===w.siteId && s.companyId===currentUser.company);
+    return site ? (site.contractor||'ללא קבלן') : 'ללא שיוך';
+  }))].sort((a,b)=>{
+    if (a==='ללא שיוך') return 1; if (b==='ללא שיוך') return -1;
+    if (a==='ללא קבלן') return 1; if (b==='ללא קבלן') return -1;
+    return a.localeCompare(b,'he');
+  });
+
+  const workersList_g = workers;
+  const colSpan_g = daysInMonth + 2;
+
+  contractors_g.forEach(contr => {
+    const group = workersList_g.filter(w => {
+      const site = DATA.workSites.find(s=>s.id===w.siteId && s.companyId===currentUser.company);
+      const wContr = site ? (site.contractor||'ללא קבלן') : 'ללא שיוך';
+      return wContr === contr;
+    });
+    workerRows += '<tr style="background:var(--bg3);"><td colspan="' + colSpan_g + '" style="padding:5px 10px;font-size:11px;font-weight:700;color:var(--text2);border-bottom:1px solid var(--border);">🏢 ' + contr + ' <span style=\'font-weight:400;color:var(--text3);\'>(' + group.length + ')</span></td></tr>';
+    group.forEach(w => {
     const key = `${w.id}-${gridYear}-${gridMonth}`;
     const hours = DATA.workerHours[key] || {};
     const signedInfo = company && company.signed[key];
@@ -4240,6 +4280,7 @@ function renderCeoWorkersGrid(fullscreen) {
       ${dayCells}
       <td class="total-td" title="סה&quot;כ שעות חודשי">${workerTotal > 0 ? workerTotal.toFixed(1) : '—'}</td>
     </tr>`;
+    });
   });
 
   // Build totals row
