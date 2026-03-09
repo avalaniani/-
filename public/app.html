@@ -2035,10 +2035,11 @@ async function sbUpdateCompany(id, updates) {
     const data = await apiFetch('/companies', 'PATCH', { id, ...updates });
     const comp = DATA.companies.find(x => x.id === id);
     if (comp) {
-      if (data.name  !== undefined) comp.name  = data.name;
-      if (data.field !== undefined) comp.field = data.field;
-      if (data.emoji !== undefined) comp.emoji = data.emoji;
-      if (data.color !== undefined) comp.color = data.color;
+      if (data.name        !== undefined) comp.name        = data.name;
+      if (data.field       !== undefined) comp.field       = data.field;
+      if (data.emoji       !== undefined) comp.emoji       = data.emoji;
+      if (data.color       !== undefined) comp.color       = data.color;
+      if (data.sig_password !== undefined) comp.sigPassword = data.sig_password;
     }
     return { ok: true, data };
   } catch(e) {
@@ -4796,7 +4797,9 @@ async function ceoUnsignWorker(workerId) {
 }
 
 function setSignToday() {
-  const today = new Date().toISOString().split('T')[0];
+  const d = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const today = d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
   const fromEl = document.getElementById('sigDayFrom');
   const toEl = document.getElementById('sigDayTo');
   if (fromEl) fromEl.value = today;
@@ -4806,11 +4809,12 @@ function setSignToday() {
 
 function setSignMonthToToday() {
   const today = new Date();
-  const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
-  const todayStr = today.toISOString().split('T')[0];
+  const pad = n => String(n).padStart(2,'0');
+  const todayStr = today.getFullYear() + '-' + pad(today.getMonth()+1) + '-' + pad(today.getDate());
+  const firstStr = today.getFullYear() + '-' + pad(today.getMonth()+1) + '-01';
   const fromEl = document.getElementById('sigDayFrom');
   const toEl = document.getElementById('sigDayTo');
-  if (fromEl) fromEl.value = firstOfMonth;
+  if (fromEl) fromEl.value = firstStr;
   if (toEl) toEl.value = todayStr;
   showToast('📆 סומן מתחילת החודש עד היום');
 }
@@ -5263,7 +5267,10 @@ async function setSigPassword() {
   if (!pass) { showToast('❌ יש להזין סיסמה', 'error'); return; }
   const company = DATA.companies.find(c => c.id === currentUser.company);
   if (!company) return;
-  if (HAS_SUPABASE) await sbUpdateCompany(company.id, { sig_password: pass });
+  if (HAS_SUPABASE) {
+    const result = await sbUpdateCompany(company.id, { sig_password: pass });
+    if (!result.ok) { showToast('❌ שגיאה בשמירת הסיסמה בשרת', 'error'); return; }
+  }
   company.sigPassword = pass;
   const dispEl = document.getElementById('current-sig-pass-display');
   if (dispEl) { dispEl.textContent = '••••••••'; dispEl.dataset.pass = pass; sigPassVisible = false; }
