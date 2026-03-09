@@ -1472,20 +1472,14 @@
               <div style="font-size:36px;margin-bottom:10px;">📋</div>
               <div style="color:var(--text2);margin-bottom:18px;font-size:14px;">הדוח טרם אושר על ידי מנהל האתר</div>
 
-              <!-- Sign full month -->
-              <div id="sig-full-month-block" style="background:#f0f7ff;border:1px solid #c8dff5;border-radius:10px;padding:16px;margin-bottom:12px;text-align:right;">
-                <div style="font-size:13px;font-weight:700;margin-bottom:10px;color:#4a88b8;">✅ חתימה על כל החודש</div>
-                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-                  <input type="password" id="sigPasswordVerify" class="search-input" placeholder="סיסמת מנהל אתר" style="width:190px;flex:1;min-width:0;">
-                  <button class="btn btn-primary btn-sm" onclick="signReport('full')">✅ חתום על כל החודש</button>
-                </div>
-              </div>
-
               <!-- Sign specific days -->
               <div style="background:#f5f0ff;border:1px solid #d8c8f5;border-radius:10px;padding:16px;text-align:right;">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
-                  <div style="font-size:13px;font-weight:700;color:#7b63d8;">📅 חתימה על ימים ספציפיים</div>
-                  <button class="btn btn-sm" style="background:#e8e0ff;color:#7b63d8;border:1px solid #d8c8f5;font-size:11px;padding:5px 10px;" onclick="setSignToday()">📌 סמן להיום</button>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px;">
+                  <div style="font-size:13px;font-weight:700;color:#7b63d8;">📅 חתימה על ימים</div>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                    <button class="btn btn-sm" style="background:#e8e0ff;color:#7b63d8;border:1px solid #d8c8f5;font-size:11px;padding:5px 10px;" onclick="setSignToday()">📌 סמן להיום</button>
+                    <button class="btn btn-sm" style="background:#d8f0e8;color:#2a7a5a;border:1px solid #a8d8c0;font-size:11px;padding:5px 10px;" onclick="setSignMonthToToday()">📆 מתחילת החודש</button>
+                  </div>
                 </div>
                 <div style="display:flex;flex-direction:column;gap:8px;">
                   <div style="display:flex;align-items:center;gap:8px;">
@@ -4808,6 +4802,17 @@ function setSignToday() {
   if (fromEl) fromEl.value = today;
   if (toEl) toEl.value = today;
   showToast('📌 תאריך היום סומן אוטומטית');
+}
+
+function setSignMonthToToday() {
+  const today = new Date();
+  const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+  const todayStr = today.toISOString().split('T')[0];
+  const fromEl = document.getElementById('sigDayFrom');
+  const toEl = document.getElementById('sigDayTo');
+  if (fromEl) fromEl.value = firstOfMonth;
+  if (toEl) toEl.value = todayStr;
+  showToast('📆 סומן מתחילת החודש עד היום');
 }
 
 function ceoOpenAddMember(role) {
