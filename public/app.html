@@ -1101,17 +1101,12 @@
             <select id="ceo-task-employee-filter" onchange="renderCeoTasks()" style="border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px;background:var(--bg3);color:var(--text);cursor:pointer;font-family:inherit;">
               <option value="">👥 כל העובדים</option>
             </select>
-            <button class="btn btn-primary btn-sm" onclick="openAddTask('ceo')">+ הוסף משימה</button>
           </div>
           <div class="tasks-grid" id="ceo-tasks-grid"></div>
         </div>
 
         <!-- תוכן: עובדים -->
         <div id="team-panel-employees" style="display:none;">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
-            <div style="flex:1;"></div>
-            <button class="btn btn-primary btn-sm" onclick="ceoOpenAddMember('employee')">+ הוסף עובד</button>
-          </div>
           <div id="ceo-employees-cards"></div>
         </div>
       </div>
@@ -3847,13 +3842,13 @@ function switchTeamTab(tab) {
     panelEmps.style.display  = 'none';
     btnTasks.style.cssText   = activeStyle;
     btnEmps.style.cssText    = inactiveStyle;
-    actionEl.innerHTML = '';
+    actionEl.innerHTML = '<button class="btn btn-primary btn-sm" onclick="openAddTask('ceo')">+ הוסף משימה</button>';
   } else {
     panelTasks.style.display = 'none';
     panelEmps.style.display  = '';
     btnTasks.style.cssText   = inactiveStyle;
     btnEmps.style.cssText    = activeStyle;
-    actionEl.innerHTML = '';
+    actionEl.innerHTML = '<button class="btn btn-primary btn-sm" onclick="ceoOpenAddMember('employee')">+ הוסף עובד</button>';
   }
 }
 
