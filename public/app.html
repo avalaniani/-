@@ -6503,13 +6503,45 @@ function openBulkAssignModal() {
   `);
 }
 
-async function bulkAssignToSite(siteId) {
+function bulkAssignToSite(siteId) {
   const site = DATA.workSites.find(s=>s.id===siteId);
   const ids = [..._bulkSelected];
-  for (const id of ids) await sbAssignWorkerSite(id, siteId);
+  const names = ids.map(id=>DATA.users.find(u=>u.id===id)?.name).filter(Boolean);
+  const today = new Date().toISOString().split('T')[0];
+
+  showModal(
+    '<div style="padding:22px;max-width:360px;width:100%;">' +
+    '<div style="font-size:16px;font-weight:800;margin-bottom:6px;display:flex;align-items:center;gap:10px;">' +
+    '<span style="font-size:24px;">📅</span> תאריך כניסה לאתר</div>' +
+    '<div style="font-size:13px;color:var(--text2);margin-bottom:6px;">מאיזה תאריך <strong>' + ids.length + ' הפועלים</strong> עובדים ב<strong>' + (site ? site.name : '') + '</strong>?</div>' +
+    '<div style="font-size:11px;color:var(--text3);margin-bottom:14px;">' + names.join(' • ') + '</div>' +
+    '<div><label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px;">תאריך התחלה *</label>' +
+    '<input type="date" id="bulk-assign-from-date" value="' + today + '" style="width:100%;border:2px solid var(--accent);border-radius:10px;padding:10px 12px;font-size:15px;font-family:inherit;background:white;direction:ltr;outline:none;box-sizing:border-box;"></div>' +
+    '<div style="display:flex;gap:10px;margin-top:20px;">' +
+    '<button class="btn btn-primary" style="flex:1;" onclick="_confirmBulkAssign(' + siteId + ')">✅ אשר שיוך</button>' +
+    '<button class="btn btn-outline" onclick="closeModal()">ביטול</button></div></div>'
+  );
+  setTimeout(() => { const el = document.getElementById('bulk-assign-from-date'); if(el) el.focus(); }, 80);
+}
+
+async function _confirmBulkAssign(siteId) {
+  const fromDate = document.getElementById('bulk-assign-from-date')?.value;
+  if (!fromDate) { showToast('יש לבחור תאריך התחלה', 'error'); return; }
+  const site = DATA.workSites.find(s=>s.id===siteId);
+  const ids = [..._bulkSelected];
+  for (const id of ids) {
+    await sbAssignWorkerSite(id, siteId);
+    DATA.workerSiteHistory.push({
+      workerId: id, siteId: siteId,
+      siteName: site ? site.name : '', contractor: site ? (site.contractor||'') : '',
+      fromDate: fromDate, toDate: null,
+    });
+    const worker = DATA.users.find(u=>u.id===id);
+    if (worker) _saveWorkerSiteHistoryLocal(worker.company);
+  }
   clearBulkSelection();
   closeModal();
-  showToast(`✅ ${ids.length} פועלים שויכו ל${site?.name}`);
+  showToast('✅ ' + ids.length + ' פועלים שויכו ל' + (site ? site.name : ''));
   renderWorkSites();
 }
 
