@@ -2084,11 +2084,19 @@ async function sbLoadMonthHours(workerId, year, month) {
 
 // ── Signatures ─────────────────────────────────────────────────
 async function sbSign(workerId, year, month, type, days, pass) {
-  await apiFetch('/signatures', 'POST', { worker_id: workerId, year, month, type, days, sig_password: pass || '' });
+  try {
+    await apiFetch('/signatures', 'POST', { worker_id: workerId, year, month, type, days, sig_password: pass || '' });
+  } catch(e) { console.error('sbSign error:', e); throw e; }
 }
 
-async function sbUnsign(workerId, year, month) {
-  await apiFetch('/signatures', 'DELETE', { worker_id: workerId, year, month });
+async function sbUnsign(workerId, year, month, pass) {
+  try {
+    await apiFetch('/signatures', 'DELETE', { worker_id: workerId, year, month, sig_password: pass || '' });
+  } catch(e) {
+    // אם 403 — worker אינו מורשה ישירות, נסה דרך endpoint אחר
+    if (e.message && e.message.includes('403')) throw new Error('אין הרשאה לביטול חתימה — פנה למנהל');
+    console.error('sbUnsign error:', e); throw e;
+  }
 }
 
 // ── Requests ───────────────────────────────────────────────────
@@ -4795,7 +4803,14 @@ async function unsignReport() {
   if (!pass) { showToast('❌ יש להזין סיסמה', 'error'); return; }
   if (pass !== company.sigPassword) { showToast('❌ סיסמה שגויה!', 'error'); return; }
   const key = `${currentUser.id}-${workerCurrentYear}-${workerCurrentMonth}`;
-  if (HAS_SUPABASE) await sbUnsign(currentUser.id, workerCurrentYear, workerCurrentMonth);
+  if (HAS_SUPABASE) {
+    try {
+      await sbUnsign(currentUser.id, workerCurrentYear, workerCurrentMonth, pass);
+    } catch(e) {
+      showToast('❌ ' + (e.message || 'שגיאה בביטול האישור — נסה שוב'), 'error');
+      return;
+    }
+  }
   delete company.signed[key];
   document.getElementById('unsignPassword').value = '';
   renderWorkerHours();
@@ -4809,7 +4824,14 @@ async function ceoUnsignWorker(workerId) {
   const key = `${workerId}-${now.getFullYear()}-${now.getMonth()}`;
   if (!company.signed[key]) { showToast('הדוח אינו חתום', 'error'); return; }
   if (!confirm('לבטל את חתימת הפועל הזה לחודש הנוכחי?')) return;
-  if (HAS_SUPABASE) await sbUnsign(workerId, now.getFullYear(), now.getMonth());
+  if (HAS_SUPABASE) {
+    try {
+      await sbUnsign(workerId, now.getFullYear(), now.getMonth());
+    } catch(e) {
+      showToast('❌ שגיאה בביטול החתימה', 'error');
+      return;
+    }
+  }
   delete company.signed[key];
   renderCeoWorkers();
   showToast('✅ חתימה בוטלה — הפועל יכול לערוך שוב');
