@@ -4756,14 +4756,34 @@ async function signReport(mode) {
       cur.setDate(cur.getDate() + 1);
     }
     if (!days.length) { showToast('❌ הטווח לא כולל ימים בחודש הנוכחי', 'error'); return; }
+
+    // בדוק ימים עם כניסה בלבד או יציאה בלבד
+    const workerKey = `${currentUser.id}-${workerCurrentYear}-${workerCurrentMonth}`;
+    const hours = DATA.workerHours[workerKey] || {};
+    const incompleteDays = days.filter(d => {
+      const e = hours[d];
+      if (!e) return false;
+      return (e.start && !e.end) || (!e.start && e.end);
+    });
+    const validDays = days.filter(d => !incompleteDays.includes(d));
+
+    if (incompleteDays.length > 0) {
+      const daysList = incompleteDays.join(', ');
+      showToast(`⚠️ ימים ${daysList} לא נחתמו — רשומה חלקית (כניסה בלבד או יציאה בלבד)`, 'error');
+      if (!validDays.length) return;
+    }
+
+    if (!validDays.length) { showToast('❌ אין ימים תקינים לחתימה', 'error'); return; }
+
     const now = new Date().toLocaleDateString('he-IL');
     const existing = company.signed[key];
     let existingDays = (existing && existing.type === 'partial') ? existing.days : [];
-    const merged = [...new Set([...existingDays, ...days])].sort((a,b)=>a-b);
+    const merged = [...new Set([...existingDays, ...validDays])].sort((a,b)=>a-b);
     if (HAS_SUPABASE) await sbSign(currentUser.id, workerCurrentYear, workerCurrentMonth, 'partial', merged, pass);
     company.signed[key] = { type:'partial', date: now, days: merged };
     document.getElementById('sigPasswordVerifyPartial').value = '';
-    showToast(`✅ ימים ${days[0]}-${days[days.length-1]} אושרו וחתומו!`);
+    const signedRange = validDays.length === 1 ? `יום ${validDays[0]}` : `ימים ${validDays[0]}–${validDays[validDays.length-1]}`;
+    showToast(`✅ ${signedRange} אושרו וחתומו!`);
   }
   renderWorkerHours();
 }
