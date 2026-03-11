@@ -1737,7 +1737,7 @@ function mapCompany(c, signedMap = {}) {
     field:       c.field        || '',
     emoji:       c.emoji        || '🏢',
     color:       c.color        || '#6c63ff',
-    sigPassword: '',  // לא מוחזר לדפדפן
+    sigPassword: c.sig_password || c.sigPassword || '',
     signed:      signedMap[c.id] || {},
   };
 }
