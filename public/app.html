@@ -2083,9 +2083,8 @@ async function sbLoadMonthHours(workerId, year, month) {
 }
 
 // ── Signatures ─────────────────────────────────────────────────
-async function sbSign(workerId, year, month, type, days) {
-  const pass = document.getElementById('sigPasswordVerify')?.value || '';
-  await apiFetch('/signatures', 'POST', { worker_id: workerId, year, month, type, days, sig_password: pass });
+async function sbSign(workerId, year, month, type, days, pass) {
+  await apiFetch('/signatures', 'POST', { worker_id: workerId, year, month, type, days, sig_password: pass || '' });
 }
 
 async function sbUnsign(workerId, year, month) {
@@ -4736,7 +4735,7 @@ async function signReport(mode) {
     if (!pass) { showToast('❌ יש להזין סיסמה', 'error'); return; }
     if (pass !== company.sigPassword) { showToast('❌ סיסמה שגויה!', 'error'); return; }
     const now = new Date().toLocaleDateString('he-IL');
-    if (HAS_SUPABASE) await sbSign(currentUser.id, workerCurrentYear, workerCurrentMonth, 'full', null);
+    if (HAS_SUPABASE) await sbSign(currentUser.id, workerCurrentYear, workerCurrentMonth, 'full', null, pass);
     company.signed[key] = { type:'full', date: now, days: null };
     document.getElementById('sigPasswordVerify').value = '';
     showToast('✅ כל הדוח אושר וחתום!');
@@ -4761,7 +4760,7 @@ async function signReport(mode) {
     const existing = company.signed[key];
     let existingDays = (existing && existing.type === 'partial') ? existing.days : [];
     const merged = [...new Set([...existingDays, ...days])].sort((a,b)=>a-b);
-    if (HAS_SUPABASE) await sbSign(currentUser.id, workerCurrentYear, workerCurrentMonth, 'partial', merged);
+    if (HAS_SUPABASE) await sbSign(currentUser.id, workerCurrentYear, workerCurrentMonth, 'partial', merged, pass);
     company.signed[key] = { type:'partial', date: now, days: merged };
     document.getElementById('sigPasswordVerifyPartial').value = '';
     showToast(`✅ ימים ${days[0]}-${days[days.length-1]} אושרו וחתומו!`);
