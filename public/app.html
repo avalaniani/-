@@ -637,14 +637,18 @@
     border: 1px solid var(--border);
     overflow: hidden;
     white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 3;
   }
   .hours-grid-table th.worker-name-col {
     text-align: right;
     width: 120px;
     position: sticky;
     right: 0;
+    top: 0;
     background: var(--bg3);
-    z-index: 2;
+    z-index: 4;
     border-right: 2px solid var(--border2);
     padding-right: 8px;
     padding-left: 4px;
@@ -666,7 +670,7 @@
   .hours-grid-table td.worker-name-td {
     text-align: right;
     font-weight: 700;
-    font-size: 11px;
+    font-size: 12px;
     background: #fafcff;
     position: sticky;
     right: 0;
@@ -697,7 +701,7 @@
   #fs-workers-grid-wrap .hours-grid-table { font-size: 13px; }
   #fs-workers-grid-wrap .hours-grid-table th { font-size: 12px; padding: 7px 2px; }
   #fs-workers-grid-wrap .hours-grid-table td { font-size: 12px; padding: 8px 2px; }
-  #fs-workers-grid-wrap .hours-grid-table td.worker-name-td { font-size: 13px; width: 140px; }
+  #fs-workers-grid-wrap .hours-grid-table td.worker-name-td { font-size: 14px; width: 140px; }
   #fs-workers-grid-wrap .hours-grid-table th.worker-name-col { width: 140px; }
   #fs-workers-grid-wrap .hours-grid-table td.total-td { font-size: 13px; }
   #fs-workers-grid-wrap .hours-grid-table tr.total-row td { font-size: 12px; }
@@ -1234,7 +1238,7 @@
               </div>
             </div>
 
-            <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;" id="grid-scroll-container">
+            <div style="overflow:auto;-webkit-overflow-scrolling:touch;max-height:60vh;" id="grid-scroll-container">
               <div id="workers-grid-wrap"></div>
             </div>
           </div>
