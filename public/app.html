@@ -6561,12 +6561,15 @@ function openAssignToSiteFromList(siteId) {
   const unassigned = DATA.users.filter(u => u.company===company && u.role==='worker' && u.siteId!==siteId);
   if (!unassigned.length) { showToast('כל הפועלים כבר משויכים לאתר זה'); return; }
 
+  const workersListId = 'assign-site-workers-list-' + siteId;
   showModal(`
     <div style="padding:24px;max-width:380px;width:100%;">
-      <div style="font-size:17px;font-weight:800;margin-bottom:16px;">הוסף פועל ל: 📍 ${site?.name}</div>
-      <div style="display:flex;flex-direction:column;gap:8px;max-height:350px;overflow-y:auto;margin-bottom:16px;">
+      <div style="font-size:17px;font-weight:800;margin-bottom:12px;">הוסף פועל ל: 📍 ${site?.name}</div>
+      <input type="text" id="assign-site-search" placeholder="🔍 חיפוש פועל..." oninput="filterAssignSiteWorkers('${workersListId}')"
+        style="width:100%;border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:14px;font-family:inherit;background:var(--bg3);color:var(--text);outline:none;box-sizing:border-box;margin-bottom:10px;">
+      <div id="${workersListId}" style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;margin-bottom:16px;">
         ${unassigned.map(w=>`
-          <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;border:1px solid var(--border);background:white;" onclick="assignWorkerToSite(${w.id},${siteId});closeModal();renderWorkSites();">
+          <label data-name="${w.name}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;border:1px solid var(--border);background:white;" onclick="assignWorkerToSite(${w.id},${siteId});closeModal();renderWorkSites();">
             <span style="width:30px;height:30px;border-radius:50%;background:${w.avatarColor}33;color:${w.avatarColor};display:inline-flex;align-items:center;justify-content:center;font-weight:700;">${w.name[0]}</span>
             <span style="font-weight:600;">${w.name}</span>
             ${w.siteId ? `<span style="font-size:11px;color:var(--text3);margin-right:auto;">${DATA.workSites.find(s=>s.id===w.siteId)?.name||''}</span>` : ''}
@@ -6575,6 +6578,16 @@ function openAssignToSiteFromList(siteId) {
       <button class="btn btn-outline" style="width:100%;" onclick="closeModal()">סגור</button>
     </div>
   `);
+  setTimeout(() => document.getElementById('assign-site-search')?.focus(), 80);
+}
+
+function filterAssignSiteWorkers(listId) {
+  const q = (document.getElementById('assign-site-search')?.value || '').toLowerCase();
+  const list = document.getElementById(listId);
+  if (!list) return;
+  list.querySelectorAll('label[data-name]').forEach(el => {
+    el.style.display = el.dataset.name.toLowerCase().includes(q) ? '' : 'none';
+  });
 }
 
 function assignWorkerToSite(workerId, siteId) {
