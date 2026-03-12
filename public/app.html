@@ -1301,6 +1301,8 @@
             <div style="font-size:13px;color:var(--text2);margin-top:2px;">ניהול אתרי עבודה ושיוך פועלים</div>
           </div>
           <button class="btn btn-primary" onclick="openAddSiteModal()" style="width:100%;justify-content:center;">+ הוסף אתר עבודה חדש</button>
+          <input type="text" id="sites-search" placeholder="🔍 חיפוש לפי קבלן או שם אתר..." oninput="renderWorkSites()"
+            style="margin-top:12px;width:100%;border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:14px;font-family:inherit;background:white;color:var(--text);outline:none;box-sizing:border-box;">
         </div>
 
         <!-- Sites list -->
@@ -6287,7 +6289,10 @@ let _bulkSelected = new Set(); // מזהי פועלים נבחרים לשיוך 
 // ── הצג את עמוד אתרי העבודה ──
 function renderWorkSites() {
   const company = currentUser.company;
-  const sites = DATA.workSites.filter(s => s.companyId === company);
+  const q = (document.getElementById('sites-search')?.value || '').trim().toLowerCase();
+  const sites = DATA.workSites.filter(s => s.companyId === company && (
+    !q || (s.contractor||'').toLowerCase().includes(q) || s.name.toLowerCase().includes(q)
+  ));
   const workers = DATA.users.filter(u => u.company === company && u.role === 'worker');
   _bulkSelected.clear();
   updateBulkBar();
