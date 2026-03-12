@@ -4327,7 +4327,7 @@ function renderCeoWorkersGrid(fullscreen) {
         ${nameCellContent}
       </td>
       ${dayCells}
-      <td class="total-td" title="סה&quot;כ שעות חודשי" style="${isFullSigned ? 'color:#1a9a5a;font-weight:800;' : ''}">${workerTotal > 0 ? workerTotal.toFixed(1) : '—'}</td>
+      <td class="total-td" title="סה&quot;כ שעות חודשי" style="${wStatus === 'signed' ? 'color:#1a9a5a;font-weight:800;' : ''}">${workerTotal > 0 ? workerTotal.toFixed(1) : '—'}</td>
     </tr>`;
       });
     });
