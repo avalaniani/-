@@ -6356,8 +6356,10 @@ function renderWorkSites() {
     </div>
   `).join('');
 
-  // גם רנדר את פועלים ללא אתר
-  const unassigned = workers.filter(w => !w.siteId || !sites.find(s=>s.id===w.siteId));
+  // פועלים ללא אתר — רק כשאין חיפוש, ותמיד לפי כל האתרים (לא המסוננים)
+  const allSites = DATA.workSites.filter(s => s.companyId === company);
+  const allWorkers = DATA.users.filter(u => u.company === company && u.role === 'worker');
+  const unassigned = !q ? allWorkers.filter(w => !w.siteId || !allSites.find(s=>s.id===w.siteId)) : [];
   if (unassigned.length) {
     container.innerHTML += `
       <div class="card" style="border:2px dashed var(--border);background:#fafbfc;">
