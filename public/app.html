@@ -4451,7 +4451,7 @@ function renderCeoWorkersGrid(fullscreen) {
     // Name cell content: show ID number when in ID search mode
     const idIcon = w.idType === 'passport' ? '🛂' : '🪪';
     const nameCellContent = showIdInCell
-      ? `<div style="display:flex;align-items:center;gap:4px;cursor:pointer;" onclick="viewWorkerReport(${w.id})" title="פתח דוח שעות"><span style="font-size:11px;">${idIcon}</span><span style="font-family:monospace;font-size:10px;">${w.idNumber || '—'}</span></div>`
+      ? `<div style="display:flex;align-items:center;gap:4px;cursor:pointer;" onclick="viewWorkerReport(${w.id})" title="פתח דוח שעות"><span style="font-size:13px;">${idIcon}</span><span style="font-family:monospace;font-size:13px;font-weight:700;">${w.idNumber || '—'}</span></div>`
       : `<div style="display:flex;align-items:center;gap:5px;cursor:pointer;" onclick="viewWorkerReport(${w.id})" title="פתח דוח שעות">
           <div style="width:20px;height:20px;border-radius:50%;background:${w.avatarColor}33;color:${w.avatarColor};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:9px;flex-shrink:0;">${w.name[0]}</div>
           <span>${w.name}</span>
