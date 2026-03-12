@@ -5961,7 +5961,7 @@ function viewWorkerReport(workerId) {
     <div id="report-stats" style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:14px;padding:14px;background:var(--bg3);border-radius:10px;"></div>
     <div class="table-wrap" style="max-height:400px;overflow-y:auto;">
       <table class="hours-table">
-        <thead><tr><th>תאריך</th><th>יום</th><th>שעות</th><th>הגעה</th><th>יציאה</th><th>הערות</th></tr></thead>
+        <thead><tr><th>תאריך</th><th>יום</th><th>שעות</th><th>הגעה</th><th>יציאה</th><th>קבלן / אתר</th></tr></thead>
         <tbody id="report-table-body"></tbody>
       </table>
     </div>
@@ -6000,6 +6000,25 @@ function loadWorkerReportMonth(workerId) {
   // Build rows & stats
   const nowDate = new Date();
   const todayDay = (nowDate.getFullYear() === y && nowDate.getMonth() === m) ? nowDate.getDate() : -1;
+  const pad2 = n => String(n).padStart(2,'0');
+
+  // פונקציה: מחזירה אתר+קבלן לפועל ביום נתון לפי היסטוריית שיוכים
+  function getSiteForDay(wId, dateStr) {
+    const hist = (DATA.workerSiteHistory||[]).filter(h => h.workerId === wId);
+    // מיין לפי fromDate — הכניסה האחרונה שתאריך תחילתה <= dateStr
+    const match = hist
+      .filter(h => h.fromDate && h.fromDate <= dateStr && (!h.toDate || h.toDate >= dateStr))
+      .sort((a,b) => b.fromDate.localeCompare(a.fromDate))[0];
+    if (match) return { site: match.siteName || '—', contractor: match.contractor || '' };
+    // fallback: בדוק מה האתר הנוכחי של הפועל (אם תאריך <= היום)
+    const worker = DATA.users.find(u=>u.id===wId);
+    if (worker && worker.siteId) {
+      const site = DATA.workSites.find(s=>s.id===worker.siteId);
+      if (site) return { site: site.name, contractor: site.contractor || '' };
+    }
+    return null;
+  }
+
   let totalH = 0, workDays = 0;
   let rows = '';
   for (let d = 1; d <= daysInMonth; d++) {
@@ -6016,13 +6035,21 @@ function loadWorkerReportMonth(workerId) {
     const sigMark = isDaySigned ? ' ✓' : '';
     const todayMark = isToday ? ' <span style="font-size:9px;background:#f5c518;color:#333;border-radius:4px;padding:1px 5px;font-weight:700;vertical-align:middle;">היום</span>' : '';
 
+    const dateStr = y + '-' + pad2(m+1) + '-' + pad2(d);
+    const siteInfo = getSiteForDay(workerId, dateStr);
+    const siteCellContent = siteInfo
+      ? (siteInfo.contractor
+          ? `<span style="font-size:11px;color:#2a6496;font-weight:600;">${siteInfo.contractor}</span><span style="color:var(--text3);font-size:10px;"> / ${siteInfo.site}</span>`
+          : `<span style="font-size:11px;color:#2a6496;">${siteInfo.site}</span>`)
+      : '<span style="color:var(--text3);font-size:11px;">—</span>';
+
     rows += `<tr style="${rowBg}${isToday ? 'border-right:3px solid #f5c518;' : ''}">
       <td style="font-weight:${isToday?'800':'600'};font-size:12px;">${d}/${m+1}${sigMark}${todayMark}</td>
       <td style="color:${isWeekend ? '#c0506a' : 'var(--text2)'};font-size:12px;">${dayNames[dayIdx]}</td>
       <td style="font-weight:700;color:#4a88b8;font-size:13px;">${computed > 0 ? computed.toFixed(1) : '—'}</td>
       <td style="font-size:12px;color:var(--text2);">${entry.start || '—'}</td>
       <td style="font-size:12px;color:var(--text2);">${entry.end || '—'}</td>
-      <td style="font-size:12px;color:var(--text2);">${entry.note || ''}</td>
+      <td style="font-size:12px;">${siteCellContent}</td>
     </tr>`;
   }
 
