@@ -1148,7 +1148,7 @@
             </div>
             <div class="table-wrap">
               <table>
-                <thead><tr><th>פועל</th><th>אתר עבודה</th><th>סה"כ שעות</th><th>שעות חתומות ✅</th><th>שעות לא חתומות ⏳</th><th>סטטוס</th><th>צפייה</th><th>פעולות</th></tr></thead>
+                <thead><tr><th>פועל</th><th>אתר עבודה</th><th>סה"כ שעות</th><th>שעות חתומות ✅</th><th>שעות לא חתומות ⏳</th><th>סטטוס</th><th>צפייה</th></tr></thead>
                 <tbody id="ceo-workers-table"></tbody>
               </table>
             </div>
@@ -3989,10 +3989,6 @@ function renderCeoWorkers() {
       <td><span style="font-size:15px;font-weight:700;color:${unsignedH > 0 ? '#c07030' : 'var(--text3)'};">${unsignedH > 0 ? unsignedH.toFixed(1) : '—'}</span>${unsignedH > 0 ? ' <span style="color:var(--text2);font-size:11px;">שע\'</span>' : ''}</td>
       <td>${statusBadge}</td>
       <td><button class="btn btn-outline btn-sm" onclick="viewWorkerReport(${w.id})">👁️ צפייה</button></td>
-      <td><div style="display:flex;gap:6px;">
-        ${signedInfo ? `<button class="btn btn-outline btn-sm" onclick="ceoUnsignWorker(${w.id})" title="בטל חתימה">🔓 בטל</button>` : ''}
-        <button class="btn btn-danger btn-sm" onclick="removeWorker(${w.id})">🗑️</button>
-      </div></td>
     </tr>`;
       });
       return siteHeader + rows.join('');
