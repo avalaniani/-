@@ -1193,13 +1193,26 @@
 
               <span id="grid-search-count" style="font-size:12px;color:var(--text2);"></span>
             </div>
-            <!-- Status filter + summary -->
-            <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding-bottom:8px;">
-              <button id="grid-status-all" onclick="setGridStatusFilter('all',false)" class="btn btn-sm" style="background:#e8edf2;color:#4a6080;border:1px solid #c0ccd8;font-size:11px;padding:4px 10px;">הכל</button>
-              <button id="grid-status-signed" onclick="setGridStatusFilter('signed',false)" class="btn btn-sm" style="background:#f0fff4;color:#2a7a5a;border:1px solid #a8d8b8;font-size:11px;padding:4px 10px;">✅ חתומים</button>
-              <button id="grid-status-filled" onclick="setGridStatusFilter('filled',false)" class="btn btn-sm" style="background:#fff8e6;color:#8a6020;border:1px solid #e0c878;font-size:11px;padding:4px 10px;">⏳ מולאו</button>
-              <button id="grid-status-missing" onclick="setGridStatusFilter('missing',false)" class="btn btn-sm" style="background:#fff0f0;color:#a03030;border:1px solid #e0a8a8;font-size:11px;padding:4px 10px;">❌ חסרים</button>
-              <span id="grid-status-summary" style="font-size:12px;color:var(--text2);margin-right:6px;"></span>
+            <!-- Status filter dropdown -->
+            <div style="padding-bottom:8px;position:relative;display:inline-block;">
+              <button id="grid-status-btn" onclick="toggleGridStatusDropdown('grid-status-dropdown')" class="btn btn-sm" style="background:#f0f4f8;color:#4a6080;border:1px solid #c0ccd8;font-size:12px;padding:5px 12px;display:flex;align-items:center;gap:6px;">
+                <span id="grid-status-btn-label">📋 כל הפועלים</span>
+                <span style="font-size:10px;color:var(--text3);">▾</span>
+              </button>
+              <div id="grid-status-dropdown" style="display:none;position:absolute;top:calc(100% + 4px);right:0;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,0.12);z-index:200;min-width:200px;overflow:hidden;">
+                <div id="grid-dd-all" onclick="setGridStatusFilter('all',false);toggleGridStatusDropdown('grid-status-dropdown')" style="padding:10px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#4a6080;" onmouseover="this.style.background='#f4f7fa'" onmouseout="this.style.background=''">
+                  <span>📋 כל הפועלים</span><span id="grid-dd-count-all" style="font-size:11px;font-weight:700;background:#e8edf2;border-radius:20px;padding:1px 8px;"></span>
+                </div>
+                <div id="grid-dd-signed" onclick="setGridStatusFilter('signed',false);toggleGridStatusDropdown('grid-status-dropdown')" style="padding:10px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#2a7a5a;" onmouseover="this.style.background='#f0fff4'" onmouseout="this.style.background=''">
+                  <span>✅ כל הימים חתומים</span><span id="grid-dd-count-signed" style="font-size:11px;font-weight:700;background:#d0f0e0;border-radius:20px;padding:1px 8px;"></span>
+                </div>
+                <div id="grid-dd-filled" onclick="setGridStatusFilter('filled',false);toggleGridStatusDropdown('grid-status-dropdown')" style="padding:10px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#8a6020;" onmouseover="this.style.background='#fff8e6'" onmouseout="this.style.background=''">
+                  <span>⏳ מולאו, לא חתומים</span><span id="grid-dd-count-filled" style="font-size:11px;font-weight:700;background:#fdefc0;border-radius:20px;padding:1px 8px;"></span>
+                </div>
+                <div id="grid-dd-missing" onclick="setGridStatusFilter('missing',false);toggleGridStatusDropdown('grid-status-dropdown')" style="padding:10px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#a03030;" onmouseover="this.style.background='#fff0f0'" onmouseout="this.style.background=''">
+                  <span>❌ לא מולאו</span><span id="grid-dd-count-missing" style="font-size:11px;font-weight:700;background:#f8d8d8;border-radius:20px;padding:1px 8px;"></span>
+                </div>
+              </div>
             </div>
 
             <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;" id="grid-scroll-container">
@@ -1631,12 +1644,24 @@
         </select>
 
         <span id="fs-grid-search-count" style="font-size:11px;color:var(--text2);white-space:nowrap;"></span>
-        <div style="display:flex;gap:4px;align-items:center;">
-          <button id="fs-grid-status-all" onclick="setGridStatusFilter('all',true)" class="btn btn-sm" style="background:#e8edf2;color:#4a6080;border:1px solid #c0ccd8;font-size:10px;padding:3px 8px;">הכל</button>
-          <button id="fs-grid-status-signed" onclick="setGridStatusFilter('signed',true)" class="btn btn-sm" style="background:#f0fff4;color:#2a7a5a;border:1px solid #a8d8b8;font-size:10px;padding:3px 8px;">✅</button>
-          <button id="fs-grid-status-filled" onclick="setGridStatusFilter('filled',true)" class="btn btn-sm" style="background:#fff8e6;color:#8a6020;border:1px solid #e0c878;font-size:10px;padding:3px 8px;">⏳</button>
-          <button id="fs-grid-status-missing" onclick="setGridStatusFilter('missing',true)" class="btn btn-sm" style="background:#fff0f0;color:#a03030;border:1px solid #e0a8a8;font-size:10px;padding:3px 8px;">❌</button>
-          <span id="fs-grid-status-summary" style="font-size:10px;color:var(--text2);white-space:nowrap;"></span>
+        <div style="position:relative;display:inline-block;">
+          <button id="fs-grid-status-btn" onclick="toggleGridStatusDropdown('fs-grid-status-dropdown')" class="btn btn-sm" style="background:#f0f4f8;color:#4a6080;border:1px solid #c0ccd8;font-size:11px;padding:4px 10px;display:flex;align-items:center;gap:5px;">
+            <span id="fs-grid-status-btn-label">📋 כל הפועלים</span><span style="font-size:9px;color:var(--text3);">▾</span>
+          </button>
+          <div id="fs-grid-status-dropdown" style="display:none;position:absolute;top:calc(100% + 4px);right:0;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,0.15);z-index:10100;min-width:200px;overflow:hidden;">
+            <div onclick="setGridStatusFilter('all',true);toggleGridStatusDropdown('fs-grid-status-dropdown')" style="padding:9px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#4a6080;" onmouseover="this.style.background='#f4f7fa'" onmouseout="this.style.background=''">
+              <span>📋 כל הפועלים</span><span id="fs-grid-dd-count-all" style="font-size:11px;font-weight:700;background:#e8edf2;border-radius:20px;padding:1px 8px;"></span>
+            </div>
+            <div onclick="setGridStatusFilter('signed',true);toggleGridStatusDropdown('fs-grid-status-dropdown')" style="padding:9px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#2a7a5a;" onmouseover="this.style.background='#f0fff4'" onmouseout="this.style.background=''">
+              <span>✅ כל הימים חתומים</span><span id="fs-grid-dd-count-signed" style="font-size:11px;font-weight:700;background:#d0f0e0;border-radius:20px;padding:1px 8px;"></span>
+            </div>
+            <div onclick="setGridStatusFilter('filled',true);toggleGridStatusDropdown('fs-grid-status-dropdown')" style="padding:9px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#8a6020;" onmouseover="this.style.background='#fff8e6'" onmouseout="this.style.background=''">
+              <span>⏳ מולאו, לא חתומים</span><span id="fs-grid-dd-count-filled" style="font-size:11px;font-weight:700;background:#fdefc0;border-radius:20px;padding:1px 8px;"></span>
+            </div>
+            <div onclick="setGridStatusFilter('missing',true);toggleGridStatusDropdown('fs-grid-status-dropdown')" style="padding:9px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#a03030;" onmouseover="this.style.background='#fff0f0'" onmouseout="this.style.background=''">
+              <span>❌ לא מולאו</span><span id="fs-grid-dd-count-missing" style="font-size:11px;font-weight:700;background:#f8d8d8;border-radius:20px;padding:1px 8px;"></span>
+            </div>
+          </div>
         </div>
         <button class="btn btn-success btn-sm" onclick="copyGridToExcelFS()" style="font-size:11px;padding:4px 10px;">📋 העתק לאקסל</button>
       </div>
@@ -4161,6 +4186,28 @@ function changeGridMonth(delta) {
 
 let _gridStatusFilter = 'all';
 
+function toggleGridStatusDropdown(id) {
+  const dd = document.getElementById(id);
+  if (!dd) return;
+  const isOpen = dd.style.display !== 'none';
+  // סגור את כל ה-dropdowns
+  ['grid-status-dropdown','fs-grid-status-dropdown'].forEach(i => {
+    const el = document.getElementById(i);
+    if (el) el.style.display = 'none';
+  });
+  if (!isOpen) dd.style.display = 'block';
+}
+// סגור dropdown בלחיצה מחוץ
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#grid-status-btn') && !e.target.closest('#grid-status-dropdown') &&
+      !e.target.closest('#fs-grid-status-btn') && !e.target.closest('#fs-grid-status-dropdown')) {
+    ['grid-status-dropdown','fs-grid-status-dropdown'].forEach(i => {
+      const el = document.getElementById(i);
+      if (el) el.style.display = 'none';
+    });
+  }
+});
+
 function setGridStatusFilter(status, fullscreen) {
   _gridStatusFilter = status;
   renderCeoWorkersGrid(fullscreen);
@@ -4358,20 +4405,21 @@ function renderCeoWorkersGrid(fullscreen) {
       </tbody>
     </table>`;
 
-  // עדכן summary + הדגש כפתור פעיל
+  // עדכן מספרים ב-dropdown
   const allWorkers_g = workers;
   const nSigned  = allWorkers_g.filter(w => _getWorkerGridStatus(w, gridYear, gridMonth, company) === 'signed').length;
   const nFilled  = allWorkers_g.filter(w => _getWorkerGridStatus(w, gridYear, gridMonth, company) === 'filled').length;
   const nMissing = allWorkers_g.filter(w => _getWorkerGridStatus(w, gridYear, gridMonth, company) === 'missing').length;
-  const summaryText = `✅ ${nSigned} חתומים · ⏳ ${nFilled} מולאו · ❌ ${nMissing} חסרים`;
+  const nAll = allWorkers_g.length;
   const p = fullscreen ? 'fs-' : '';
-  const sumEl = document.getElementById(p + 'grid-status-summary');
-  if (sumEl) sumEl.textContent = summaryText;
-  ['all','signed','filled','missing'].forEach(s => {
-    const btn = document.getElementById(p + 'grid-status-' + s);
-    if (btn) btn.style.fontWeight = _gridStatusFilter === s ? '800' : '400';
-    if (btn) btn.style.outline = _gridStatusFilter === s ? '2px solid currentColor' : 'none';
-  });
+  const labelMap = { all: `📋 כל הפועלים (${nAll})`, signed: `✅ כל הימים חתומים (${nSigned})`, filled: `⏳ מולאו, לא חתומים (${nFilled})`, missing: `❌ לא מולאו (${nMissing})` };
+  const btnLabel = document.getElementById(p + 'grid-status-btn-label');
+  if (btnLabel) btnLabel.textContent = labelMap[_gridStatusFilter];
+  const setCount = (id, n) => { const el = document.getElementById(p + id); if (el) el.textContent = n; };
+  setCount('grid-dd-count-all', nAll);
+  setCount('grid-dd-count-signed', nSigned);
+  setCount('grid-dd-count-filled', nFilled);
+  setCount('grid-dd-count-missing', nMissing);
 
   // Apply current zoom level after render
   const currentSize = fullscreen ? gridZoomFS : gridZoomNormal;
