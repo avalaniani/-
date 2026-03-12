@@ -4765,19 +4765,26 @@ async function signReport(mode) {
     }
     if (!days.length) { showToast('❌ הטווח לא כולל ימים בחודש הנוכחי', 'error'); return; }
 
-    // בדוק ימים עם כניסה בלבד או יציאה בלבד
+    // בדוק ימים — רק ימים עם כניסה ויציאה יחתמו
     const workerKey = `${currentUser.id}-${workerCurrentYear}-${workerCurrentMonth}`;
     const hours = DATA.workerHours[workerKey] || {};
+    const emptyDays = days.filter(d => {
+      const e = hours[d];
+      return !e || (!e.start && !e.end && !e.hours);
+    });
     const incompleteDays = days.filter(d => {
       const e = hours[d];
       if (!e) return false;
       return (e.start && !e.end) || (!e.start && e.end);
     });
-    const validDays = days.filter(d => !incompleteDays.includes(d));
+    const skippedDays = [...emptyDays, ...incompleteDays].sort((a,b)=>a-b);
+    const validDays = days.filter(d => !skippedDays.includes(d));
 
-    if (incompleteDays.length > 0) {
-      const daysList = incompleteDays.join(', ');
-      showToast(`⚠️ ימים ${daysList} לא נחתמו — רשומה חלקית (כניסה בלבד או יציאה בלבד)`, 'error');
+    if (emptyDays.length > 0 || incompleteDays.length > 0) {
+      const msgs = [];
+      if (emptyDays.length > 0) msgs.push(`ימים ${emptyDays.join(', ')} ללא נוכחות`);
+      if (incompleteDays.length > 0) msgs.push(`ימים ${incompleteDays.join(', ')} עם רשומה חלקית`);
+      showToast(`⚠️ לא נחתמו: ${msgs.join(' | ')}`, 'error');
       if (!validDays.length) return;
     }
 
