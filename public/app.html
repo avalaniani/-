@@ -4171,15 +4171,25 @@ function _getWorkerGridStatus(w, gridYear, gridMonth, company) {
   const hours = DATA.workerHours[key] || {};
   const signedInfo = company && company.signed[key];
   const isFullSigned = signedInfo && signedInfo.type === 'full';
-  // חתום מלא
-  if (isFullSigned) return 'signed';
-  // בדוק אם מולא — לפחות יום אחד עם שעות
+  const partialDays = (signedInfo && signedInfo.type === 'partial') ? (signedInfo.days || []) : [];
   const daysInMonth = new Date(gridYear, gridMonth+1, 0).getDate();
+
+  // מצא את כל הימים שיש בהם שעות
+  const workedDays = [];
   for (let d = 1; d <= daysInMonth; d++) {
     const e = hours[d];
-    if (e && (e.hours > 0 || (e.start && e.end))) return 'filled';
+    if (e && (parseFloat(e.hours) > 0 || (e.start && e.end))) workedDays.push(d);
   }
-  return 'missing';
+
+  // אין שעות כלל
+  if (!workedDays.length) return 'missing';
+
+  // חתום — כל הימים שיש בהם שעות חתומים (בחתימה מלאה או חלקית)
+  const allWorkedSigned = workedDays.every(d => isFullSigned || partialDays.includes(d));
+  if (allWorkedSigned) return 'signed';
+
+  // מולא — יש שעות אבל לא הכל חתום
+  return 'filled';
 }
 
 function renderCeoWorkersGrid(fullscreen) {
