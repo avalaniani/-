@@ -1193,6 +1193,14 @@
 
               <span id="grid-search-count" style="font-size:12px;color:var(--text2);"></span>
             </div>
+            <!-- Status filter + summary -->
+            <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding-bottom:8px;">
+              <button id="grid-status-all" onclick="setGridStatusFilter('all',false)" class="btn btn-sm" style="background:#e8edf2;color:#4a6080;border:1px solid #c0ccd8;font-size:11px;padding:4px 10px;">הכל</button>
+              <button id="grid-status-signed" onclick="setGridStatusFilter('signed',false)" class="btn btn-sm" style="background:#f0fff4;color:#2a7a5a;border:1px solid #a8d8b8;font-size:11px;padding:4px 10px;">✅ חתומים</button>
+              <button id="grid-status-filled" onclick="setGridStatusFilter('filled',false)" class="btn btn-sm" style="background:#fff8e6;color:#8a6020;border:1px solid #e0c878;font-size:11px;padding:4px 10px;">⏳ מולאו</button>
+              <button id="grid-status-missing" onclick="setGridStatusFilter('missing',false)" class="btn btn-sm" style="background:#fff0f0;color:#a03030;border:1px solid #e0a8a8;font-size:11px;padding:4px 10px;">❌ חסרים</button>
+              <span id="grid-status-summary" style="font-size:12px;color:var(--text2);margin-right:6px;"></span>
+            </div>
 
             <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;" id="grid-scroll-container">
               <div id="workers-grid-wrap"></div>
@@ -1623,6 +1631,13 @@
         </select>
 
         <span id="fs-grid-search-count" style="font-size:11px;color:var(--text2);white-space:nowrap;"></span>
+        <div style="display:flex;gap:4px;align-items:center;">
+          <button id="fs-grid-status-all" onclick="setGridStatusFilter('all',true)" class="btn btn-sm" style="background:#e8edf2;color:#4a6080;border:1px solid #c0ccd8;font-size:10px;padding:3px 8px;">הכל</button>
+          <button id="fs-grid-status-signed" onclick="setGridStatusFilter('signed',true)" class="btn btn-sm" style="background:#f0fff4;color:#2a7a5a;border:1px solid #a8d8b8;font-size:10px;padding:3px 8px;">✅</button>
+          <button id="fs-grid-status-filled" onclick="setGridStatusFilter('filled',true)" class="btn btn-sm" style="background:#fff8e6;color:#8a6020;border:1px solid #e0c878;font-size:10px;padding:3px 8px;">⏳</button>
+          <button id="fs-grid-status-missing" onclick="setGridStatusFilter('missing',true)" class="btn btn-sm" style="background:#fff0f0;color:#a03030;border:1px solid #e0a8a8;font-size:10px;padding:3px 8px;">❌</button>
+          <span id="fs-grid-status-summary" style="font-size:10px;color:var(--text2);white-space:nowrap;"></span>
+        </div>
         <button class="btn btn-success btn-sm" onclick="copyGridToExcelFS()" style="font-size:11px;padding:4px 10px;">📋 העתק לאקסל</button>
       </div>
       <span style="font-size:11px;color:var(--text3);">לחץ ESC או ✕ לסגירה</span>
@@ -4144,6 +4159,29 @@ function changeGridMonth(delta) {
   renderCeoWorkersGrid(false);
 }
 
+let _gridStatusFilter = 'all';
+
+function setGridStatusFilter(status, fullscreen) {
+  _gridStatusFilter = status;
+  renderCeoWorkersGrid(fullscreen);
+}
+
+function _getWorkerGridStatus(w, gridYear, gridMonth, company) {
+  const key = w.id + '-' + gridYear + '-' + gridMonth;
+  const hours = DATA.workerHours[key] || {};
+  const signedInfo = company && company.signed[key];
+  const isFullSigned = signedInfo && signedInfo.type === 'full';
+  // חתום מלא
+  if (isFullSigned) return 'signed';
+  // בדוק אם מולא — לפחות יום אחד עם שעות
+  const daysInMonth = new Date(gridYear, gridMonth+1, 0).getDate();
+  for (let d = 1; d <= daysInMonth; d++) {
+    const e = hours[d];
+    if (e && (e.hours > 0 || (e.start && e.end))) return 'filled';
+  }
+  return 'missing';
+}
+
 function renderCeoWorkersGrid(fullscreen) {
   const monthNames = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
   const dayNames = ['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
@@ -4232,6 +4270,8 @@ function renderCeoWorkersGrid(fullscreen) {
       const group = contrWorkers_g.filter(w=>_gs(w)===siteName);
       workerRows += '<tr style="background:#f4f7fa;"><td colspan="' + colSpan_g + '" style="padding:3px 20px;font-size:11px;font-weight:600;color:#4a6a8a;border-bottom:1px solid var(--border);">🏗️ ' + siteName + ' <span style=\'font-weight:400;color:var(--text3);\'>(' + group.length + ')</span></td></tr>';
       group.forEach(w => {
+    const wStatus = _getWorkerGridStatus(w, gridYear, gridMonth, company);
+    if (_gridStatusFilter !== 'all' && wStatus !== _gridStatusFilter) return;
     const key = `${w.id}-${gridYear}-${gridMonth}`;
     const hours = DATA.workerHours[key] || {};
     const signedInfo = company && company.signed[key];
@@ -4277,7 +4317,7 @@ function renderCeoWorkersGrid(fullscreen) {
         ${nameCellContent}
       </td>
       ${dayCells}
-      <td class="total-td" title="סה&quot;כ שעות חודשי">${workerTotal > 0 ? workerTotal.toFixed(1) : '—'}</td>
+      <td class="total-td" title="סה&quot;כ שעות חודשי" style="${isFullSigned ? 'color:#1a9a5a;font-weight:800;' : ''}">${workerTotal > 0 ? workerTotal.toFixed(1) : '—'}</td>
     </tr>`;
       });
     });
@@ -4307,6 +4347,21 @@ function renderCeoWorkersGrid(fullscreen) {
         </tr>
       </tbody>
     </table>`;
+
+  // עדכן summary + הדגש כפתור פעיל
+  const allWorkers_g = workers;
+  const nSigned  = allWorkers_g.filter(w => _getWorkerGridStatus(w, gridYear, gridMonth, company) === 'signed').length;
+  const nFilled  = allWorkers_g.filter(w => _getWorkerGridStatus(w, gridYear, gridMonth, company) === 'filled').length;
+  const nMissing = allWorkers_g.filter(w => _getWorkerGridStatus(w, gridYear, gridMonth, company) === 'missing').length;
+  const summaryText = `✅ ${nSigned} חתומים · ⏳ ${nFilled} מולאו · ❌ ${nMissing} חסרים`;
+  const p = fullscreen ? 'fs-' : '';
+  const sumEl = document.getElementById(p + 'grid-status-summary');
+  if (sumEl) sumEl.textContent = summaryText;
+  ['all','signed','filled','missing'].forEach(s => {
+    const btn = document.getElementById(p + 'grid-status-' + s);
+    if (btn) btn.style.fontWeight = _gridStatusFilter === s ? '800' : '400';
+    if (btn) btn.style.outline = _gridStatusFilter === s ? '2px solid currentColor' : 'none';
+  });
 
   // Apply current zoom level after render
   const currentSize = fullscreen ? gridZoomFS : gridZoomNormal;
