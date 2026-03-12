@@ -40,8 +40,18 @@ export async function DELETE(req: NextRequest) {
   const session = requireAuth(req)
   if ('status' in session) return session
 
-  const { worker_id, year, month } = await req.json()
-  if (!['admin','ceo','employee'].includes(session.role)) return err('Forbidden', 403)
+  const { worker_id, year, month, sig_password } = await req.json()
+
+  // worker מורשה רק עם סיסמת חתימה נכונה
+  if (!['admin', 'ceo', 'employee', 'worker'].includes(session.role))
+    return err('Forbidden', 403)
+
+  if (session.role === 'worker') {
+    const { data: company } = await supabase.from('companies')
+      .select('sig_password').eq('id', session.company).single()
+    if (!sig_password || company?.sig_password !== sig_password)
+      return err('סיסמה שגויה', 401)
+  }
 
   const { error } = await supabase.from('signatures')
     .delete().eq('worker_id', worker_id).eq('year', year).eq('month', month)
