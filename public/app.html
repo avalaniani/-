@@ -622,6 +622,29 @@
   .active-sort { border-color: var(--accent) !important; color: var(--accent) !important; background: var(--accent3) !important; }
 
   /* Monthly hours grid — fixed layout so all 31 days always fit */
+  #page-ceo-workers .hours-grid-table {
+    border-collapse: collapse;
+    table-layout: fixed;
+    width: 100%;
+    font-size: 11px;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+  }
+  #page-ceo-workers .hours-grid-table th {
+    background: #f5f5f7;
+    padding: 7px 1px;
+    text-align: center;
+    font-size: 10px;
+    font-weight: 600;
+    border: none;
+    border-bottom: 1px solid #e5e5ea;
+    overflow: hidden;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    color: #86868b;
+    letter-spacing: 0.2px;
+  }
   .hours-grid-table {
     border-collapse: collapse;
     table-layout: fixed;
@@ -666,6 +689,29 @@
     overflow: hidden;
     white-space: nowrap;
     color: var(--text);
+  }
+  #page-ceo-workers .hours-grid-table td.worker-name-td {
+    background: #fafafa;
+    border-right: 1px solid #e5e5ea;
+    border-bottom: 1px solid #f0f0f5;
+  }
+  #page-ceo-workers .hours-grid-table td {
+    border: none;
+    border-bottom: 1px solid #f0f0f5;
+  }
+  #page-ceo-workers .hours-grid-table tr:hover td { background: #f0f7ff; }
+  #page-ceo-workers .hours-grid-table tr:hover td.worker-name-td { background: #e8f0fb; }
+  #page-ceo-workers .hours-grid-table th.worker-name-col {
+    background: #f5f5f7;
+    border-right: 1px solid #e5e5ea;
+  }
+  #page-ceo-workers .hours-grid-table td.total-td {
+    background: #f5f5f7;
+    border-left: 1px solid #e5e5ea;
+  }
+  #page-ceo-workers .hours-grid-table th.total-col {
+    background: #f0f0f5;
+    border-left: 1px solid #e5e5ea;
   }
   .hours-grid-table td.worker-name-td {
     text-align: right;
@@ -1116,54 +1162,51 @@
       </div>
 
       <!-- CEO Workers -->
-      <div class="page" id="page-ceo-workers">
+      <div class="page" id="page-ceo-workers" style="background:#f5f5f7;min-height:100vh;padding:20px;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',Arial,sans-serif;">
         <!-- Monthly Grid View -->
-        <div class="card" style="margin-bottom:16px;">
-          <div class="card-header" style="flex-wrap:wrap;gap:10px;">
-            <div style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:4px 6px;border-radius:8px;transition:background 0.15s;" onclick="toggleSection('grid-section','grid-toggle-icon')" onmouseover="this.style.background='rgba(0,0,0,0.04)'" onmouseout="this.style.background='transparent'">
-              <span id="grid-toggle-icon" style="font-size:14px;transition:transform 0.2s;display:inline-block;color:var(--text3);">▾</span>
-              <div class="card-title" style="margin:0;">📅 לוח שעות חודשי</div>
+        <div style="background:#ffffff;border-radius:18px;box-shadow:0 2px 20px rgba(0,0,0,0.07);margin-bottom:20px;overflow:hidden;">
+          <div style="padding:18px 20px 14px;display:flex;align-items:center;flex-wrap:wrap;gap:10px;border-bottom:1px solid #f0f0f5;">
+            <div style="display:flex;align-items:center;gap:8px;cursor:pointer;" onclick="toggleSection('grid-section','grid-toggle-icon')">
+              <span id="grid-toggle-icon" style="font-size:13px;transition:transform 0.2s;display:inline-block;color:#86868b;">▾</span>
+              <span style="font-size:17px;font-weight:600;color:#1d1d1f;letter-spacing:-0.3px;">לוח שעות חודשי</span>
             </div>
             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-right:auto;">
-              <button class="btn btn-sm" id="btn-add-worker" onclick="ceoOpenAddMember('worker')" style="font-size:11px;padding:2px 8px;background:transparent;border:1px solid #4a80d4;color:#4a80d4;border-radius:6px;cursor:pointer;transition:background 0.15s,color 0.15s;" onmouseover="this.style.background='#4a80d4';this.style.color='#ffffff'" onmouseout="this.style.background='transparent';this.style.color='#4a80d4'">+ הוסף פועל</button>
-              <button class="btn btn-outline btn-sm" onclick="openBulkImportWorkers()" id="btn-import-workers" style="font-size:10px;padding:3px 8px;border-color:var(--green);color:var(--green);transition:background 0.15s,color 0.15s;white-space:nowrap;" onmouseover="this.style.background='var(--green)';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='var(--green)'">📥 ייבוא מאקסל</button>
-              <button class="btn btn-outline btn-sm" onclick="changeGridMonth(-1)">▶</button>
-              <span id="grid-month-label" style="font-size:14px;font-weight:700;min-width:110px;text-align:center;"></span>
-              <button class="btn btn-outline btn-sm" onclick="changeGridMonth(1)">◀</button>
-
-              <!-- Zoom control hidden -->
+              <button id="btn-add-worker" onclick="ceoOpenAddMember('worker')" style="font-size:12px;padding:5px 14px;background:transparent;border:1.5px solid #0071e3;color:#0071e3;border-radius:980px;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">+ הוסף פועל</button>
+              <button id="btn-import-workers" onclick="openBulkImportWorkers()" style="font-size:12px;padding:5px 14px;background:transparent;border:1.5px solid #34c759;color:#34c759;border-radius:980px;cursor:pointer;font-family:inherit;font-weight:500;white-space:nowrap;transition:all 0.15s;" onmouseover="this.style.background='#34c759';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#34c759'">📥 ייבוא מאקסל</button>
+              <button onclick="changeGridMonth(-1)" style="background:#f5f5f7;border:none;border-radius:50%;width:30px;height:30px;font-size:13px;cursor:pointer;color:#1d1d1f;display:flex;align-items:center;justify-content:center;" onmouseover="this.style.background='#e5e5ea'" onmouseout="this.style.background='#f5f5f7'">▶</button>
+              <span id="grid-month-label" style="font-size:15px;font-weight:600;min-width:110px;text-align:center;color:#1d1d1f;letter-spacing:-0.2px;"></span>
+              <button onclick="changeGridMonth(1)" style="background:#f5f5f7;border:none;border-radius:50%;width:30px;height:30px;font-size:13px;cursor:pointer;color:#1d1d1f;display:flex;align-items:center;justify-content:center;" onmouseover="this.style.background='#e5e5ea'" onmouseout="this.style.background='#f5f5f7'">◀</button>
               <span id="grid-zoom-label" style="display:none;">11px</span>
               <input type="range" id="grid-zoom-slider" min="7" max="18" step="0.5" value="11" oninput="applyGridZoom(this.value, false)" style="display:none;">
-              <button class="btn btn-outline btn-sm" onclick="openGridFullscreen()" title="מסך מלא" style="font-size:14px;padding:6px 10px;">⛶ מסך מלא</button>
-              <button class="btn btn-success btn-sm" onclick="copyGridToExcel()" title="העתקה לאקסל" style="font-size:12px;gap:5px;">📋 העתק לאקסל</button>
+              <button onclick="openGridFullscreen()" title="מסך מלא" style="background:#f5f5f7;border:none;border-radius:8px;padding:5px 10px;font-size:15px;cursor:pointer;color:#1d1d1f;" onmouseover="this.style.background='#e5e5ea'" onmouseout="this.style.background='#f5f5f7'">⛶</button>
+              <button onclick="copyGridToExcel()" style="background:#0071e3;border:none;border-radius:980px;padding:5px 14px;font-size:12px;color:#fff;cursor:pointer;font-family:inherit;font-weight:500;" onmouseover="this.style.background='#0077ed'" onmouseout="this.style.background='#0071e3'">📋 העתק לאקסל</button>
             </div>
           </div>
 
-          <div id="grid-section">
+          <div id="grid-section" style="padding:14px 20px 20px;">
             <!-- Search + filter bar -->
-            <div style="padding:10px 0 4px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-              <select id="grid-search-type" onchange="renderCeoWorkersGrid(false)" style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;background:var(--bg3);color:var(--text);cursor:pointer;">
+            <div style="padding:0 0 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+              <select id="grid-search-type" onchange="renderCeoWorkersGrid(false)" style="border:1.5px solid #d2d2d7;border-radius:10px;padding:7px 12px;font-size:13px;background:#f5f5f7;color:#1d1d1f;cursor:pointer;font-family:inherit;outline:none;">
                 <option value="name">🔎 חיפוש לפי שם</option>
                 <option value="idpassport" selected>🪪 חיפוש לפי ת"ז / דרכון</option>
               </select>
               <input type="text" id="grid-search-input" placeholder="הקלד לחיפוש..." oninput="renderCeoWorkersGrid(false)"
-                style="border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px;background:white;color:var(--text);min-width:150px;font-family:inherit;">
-              <select id="grid-filter-contractor" onchange="_refreshContractorFilter('grid-filter-contractor','grid-filter-site',()=>renderCeoWorkersGrid(false))" style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;background:var(--bg3);color:var(--text);cursor:pointer;">
+                style="border:1.5px solid #d2d2d7;border-radius:10px;padding:7px 14px;font-size:13px;background:#fff;color:#1d1d1f;min-width:150px;font-family:inherit;outline:none;">
+              <select id="grid-filter-contractor" onchange="_refreshContractorFilter('grid-filter-contractor','grid-filter-site',()=>renderCeoWorkersGrid(false))" style="border:1.5px solid #d2d2d7;border-radius:10px;padding:7px 12px;font-size:13px;background:#f5f5f7;color:#1d1d1f;cursor:pointer;font-family:inherit;outline:none;">
                 <option value="">🏢 כל הקבלנים</option>
               </select>
-              <select id="grid-filter-site" onchange="renderCeoWorkersGrid(false)" style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;background:var(--bg3);color:var(--text);cursor:pointer;">
+              <select id="grid-filter-site" onchange="renderCeoWorkersGrid(false)" style="border:1.5px solid #d2d2d7;border-radius:10px;padding:7px 12px;font-size:13px;background:#f5f5f7;color:#1d1d1f;cursor:pointer;font-family:inherit;outline:none;">
                 <option value="">🏗️ כל האתרים</option>
               </select>
-
-              <span id="grid-search-count" style="font-size:12px;color:var(--text2);"></span>
+              <span id="grid-search-count" style="font-size:12px;color:#86868b;"></span>
             </div>
             <!-- Status filter dropdown -->
-            <div style="padding-bottom:8px;position:relative;display:inline-block;">
-              <button id="grid-status-btn" onclick="toggleGridStatusDropdown('grid-status-dropdown')" class="btn btn-sm" style="background:#f0f4f8;color:#4a6080;border:1px solid #c0ccd8;font-size:12px;padding:5px 12px;display:flex;align-items:center;gap:6px;">
+            <div style="padding-bottom:12px;position:relative;display:inline-block;">
+              <button id="grid-status-btn" onclick="toggleGridStatusDropdown('grid-status-dropdown')" style="background:#f5f5f7;color:#1d1d1f;border:none;border-radius:980px;font-size:13px;padding:6px 14px;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit;font-weight:500;" onmouseover="this.style.background='#e5e5ea'" onmouseout="this.style.background='#f5f5f7'">
                 <span id="grid-status-btn-label">📋 כל הפועלים</span>
-                <span style="font-size:10px;color:var(--text3);">▾</span>
+                <span style="font-size:10px;color:#86868b;">▾</span>
               </button>
-              <div id="grid-status-dropdown" style="display:none;position:absolute;top:calc(100% + 4px);right:0;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,0.12);z-index:200;min-width:200px;overflow:hidden;">
+              <div id="grid-status-dropdown" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:#fff;border:none;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,0.14);z-index:200;min-width:210px;overflow:hidden;">
                 <div id="grid-dd-all" onclick="setGridStatusFilter('all',false);toggleGridStatusDropdown('grid-status-dropdown')" style="padding:10px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#4a6080;" onmouseover="this.style.background='#f4f7fa'" onmouseout="this.style.background=''">
                   <span>📋 כל הפועלים</span><span id="grid-dd-count-all" style="font-size:11px;font-weight:700;background:#e8edf2;border-radius:20px;padding:1px 8px;"></span>
                 </div>
