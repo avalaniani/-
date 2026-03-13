@@ -1125,11 +1125,8 @@
               <div class="card-title" style="margin:0;">📅 לוח שעות חודשי</div>
             </div>
             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-right:auto;">
-              <button class="btn btn-primary btn-sm" onclick="ceoOpenAddMember('worker')" id="btn-add-worker">+ הוסף פועל</button>
-              <button class="btn btn-outline btn-sm" onclick="openBulkImportWorkers()" id="btn-import-workers"
-                style="border-color:var(--green);color:var(--green);transition:background 0.15s,color 0.15s;white-space:nowrap;"
-                onmouseover="this.style.background='var(--green)';this.style.color='white'"
-                onmouseout="this.style.background='transparent';this.style.color='var(--green)'">📥 ייבוא פועלים מאקסל</button>
+              <button class="btn btn-primary btn-sm" onclick="ceoOpenAddMember('worker')" id="btn-add-worker" style="font-size:10px;padding:3px 8px;">+ הוסף פועל</button>
+              <button class="btn btn-outline btn-sm" onclick="openBulkImportWorkers()" id="btn-import-workers" style="font-size:10px;padding:3px 8px;border-color:var(--green);color:var(--green);transition:background 0.15s,color 0.15s;white-space:nowrap;" onmouseover="this.style.background='var(--green)';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='var(--green)'">📥 ייבוא מאקסל</button>
               <button class="btn btn-outline btn-sm" onclick="changeGridMonth(-1)">▶</button>
               <span id="grid-month-label" style="font-size:14px;font-weight:700;min-width:110px;text-align:center;"></span>
               <button class="btn btn-outline btn-sm" onclick="changeGridMonth(1)">◀</button>
@@ -4417,7 +4414,7 @@ function renderCeoWorkersGrid(fullscreen) {
     // Name cell content: show ID number when in ID search mode
     const idIcon = w.idType === 'passport' ? '🛂' : '🪪';
     const nameCellContent = showIdInCell
-      ? `<div style="display:flex;align-items:center;gap:4px;cursor:pointer;" onclick="viewWorkerReport(${w.id})" title="פתח דוח שעות"><span style="font-family:monospace;font-size:15px;font-weight:400;">${w.idNumber || '—'}</span></div>`
+      ? `<div style="display:flex;align-items:center;gap:4px;cursor:pointer;" onclick="viewWorkerReport(${w.id})" title="פתח דוח שעות"><span style="font-family:Arial,sans-serif;font-size:15px;font-weight:400;">${w.idNumber || '—'}</span></div>`
       : `<div style="display:flex;align-items:center;gap:5px;cursor:pointer;" onclick="viewWorkerReport(${w.id})" title="פתח דוח שעות">
           <div style="width:20px;height:20px;border-radius:50%;background:${w.avatarColor}33;color:${w.avatarColor};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:9px;flex-shrink:0;">${w.name[0]}</div>
           <span>${w.name}</span>
