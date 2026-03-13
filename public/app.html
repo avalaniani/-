@@ -2703,7 +2703,7 @@ function renderPage(pageId) {
     renderCeoEmployees();
     switchTeamTab('tasks');
   }
-  else if (pageId === 'ceo-workers') { renderCeoWorkers(); renderCeoWorkersGrid(false); setTimeout(() => { fitGridToScreen(false); updateSliderFill(document.getElementById('grid-zoom-slider')); }, 80); }
+  else if (pageId === 'ceo-workers') { renderCeoWorkersGrid(false); setTimeout(() => { fitGridToScreen(false); updateSliderFill(document.getElementById('grid-zoom-slider')); }, 80); }
   else if (pageId === 'ceo-credentials') renderCeoCredentials();
   else if (pageId === 'ceo-sites') renderWorkSites();
   else if (pageId === 'ceo-notes') renderNotes('ceo');
@@ -5017,7 +5017,7 @@ async function ceoUnsignWorker(workerId) {
     }
   }
   delete company.signed[key];
-  renderCeoWorkers();
+  renderCeoWorkersGrid(false);
   showToast('✅ חתימה בוטלה — הפועל יכול לערוך שוב');
 }
 
@@ -5101,7 +5101,7 @@ async function ceoAddMember(role) {
   }
   closeModal();
   if (role === 'employee') renderCeoEmployees();
-  else renderCeoWorkers();
+  else renderCeoWorkersGrid(false);
   showToast(`✅ ${name} נוסף${role==='worker'?'':'ה'} בהצלחה!`);
 }
 
@@ -5445,7 +5445,7 @@ async function executeBulkImport() {
       }
     }
     closeBulkModal();
-    renderCeoWorkers();
+    renderCeoWorkersGrid(false);
     renderCeoWorkersGrid(false);
     showToast(`✅ ${success} פועלים יובאו בהצלחה!`, 'success');
   } else {
@@ -5470,7 +5470,7 @@ async function executeBulkImport() {
       if (siteId) _saveWorkerSitesLocal(company);
     });
     closeBulkModal();
-    renderCeoWorkers();
+    renderCeoWorkersGrid(false);
     renderCeoWorkersGrid(false);
     showToast(`✅ ${valid.length} פועלים יובאו בהצלחה!`, 'success');
   }
@@ -6247,7 +6247,7 @@ function removeWorker(workerId) {
   const w = DATA.users.find(u => u.id === workerId);
   if (!confirm(`להסיר את ${w.name}?`)) return;
   w.company = null;
-  renderCeoWorkers(); showToast('✅ פועל הוסר מהחברה');
+  renderCeoWorkersGrid(false); showToast('✅ פועל הוסר מהחברה');
 }
 
 // ── NOTES ──
@@ -6845,7 +6845,7 @@ async function _confirmAssignWorker(workerId, siteId, dateInputId) {
   showToast(site ? ('\u2705 שויך ל' + site.name) : '\u2705 שיוך הוסר');
   closeModal();
   if (currentPage==='ceo-sites') renderWorkSites();
-  if (currentPage==='ceo-workers') renderCeoWorkers();
+  if (currentPage==='ceo-workers') renderCeoWorkersGrid(false);
 }
 
 function openWorkerSiteHistory(workerId) {
