@@ -1117,48 +1117,6 @@
 
       <!-- CEO Workers -->
       <div class="page" id="page-ceo-workers">
-        <!-- Workers list section -->
-        <div class="card" style="margin-bottom:16px;">
-          <div class="card-header" style="flex-wrap:wrap;gap:10px;">
-            <div style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:4px 6px;border-radius:8px;transition:background 0.15s;" onclick="toggleSection('workers-section','workers-toggle-icon')" onmouseover="this.style.background='rgba(0,0,0,0.04)'" onmouseout="this.style.background='transparent'">
-              <span id="workers-toggle-icon" style="font-size:14px;transition:transform 0.2s;display:inline-block;color:var(--text3);">▾</span>
-              <div class="card-title" style="margin:0;">🔧 ניהול פועלים ושעות</div>
-            </div>
-            <div style="display:flex;gap:8px;margin-right:auto;" id="workers-action-btns">
-              <button class="btn btn-primary btn-sm" onclick="ceoOpenAddMember('worker')" id="btn-add-worker">+ הוסף פועל</button>
-              <button class="btn btn-outline btn-sm" onclick="openBulkImportWorkers()" id="btn-import-workers"
-                style="border-color:var(--green);color:var(--green);transition:background 0.15s,color 0.15s;white-space:nowrap;"
-                onmouseover="this.style.background='var(--green)';this.style.color='white'"
-                onmouseout="this.style.background='transparent';this.style.color='var(--green)'">📥 ייבוא פועלים מאקסל</button>
-            </div>
-          </div>
-          <div id="workers-section">
-            <!-- Workers search + filter + sort -->
-            <div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-              <select id="workers-search-type" onchange="filterWorkersTable()" style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;background:var(--bg3);color:var(--text);cursor:pointer;font-family:inherit;">
-                <option value="name">🔎 שם</option>
-                <option value="idpassport" selected>🪪 ת"ז / דרכון</option>
-              </select>
-              <input type="text" id="workers-search-input" placeholder="חפש פועל..." oninput="filterWorkersTable()"
-                style="border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px;background:white;color:var(--text);min-width:160px;font-family:inherit;outline:none;">
-              <select id="workers-filter-contractor" onchange="_refreshContractorFilter('workers-filter-contractor','workers-filter-site',filterWorkersTable)" style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;background:var(--bg3);color:var(--text);cursor:pointer;font-family:inherit;">
-                <option value="">🏢 כל הקבלנים</option>
-              </select>
-              <select id="workers-filter-site" onchange="filterWorkersTable()" style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;background:var(--bg3);color:var(--text);cursor:pointer;font-family:inherit;">
-                <option value="">🏗️ כל האתרים</option>
-              </select>
-
-              <span id="workers-search-count" style="font-size:12px;color:var(--text2);"></span>
-            </div>
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th>פועל</th><th>אתר עבודה</th><th>סה"כ שעות</th><th>שעות חתומות ✅</th><th>שעות לא חתומות ⏳</th><th>סטטוס</th><th>צפייה</th></tr></thead>
-                <tbody id="ceo-workers-table"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
         <!-- Monthly Grid View -->
         <div class="card" style="margin-bottom:16px;">
           <div class="card-header" style="flex-wrap:wrap;gap:10px;">
@@ -1167,6 +1125,11 @@
               <div class="card-title" style="margin:0;">📅 לוח שעות חודשי</div>
             </div>
             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-right:auto;">
+              <button class="btn btn-primary btn-sm" onclick="ceoOpenAddMember('worker')" id="btn-add-worker">+ הוסף פועל</button>
+              <button class="btn btn-outline btn-sm" onclick="openBulkImportWorkers()" id="btn-import-workers"
+                style="border-color:var(--green);color:var(--green);transition:background 0.15s,color 0.15s;white-space:nowrap;"
+                onmouseover="this.style.background='var(--green)';this.style.color='white'"
+                onmouseout="this.style.background='transparent';this.style.color='var(--green)'">📥 ייבוא פועלים מאקסל</button>
               <button class="btn btn-outline btn-sm" onclick="changeGridMonth(-1)">▶</button>
               <span id="grid-month-label" style="font-size:14px;font-weight:700;min-width:110px;text-align:center;"></span>
               <button class="btn btn-outline btn-sm" onclick="changeGridMonth(1)">◀</button>
@@ -1243,28 +1206,7 @@
             </div>
           </div>
         </div>
-        <div class="card" style="margin-top:16px;">
-          <div class="card-header">
-            <div class="card-title">🔑 ניהול סיסמת חתימה</div>
-          </div>
-          <p style="color:var(--text2);font-size:13px;margin-bottom:14px;">קבע את הסיסמה שמנהל האתר ישתמש בה לאישור דוחות שעות</p>
 
-          <!-- Current password display -->
-          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px;">
-            <div style="font-size:12px;color:var(--text2);margin-bottom:8px;font-weight:600;">סיסמה נוכחית:</div>
-            <div style="display:flex;align-items:center;gap:8px;">
-              <span id="current-sig-pass-display" style="font-family:monospace;font-size:15px;letter-spacing:3px;background:white;border:1px solid var(--border);border-radius:6px;padding:6px 14px;min-width:160px;color:var(--text);">••••••••</span>
-              <button onclick="toggleCurrentSigPass()" id="current-sig-pass-eye" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px 10px;cursor:pointer;font-size:14px;" title="הצג/הסתר">👁️</button>
-            </div>
-          </div>
-
-          <!-- Set new password -->
-          <div style="font-size:12px;color:var(--text2);margin-bottom:8px;font-weight:600;">הגדר סיסמה חדשה:</div>
-          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-            <input type="password" id="sigPasswordInput" class="search-input" style="width:200px;" placeholder="סיסמת חתימה חדשה">
-            <button class="btn btn-success btn-sm" onclick="setSigPassword()">💾 שמור סיסמה</button>
-          </div>
-        </div>
 
       </div>
 
@@ -1316,6 +1258,30 @@
               <thead><tr><th>שם</th><th>שם משתמש</th><th>ת"ז / דרכון</th><th>סיסמה</th><th>עריכה</th></tr></thead>
               <tbody id="ceo-worker-creds-table"></tbody>
             </table>
+          </div>
+        </div>
+
+        <!-- סיסמת חתימה -->
+        <div class="card" style="margin-top:16px;">
+          <div class="card-header">
+            <div class="card-title">🔑 ניהול סיסמת חתימה</div>
+          </div>
+          <p style="color:var(--text2);font-size:13px;margin-bottom:14px;">קבע את הסיסמה שמנהל האתר ישתמש בה לאישור דוחות שעות</p>
+
+          <!-- Current password display -->
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px;">
+            <div style="font-size:12px;color:var(--text2);margin-bottom:8px;font-weight:600;">סיסמה נוכחית:</div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span id="current-sig-pass-display" style="font-family:monospace;font-size:15px;letter-spacing:3px;background:white;border:1px solid var(--border);border-radius:6px;padding:6px 14px;min-width:160px;color:var(--text);">••••••••</span>
+              <button onclick="toggleCurrentSigPass()" id="current-sig-pass-eye" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px 10px;cursor:pointer;font-size:14px;" title="הצג/הסתר">👁️</button>
+            </div>
+          </div>
+
+          <!-- Set new password -->
+          <div style="font-size:12px;color:var(--text2);margin-bottom:8px;font-weight:600;">הגדר סיסמה חדשה:</div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <input type="password" id="sigPasswordInput" class="search-input" style="width:200px;" placeholder="סיסמת חתימה חדשה">
+            <button class="btn btn-success btn-sm" onclick="setSigPassword()">💾 שמור סיסמה</button>
           </div>
         </div>
       </div>
