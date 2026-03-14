@@ -4397,9 +4397,14 @@ function toggleGridStatusDropdown(id) {
 }
 // סגור dropdown בלחיצה מחוץ
 document.addEventListener('click', function(e) {
-  if (!e.target.closest('#grid-status-btn') && !e.target.closest('#grid-status-dropdown') &&
-      !e.target.closest('#fs-grid-status-btn') && !e.target.closest('#fs-grid-status-dropdown')) {
-    ['grid-status-dropdown','fs-grid-status-dropdown','grid-search-type-dd','grid-filter-contractor-dd','grid-filter-site-dd'].forEach(i => {
+  const allDDs = ['grid-status-dropdown','fs-grid-status-dropdown','grid-search-type-dd','grid-filter-contractor-dd','grid-filter-site-dd'];
+  const allBtns = ['grid-status-btn','fs-grid-status-btn','grid-search-type-btn','grid-filter-contractor-btn','grid-filter-site-btn'];
+  const clickedInsideAny = allDDs.concat(allBtns).some(id => {
+    const el = document.getElementById(id);
+    return el && el.contains(e.target);
+  });
+  if (!clickedInsideAny) {
+    allDDs.forEach(i => {
       const el = document.getElementById(i);
       if (el) el.style.display = 'none';
     });
