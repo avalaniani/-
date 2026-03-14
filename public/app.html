@@ -1185,8 +1185,6 @@
               </div>
               <span id="grid-zoom-label" style="display:none;">11px</span>
               <input type="range" id="grid-zoom-slider" min="7" max="18" step="0.5" value="11" oninput="applyGridZoom(this.value, false)" style="display:none;">
-              <button onclick="openGridFullscreen()" title="מסך מלא" style="background:transparent;border:1.5px solid #1d1d1f;border-radius:980px;padding:5px 14px;font-size:12px;cursor:pointer;color:#1d1d1f;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">⛶ מסך מלא</button>
-              <button onclick="copyGridToExcel()" style="background:transparent;border:1.5px solid #34c759;border-radius:980px;padding:5px 14px;font-size:12px;color:#34c759;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.background='#34c759';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#34c759'">📋 אקסל</button>
             </div>
           </div>
 
@@ -1226,6 +1224,8 @@
                 </div>
                 <select id="grid-filter-site" style="display:none;" onchange="renderCeoWorkersGrid(false)"><option value="">כל האתרים</option></select>
               </div>
+              <button onclick="openGridFullscreen()" title="מסך מלא" style="background:transparent;border:1.5px solid #1d1d1f;border-radius:980px;padding:5px 14px;font-size:12px;cursor:pointer;color:#1d1d1f;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">⛶ מסך מלא</button>
+              <button onclick="copyGridToExcel()" style="background:transparent;border:1.5px solid #34c759;border-radius:980px;padding:5px 14px;font-size:12px;color:#34c759;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.background='#34c759';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#34c759'">📋 אקסל</button>
               <span id="grid-search-count" style="font-size:12px;color:#86868b;"></span>
             </div>
             <!-- Status filter dropdown -->
