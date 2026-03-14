@@ -1193,18 +1193,18 @@
           <div id="grid-section" style="padding:16px 22px 24px;">
             <!-- Search + filter bar -->
             <div style="padding:0 0 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-              <select id="grid-search-type" onchange="renderCeoWorkersGrid(false)" style="border:1.5px solid #0071e3;border-radius:980px;padding:5px 14px;font-size:12px;background:transparent;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;outline:none;transition:all 0.15s;appearance:none;-webkit-appearance:none;">
+              <div style="position:relative;display:inline-block;" onmouseover="this.querySelector('select').style.background='#0071e3';this.querySelector('select').style.color='#fff'" onmouseout="this.querySelector('select').style.background='transparent';this.querySelector('select').style.color='#0071e3'"><select id="grid-search-type" onchange="renderCeoWorkersGrid(false)" style="border:1.5px solid #0071e3;border-radius:980px;padding:5px 14px;font-size:12px;background:transparent;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;outline:none;transition:all 0.15s;appearance:none;-webkit-appearance:none;">
                 <option value="name">🔎 חיפוש לפי שם</option>
                 <option value="idpassport" selected>🪪 חיפוש לפי ת"ז / דרכון</option>
-              </select>
+              </select></div>
               <input type="text" id="grid-search-input" placeholder="הקלד לחיפוש..." oninput="renderCeoWorkersGrid(false)"
                 style="border:1.5px solid #d2d2d7;border-radius:10px;padding:7px 14px;font-size:13px;background:#fff;color:#1d1d1f;min-width:150px;font-family:inherit;outline:none;">
-              <select id="grid-filter-contractor" onchange="_refreshContractorFilter('grid-filter-contractor','grid-filter-site',()=>renderCeoWorkersGrid(false))" style="border:1.5px solid #0071e3;border-radius:980px;padding:5px 14px;font-size:12px;background:transparent;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;outline:none;transition:all 0.15s;appearance:none;-webkit-appearance:none;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">
+              <div style="position:relative;display:inline-block;" onmouseover="this.querySelector('select').style.background='#0071e3';this.querySelector('select').style.color='#fff'" onmouseout="this.querySelector('select').style.background='transparent';this.querySelector('select').style.color='#0071e3'"><select id="grid-filter-contractor" onchange="_refreshContractorFilter('grid-filter-contractor','grid-filter-site',()=>renderCeoWorkersGrid(false))" style="border:1.5px solid #0071e3;border-radius:980px;padding:5px 14px;font-size:12px;background:transparent;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;outline:none;transition:all 0.15s;appearance:none;-webkit-appearance:none;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">
                 <option value="">🏢 כל הקבלנים</option>
-              </select>
-              <select id="grid-filter-site" onchange="renderCeoWorkersGrid(false)" style="border:1.5px solid #0071e3;border-radius:980px;padding:5px 14px;font-size:12px;background:transparent;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;outline:none;transition:all 0.15s;appearance:none;-webkit-appearance:none;">
+              </select></div>
+              <div style="position:relative;display:inline-block;" onmouseover="this.querySelector('select').style.background='#0071e3';this.querySelector('select').style.color='#fff'" onmouseout="this.querySelector('select').style.background='transparent';this.querySelector('select').style.color='#0071e3'"><select id="grid-filter-site" onchange="renderCeoWorkersGrid(false)" style="border:1.5px solid #0071e3;border-radius:980px;padding:5px 14px;font-size:12px;background:transparent;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;outline:none;transition:all 0.15s;appearance:none;-webkit-appearance:none;">
                 <option value="">🏗️ כל האתרים</option>
-              </select>
+              </select></div>
               <span id="grid-search-count" style="font-size:12px;color:#86868b;"></span>
             </div>
             <!-- Status filter dropdown -->
