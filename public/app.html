@@ -1189,6 +1189,46 @@
           </div>
 
           <div id="grid-section" style="padding:16px 22px 24px;">
+            <!-- Status filter dropdown -->
+            <div style="padding-bottom:12px;position:relative;display:inline-block;">
+              <button id="grid-status-btn" onclick="toggleGridStatusDropdown('grid-status-dropdown')" style="background:transparent;border:1.5px solid #1d1d1f;color:#1d1d1f;border-radius:980px;font-size:13px;padding:5px 14px;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.background='#1d1d1f';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#1d1d1f'">
+                <span id="grid-status-btn-label">📋 כל הפועלים</span>
+                <span style="font-size:10px;color:#86868b;">▾</span>
+              </button>
+              <div id="grid-status-dropdown" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:#fff;border:none;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,0.14);z-index:200;min-width:210px;overflow:hidden;">
+                <div id="grid-dd-all" onclick="setGridStatusFilter('all',false);toggleGridStatusDropdown('grid-status-dropdown')" style="padding:10px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#4a6080;" onmouseover="this.style.background='#f4f7fa'" onmouseout="this.style.background=''">
+                  <span>📋 כל הפועלים</span><span id="grid-dd-count-all" style="font-size:11px;font-weight:700;background:#e8edf2;border-radius:20px;padding:1px 8px;"></span>
+                </div>
+                <div id="grid-dd-signed" onclick="setGridStatusFilter('signed',false);toggleGridStatusDropdown('grid-status-dropdown')" style="padding:10px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#2a7a5a;" onmouseover="this.style.background='#f0fff4'" onmouseout="this.style.background=''">
+                  <span>✅ כל הימים חתומים</span><span id="grid-dd-count-signed" style="font-size:11px;font-weight:700;background:#d0f0e0;border-radius:20px;padding:1px 8px;"></span>
+                </div>
+                <div id="grid-dd-filled" onclick="setGridStatusFilter('filled',false);toggleGridStatusDropdown('grid-status-dropdown')" style="padding:10px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#8a6020;" onmouseover="this.style.background='#fff8e6'" onmouseout="this.style.background=''">
+                  <span>⏳ מולאו, לא חתומים</span><span id="grid-dd-count-filled" style="font-size:11px;font-weight:700;background:#fdefc0;border-radius:20px;padding:1px 8px;"></span>
+                </div>
+                <div id="grid-dd-missing" onclick="setGridStatusFilter('missing',false);toggleGridStatusDropdown('grid-status-dropdown')" style="padding:10px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#a03030;" onmouseover="this.style.background='#fff0f0'" onmouseout="this.style.background=''">
+                  <span>❌ לא מולאו</span><span id="grid-dd-count-missing" style="font-size:11px;font-weight:700;background:#f8d8d8;border-radius:20px;padding:1px 8px;"></span>
+                </div>
+                <div style="border-top:1px solid var(--border);margin:4px 0;"></div>
+                <div style="padding:10px 16px;">
+                  <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px;">🗓️ חתמו עד יום:</div>
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <input type="number" id="grid-until-day" min="1" max="31" placeholder="יום" style="width:60px;border:1px solid var(--border);border-radius:8px;padding:5px 8px;font-size:13px;font-family:inherit;background:var(--bg3);color:var(--text);outline:none;text-align:center;" oninput="setGridUntilDay(this.value,false)">
+                    <span style="font-size:12px;color:var(--text2);">בחודש</span>
+                    <button onclick="clearGridUntilDay(false)" style="font-size:11px;color:var(--text3);background:none;border:none;cursor:pointer;padding:0;" title="נקה">✕</button>
+                  </div>
+                  <div style="display:flex;gap:8px;margin-top:8px;">
+                    <div id="grid-dd-signed-until" onclick="setGridStatusFilter('signed-until',false);toggleGridStatusDropdown('grid-status-dropdown')" style="flex:1;padding:7px 10px;cursor:pointer;border-radius:8px;border:1px solid #a8d8b8;background:#f0fff4;text-align:center;font-size:12px;color:#2a7a5a;" onmouseover="this.style.background='#dcf5e8'" onmouseout="this.style.background='#f0fff4'">
+                      <div style="font-weight:700;">✅ חתמו</div>
+                      <div id="grid-dd-count-signed-until" style="font-size:13px;font-weight:800;"></div>
+                    </div>
+                    <div id="grid-dd-missing-until" onclick="setGridStatusFilter('missing-until',false);toggleGridStatusDropdown('grid-status-dropdown')" style="flex:1;padding:7px 10px;cursor:pointer;border-radius:8px;border:1px solid #e0a8a8;background:#fff0f0;text-align:center;font-size:12px;color:#a03030;" onmouseover="this.style.background='#fddede'" onmouseout="this.style.background='#fff0f0'">
+                      <div style="font-weight:700;">❌ לא חתמו</div>
+                      <div id="grid-dd-count-missing-until" style="font-size:13px;font-weight:800;"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
             <!-- Search + filter bar -->
             <div style="padding:0 0 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
               <!-- Search type custom dropdown -->
@@ -1229,46 +1269,7 @@
               <button onclick="copyGridToExcel()" style="background:transparent;border:1.5px solid #34c759;border-radius:980px;padding:5px 14px;font-size:12px;color:#34c759;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.background='#34c759';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#34c759'">📋 אקסל</button>
               <span id="grid-search-count" style="font-size:12px;color:#86868b;"></span>
             </div>
-            <!-- Status filter dropdown -->
-            <div style="padding-bottom:12px;position:relative;display:inline-block;">
-              <button id="grid-status-btn" onclick="toggleGridStatusDropdown('grid-status-dropdown')" style="background:transparent;border:1.5px solid #1d1d1f;color:#1d1d1f;border-radius:980px;font-size:13px;padding:5px 14px;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">
-                <span id="grid-status-btn-label">📋 כל הפועלים</span>
-                <span style="font-size:10px;color:#86868b;">▾</span>
-              </button>
-              <div id="grid-status-dropdown" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:#fff;border:none;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,0.14);z-index:200;min-width:210px;overflow:hidden;">
-                <div id="grid-dd-all" onclick="setGridStatusFilter('all',false);toggleGridStatusDropdown('grid-status-dropdown')" style="padding:10px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#4a6080;" onmouseover="this.style.background='#f4f7fa'" onmouseout="this.style.background=''">
-                  <span>📋 כל הפועלים</span><span id="grid-dd-count-all" style="font-size:11px;font-weight:700;background:#e8edf2;border-radius:20px;padding:1px 8px;"></span>
-                </div>
-                <div id="grid-dd-signed" onclick="setGridStatusFilter('signed',false);toggleGridStatusDropdown('grid-status-dropdown')" style="padding:10px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#2a7a5a;" onmouseover="this.style.background='#f0fff4'" onmouseout="this.style.background=''">
-                  <span>✅ כל הימים חתומים</span><span id="grid-dd-count-signed" style="font-size:11px;font-weight:700;background:#d0f0e0;border-radius:20px;padding:1px 8px;"></span>
-                </div>
-                <div id="grid-dd-filled" onclick="setGridStatusFilter('filled',false);toggleGridStatusDropdown('grid-status-dropdown')" style="padding:10px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#8a6020;" onmouseover="this.style.background='#fff8e6'" onmouseout="this.style.background=''">
-                  <span>⏳ מולאו, לא חתומים</span><span id="grid-dd-count-filled" style="font-size:11px;font-weight:700;background:#fdefc0;border-radius:20px;padding:1px 8px;"></span>
-                </div>
-                <div id="grid-dd-missing" onclick="setGridStatusFilter('missing',false);toggleGridStatusDropdown('grid-status-dropdown')" style="padding:10px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#a03030;" onmouseover="this.style.background='#fff0f0'" onmouseout="this.style.background=''">
-                  <span>❌ לא מולאו</span><span id="grid-dd-count-missing" style="font-size:11px;font-weight:700;background:#f8d8d8;border-radius:20px;padding:1px 8px;"></span>
-                </div>
-                <div style="border-top:1px solid var(--border);margin:4px 0;"></div>
-                <div style="padding:10px 16px;">
-                  <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px;">🗓️ חתמו עד יום:</div>
-                  <div style="display:flex;align-items:center;gap:8px;">
-                    <input type="number" id="grid-until-day" min="1" max="31" placeholder="יום" style="width:60px;border:1px solid var(--border);border-radius:8px;padding:5px 8px;font-size:13px;font-family:inherit;background:var(--bg3);color:var(--text);outline:none;text-align:center;" oninput="setGridUntilDay(this.value,false)">
-                    <span style="font-size:12px;color:var(--text2);">בחודש</span>
-                    <button onclick="clearGridUntilDay(false)" style="font-size:11px;color:var(--text3);background:none;border:none;cursor:pointer;padding:0;" title="נקה">✕</button>
-                  </div>
-                  <div style="display:flex;gap:8px;margin-top:8px;">
-                    <div id="grid-dd-signed-until" onclick="setGridStatusFilter('signed-until',false);toggleGridStatusDropdown('grid-status-dropdown')" style="flex:1;padding:7px 10px;cursor:pointer;border-radius:8px;border:1px solid #a8d8b8;background:#f0fff4;text-align:center;font-size:12px;color:#2a7a5a;" onmouseover="this.style.background='#dcf5e8'" onmouseout="this.style.background='#f0fff4'">
-                      <div style="font-weight:700;">✅ חתמו</div>
-                      <div id="grid-dd-count-signed-until" style="font-size:13px;font-weight:800;"></div>
-                    </div>
-                    <div id="grid-dd-missing-until" onclick="setGridStatusFilter('missing-until',false);toggleGridStatusDropdown('grid-status-dropdown')" style="flex:1;padding:7px 10px;cursor:pointer;border-radius:8px;border:1px solid #e0a8a8;background:#fff0f0;text-align:center;font-size:12px;color:#a03030;" onmouseover="this.style.background='#fddede'" onmouseout="this.style.background='#fff0f0'">
-                      <div style="font-weight:700;">❌ לא חתמו</div>
-                      <div id="grid-dd-count-missing-until" style="font-size:13px;font-weight:800;"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+
 
             <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;" id="grid-scroll-container">
               <div id="workers-grid-wrap"></div>
