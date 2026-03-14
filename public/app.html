@@ -4272,51 +4272,33 @@ function setGridSearchType(val, label) {
 }
 
 function _populateCustomGridDropdowns() {
-  const company = DATA.companies.find(c => c.id === currentUser.company);
-  const workers = DATA.users.filter(u => u.company === currentUser.company && u.role === 'worker');
+  // קרא את הנתונים ישירות מה-hidden selects שכבר מולאו ע"י _populateSiteFilters
+  const contrSel = document.getElementById('grid-filter-contractor');
+  const siteSel  = document.getElementById('grid-filter-site');
+  const ITEM = 'padding:10px 16px;cursor:pointer;font-size:13px;color:#1d1d1f;';
 
   // contractors
-  const contractors = [...new Set(workers.map(w => {
-    const site = DATA.workSites?.find(s => s.id === w.currentSite);
-    return site?.contractor || '';
-  }).filter(Boolean))].sort((a,b) => a.localeCompare(b,'he'));
-
-  const contrSel = document.getElementById('grid-filter-contractor');
   const contrOpts = document.getElementById('grid-contractor-options');
-  if (contrOpts) {
-    const ITEM = 'padding:10px 16px;cursor:pointer;font-size:13px;color:#1d1d1f;';
-    let html = `<div onclick="setGridContractor('','🏢 כל הקבלנים');toggleGridStatusDropdown('grid-filter-contractor-dd')" style="${ITEM}" onmouseover="this.style.background='#f5f5f7'" onmouseout="this.style.background=''">🏢 כל הקבלנים</div>`;
-    contractors.forEach(c => {
-      html += `<div onclick="setGridContractor('${c.replace(/'/g,"\'")}','${c.replace(/'/g,"\'")}');toggleGridStatusDropdown('grid-filter-contractor-dd')" style="${ITEM}" onmouseover="this.style.background='#f5f5f7'" onmouseout="this.style.background=''">🏢 ${c}</div>`;
+  if (contrOpts && contrSel) {
+    let html = '';
+    Array.from(contrSel.options).forEach(opt => {
+      const val = opt.value;
+      const text = opt.text;
+      html += `<div onclick="setGridContractor('${val.replace(/'/g,"\'")}','${text.replace(/'/g,"\'")}');toggleGridStatusDropdown('grid-filter-contractor-dd')" style="${ITEM}" onmouseover="this.style.background='#f5f5f7'" onmouseout="this.style.background=''">${text}</div>`;
     });
     contrOpts.innerHTML = html;
-    // sync hidden select
-    if (contrSel) {
-      contrSel.innerHTML = '<option value="">כל הקבלנים</option>' + contractors.map(c => `<option value="${c}">${c}</option>`).join('');
-    }
   }
 
   // sites
-  const siteSel = document.getElementById('grid-filter-site');
   const siteOpts = document.getElementById('grid-site-options');
-  const selContr = contrSel?.value || '';
-  const sites = [...new Set(workers.map(w => {
-    const site = DATA.workSites?.find(s => s.id === w.currentSite);
-    if (!site) return null;
-    if (selContr && site.contractor !== selContr) return null;
-    return site.name ? JSON.stringify({id: site.id, name: site.name}) : null;
-  }).filter(Boolean))].map(s => JSON.parse(s));
-
-  if (siteOpts) {
-    const ITEM = 'padding:10px 16px;cursor:pointer;font-size:13px;color:#1d1d1f;';
-    let html = `<div onclick="setGridSite('','🏗️ כל האתרים');toggleGridStatusDropdown('grid-filter-site-dd')" style="${ITEM}" onmouseover="this.style.background='#f5f5f7'" onmouseout="this.style.background=''">🏗️ כל האתרים</div>`;
-    sites.forEach(s => {
-      html += `<div onclick="setGridSite('${s.id}','🏗️ ${s.name.replace(/'/g,"\'")}');toggleGridStatusDropdown('grid-filter-site-dd')" style="${ITEM}" onmouseover="this.style.background='#f5f5f7'" onmouseout="this.style.background=''">🏗️ ${s.name}</div>`;
+  if (siteOpts && siteSel) {
+    let html = '';
+    Array.from(siteSel.options).forEach(opt => {
+      const val = opt.value;
+      const text = opt.text;
+      html += `<div onclick="setGridSite('${val.replace(/'/g,"\'")}','${text.replace(/'/g,"\'")}');toggleGridStatusDropdown('grid-filter-site-dd')" style="${ITEM}" onmouseover="this.style.background='#f5f5f7'" onmouseout="this.style.background=''">${text}</div>`;
     });
     siteOpts.innerHTML = html;
-    if (siteSel) {
-      siteSel.innerHTML = '<option value="">כל האתרים</option>' + sites.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
-    }
   }
 }
 
@@ -4330,6 +4312,7 @@ function setGridContractor(val, label) {
   if (siteSel) siteSel.value = '';
   const siteLbl = document.getElementById('grid-filter-site-label');
   if (siteLbl) siteLbl.textContent = '🏗️ כל האתרים';
+  _populateSiteFilters();
   _populateCustomGridDropdowns();
   renderCeoWorkersGrid(false);
 }
