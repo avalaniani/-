@@ -7069,7 +7069,7 @@ function openAssignToSiteFromList(siteId) {
         style="width:100%;border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:14px;font-family:inherit;background:var(--bg3);color:var(--text);outline:none;box-sizing:border-box;margin-bottom:10px;">
       <div id="${workersListId}" style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;margin-bottom:16px;">
         ${unassigned.map(w=>`
-          <label data-name="${w.name}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;border:1px solid var(--border);background:white;" onclick="assignWorkerToSite(${w.id},${siteId});closeModal();renderWorkSites();">
+          <label data-name="${w.name}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;border:1px solid var(--border);background:white;" onclick="closeModal();assignWorkerToSite(${w.id},${siteId});">
             <span style="width:30px;height:30px;border-radius:50%;background:${w.avatarColor}33;color:${w.avatarColor};display:inline-flex;align-items:center;justify-content:center;font-weight:700;">${w.name[0]}</span>
             <span style="font-weight:600;">${w.name}</span>
             ${w.siteId ? `<span style="font-size:11px;color:var(--text3);margin-right:auto;">${DATA.workSites.find(s=>s.id===w.siteId)?.name||''}</span>` : ''}
