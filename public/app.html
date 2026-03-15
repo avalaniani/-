@@ -6715,6 +6715,15 @@ function renderSitesHoursSummary() {
     }
   });
 
+  // הוסף אתרים וקבלנים שאין בהם שעות כלל
+  allSites.forEach(site => {
+    const contractor = site.contractor || '— ללא קבלן';
+    if (!contractorMap[contractor]) contractorMap[contractor] = {};
+    if (!contractorMap[contractor][site.id]) {
+      contractorMap[contractor][site.id] = { siteName: site.name, hours: 0, signedHours: 0, workers: new Set() };
+    }
+  });
+
   const contractors = Object.keys(contractorMap).sort((a,b) => {
     if (a === '— ללא קבלן') return 1;
     if (b === '— ללא קבלן') return -1;
@@ -6722,7 +6731,7 @@ function renderSitesHoursSummary() {
   });
 
   if (!contractors.length) {
-    wrap.innerHTML = '<div style="text-align:center;color:var(--text3);padding:24px;">אין נתוני שעות לחודש זה</div>';
+    wrap.innerHTML = '<div style="text-align:center;color:var(--text3);padding:24px;">אין אתרי עבודה מוגדרים</div>';
     return;
   }
 
@@ -6808,13 +6817,15 @@ function renderWorkSites() {
   container.innerHTML = Object.entries(byContractor).map(([contractor, cSites]) => `
     <div class="card" style="margin-bottom:16px;">
       <div class="card-header" style="border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:14px;">
-        <div style="display:flex;align-items:center;gap:10px;">
+        <div style="display:flex;align-items:center;gap:10px;flex:1;">
           <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🏢</div>
           <div>
             <div style="font-size:15px;font-weight:700;color:var(--text);">קבלן: ${contractor}</div>
-            <div style="font-size:12px;color:var(--text3);">${cSites.length} אתר${cSites.length!==1?'ים':''}</div>
+            <div style="font-size:12px;color:var(--text3);">${cSites.length} אתר${cSites.length!==1?'ים':''}${cSites[0]?.contractorPhone ? ' · 📞 ' + cSites[0].contractorPhone : ''}</div>
+            ${cSites[0]?.contractorNotes ? `<div style="font-size:11px;color:var(--text2);margin-top:2px;">${cSites[0].contractorNotes}</div>` : ''}
           </div>
         </div>
+        <button onclick="openEditContractorModal('${contractor.replace(/'/g,"\'")}')" class="btn btn-outline btn-sm" style="white-space:nowrap;flex-shrink:0;">✏️ ערוך קבלן</button>
       </div>
       ${cSites.map(site => {
         const siteWorkers = workers.filter(w => w.siteId === site.id);
@@ -6925,6 +6936,90 @@ function updateBulkBar() {
 }
 
 // ── מודל הוספת/עריכת אתר ──
+function openEditContractorModal(contractorName) {
+  const phone = DATA.workSites.find(s=>s.contractor===contractorName)?.contractorPhone || '';
+  const notes = DATA.workSites.find(s=>s.contractor===contractorName)?.contractorNotes || '';
+  showModal(`
+    <div style="padding:22px;max-width:360px;width:100%;">
+      <div style="font-size:16px;font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:8px;">
+        <span style="font-size:22px;">🏢</span> עריכת קבלן
+      </div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:18px;">שינוי השם יעדכן את כל אתרי העבודה של הקבלן</div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div>
+          <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">שם הקבלן *</label>
+          <input id="edit-contractor-name" class="search-input" value="${contractorName}" style="width:100%;font-size:14px;">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">טלפון איש קשר</label>
+          <input id="edit-contractor-phone" class="search-input" placeholder="050-0000000" value="${phone}" style="width:100%;font-size:14px;">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">הערות</label>
+          <textarea id="edit-contractor-notes" class="search-input" placeholder="הערות..." rows="2" style="width:100%;font-size:13px;resize:none;">${notes}</textarea>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:20px;">
+        <button class="btn btn-primary" style="flex:1;" onclick="saveEditContractor('${contractorName.replace(/'/g,"\'")}')">💾 שמור</button>
+        <button class="btn btn-outline" onclick="closeModal()">ביטול</button>
+      </div>
+      <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px;">
+        <button class="btn btn-danger btn-sm" style="width:100%;" onclick="deleteContractor('${contractorName.replace(/'/g,"\'")}')">🗑️ מחק קבלן וכל אתריו</button>
+      </div>
+    </div>
+  `);
+  setTimeout(() => {
+    const el = document.getElementById('edit-contractor-name');
+    if (el) { el.focus(); el.select(); }
+  }, 80);
+}
+
+async function saveEditContractor(oldName) {
+  const newName = document.getElementById('edit-contractor-name')?.value.trim();
+  const phone   = document.getElementById('edit-contractor-phone')?.value.trim() || '';
+  const notes   = document.getElementById('edit-contractor-notes')?.value.trim() || '';
+  if (!newName) { showToast('יש להזין שם קבלן', 'error'); return; }
+
+  const company = currentUser.company;
+  const sitesToUpdate = DATA.workSites.filter(s => s.companyId === company && s.contractor === oldName);
+
+  for (const site of sitesToUpdate) {
+    site.contractor = newName;
+    site.contractorPhone = phone;
+    site.contractorNotes = notes;
+    await sbUpdateWorkSite(site.id, { contractor: newName, contractor_phone: phone, contractor_notes: notes });
+  }
+
+  // עדכן גם בהיסטוריית שיוכים
+  (DATA.workerSiteHistory || []).forEach(h => {
+    if (h.contractor === oldName) h.contractor = newName;
+  });
+  const worker0 = DATA.users.find(u => u.company === company);
+  if (worker0) _saveWorkerSiteHistoryLocal(company);
+
+  showToast(`✅ הקבלן עודכן ל-${newName}`);
+  closeModal();
+  renderWorkSites();
+}
+
+async function deleteContractor(contractorName) {
+  const company = currentUser.company;
+  const sitesToDelete = DATA.workSites.filter(s => s.companyId === company && s.contractor === contractorName);
+  if (!confirm(`למחוק את הקבלן "${contractorName}" ואת ${sitesToDelete.length} אתריו?`)) return;
+
+  for (const site of sitesToDelete) {
+    // הסר שיוך פועלים מהאתר
+    const workers = DATA.users.filter(u => u.company === company && u.role === 'worker' && u.siteId === site.id);
+    for (const w of workers) await sbAssignWorkerSite(w.id, null);
+    await sbDeleteWorkSite(site.id);
+    DATA.workSites = DATA.workSites.filter(s => s.id !== site.id);
+  }
+
+  showToast(`🗑️ הקבלן ו-${sitesToDelete.length} אתרים נמחקו`);
+  closeModal();
+  renderWorkSites();
+}
+
 function openAddSiteModal() { openSiteModal(null); }
 function openEditSiteModal(siteId) { openSiteModal(siteId); }
 
