@@ -3633,98 +3633,112 @@ function ceoEditCredentials(userId) {
   const user = DATA.users.find(u => u.id === userId);
   if (!user) return;
   const roleLabel = user.role === 'employee' ? 'עובד' : 'פועל';
+  const S = 'font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Arial,sans-serif;';
+  const INPUT = 'width:100%;border:1.5px solid #d2d2d7;border-radius:10px;padding:10px 14px;font-size:14px;font-family:inherit;background:#fff;color:#1d1d1f;outline:none;box-sizing:border-box;transition:border-color 0.15s;';
+  const LABEL = 'font-size:12px;font-weight:600;color:#86868b;display:block;margin-bottom:6px;letter-spacing:0.3px;text-transform:uppercase;';
+  const SECTION = 'background:#f5f5f7;border-radius:14px;padding:16px;margin-bottom:12px;';
+
   document.getElementById('modalBody').innerHTML = `
-    <div class="modal-title">✏️ עריכת פרטי עובד — ${user.name}</div>
-    <div style="background:var(--bg3);border-radius:10px;padding:12px 16px;margin-bottom:18px;display:flex;align-items:center;gap:10px;">
-      <div style="width:36px;height:36px;border-radius:50%;background:${user.avatarColor}33;color:${user.avatarColor};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;">${user.name[0]}</div>
-      <div><div style="font-weight:700;font-size:14px;">${user.name}</div><div style="font-size:11px;color:var(--text2);">${roleLabel}</div></div>
-    </div>
+    <div style="${S}padding:0;max-width:420px;width:100%;">
 
-    <!-- Name + Role -->
-    <div style="display:flex;gap:10px;margin-bottom:14px;">
-      <div style="flex:2;">
-        <label style="font-size:13px;font-weight:600;color:var(--text);display:block;margin-bottom:6px;">שם מלא</label>
-        <input type="text" id="ceo-edit-name" class="form-input" value="${user.name}" placeholder="שם מלא...">
-      </div>
-      <div style="flex:1;">
-        <label style="font-size:13px;font-weight:600;color:var(--text);display:block;margin-bottom:6px;">תפקיד</label>
-        <select id="ceo-edit-role" class="form-input" style="padding:8px 12px;">
-          <option value="employee" ${user.role === 'employee' ? 'selected' : ''}>💼 עובד</option>
-          <option value="worker" ${user.role === 'worker' ? 'selected' : ''}>🔧 פועל</option>
-        </select>
-      </div>
-    </div>
-
-    ${user.role === 'employee' ? `
-    <div style="background:linear-gradient(135deg,#f0ebff,#e8f0ff);border:1px solid #c8b8f0;border-radius:12px;padding:14px 16px;margin-bottom:10px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+      <!-- כותרת -->
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+        <div style="width:44px;height:44px;border-radius:50%;background:${user.avatarColor}22;color:${user.avatarColor};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;flex-shrink:0;">${user.name[0]}</div>
         <div>
-          <div style="font-size:13px;font-weight:700;color:#5a4a8a;">👑 ממשק עובד מורחב</div>
-          <div style="font-size:11px;color:#8878b0;margin-top:3px;">עובד זה יראה ממשק מנכ"ל עם גישה לניהול החברה</div>
+          <div style="font-size:18px;font-weight:700;color:#1d1d1f;letter-spacing:-0.3px;">${user.name}</div>
+          <div style="font-size:13px;color:#86868b;margin-top:1px;">${roleLabel}</div>
         </div>
-        <div onclick="toggleCeoInterfaceUI()" id="ceo-interface-toggle-wrap"
-          style="width:44px;height:24px;border-radius:24px;background:${user.ceoInterface ? '#8b6cda' : '#ccc'};cursor:pointer;position:relative;transition:background 0.25s;flex-shrink:0;">
-          <div id="ceo-interface-thumb"
-            style="position:absolute;top:3px;width:18px;height:18px;border-radius:50%;background:white;box-shadow:0 1px 3px rgba(0,0,0,0.2);transition:left 0.25s;left:${user.ceoInterface ? '23px' : '3px'};"></div>
+      </div>
+
+      <!-- שם ותפקיד -->
+      <div style="${SECTION}">
+        <div style="font-size:11px;font-weight:700;color:#86868b;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:12px;">פרטי זהות</div>
+        <div style="display:flex;gap:10px;">
+          <div style="flex:2;">
+            <label style="${LABEL}">שם מלא</label>
+            <input type="text" id="ceo-edit-name" value="${user.name}" placeholder="שם מלא..." style="${INPUT}" onfocus="this.style.borderColor='#0071e3'" onblur="this.style.borderColor='#d2d2d7'">
+          </div>
+          <div style="flex:1;">
+            <label style="${LABEL}">תפקיד</label>
+            <select id="ceo-edit-role" style="${INPUT}padding:10px 12px;">
+              <option value="employee" ${user.role === 'employee' ? 'selected' : ''}>💼 עובד</option>
+              <option value="worker" ${user.role === 'worker' ? 'selected' : ''}>🔧 פועל</option>
+            </select>
+          </div>
         </div>
-        <input type="hidden" id="ceo-edit-ceointerface" value="${user.ceoInterface ? '1' : '0'}">
-      </div>
-    </div>
-    <div style="background:linear-gradient(135deg,#fff3e0,#fff8ee);border:1px solid #f0c870;border-radius:12px;padding:14px 16px;margin-bottom:14px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
-        <div>
-          <div style="font-size:13px;font-weight:700;color:#9a6a10;">🏗️ עובד שטח</div>
-          <div style="font-size:11px;color:#b08030;margin-top:3px;">גישה לניהול פועלים ושעות + פניות פועלים, ללא הוספת עובדים</div>
+        <div style="display:flex;gap:10px;margin-top:10px;">
+          <div style="flex:1;">
+            <label style="${LABEL}">סוג מסמך</label>
+            <select id="ceo-edit-idtype" style="${INPUT}padding:10px 12px;">
+              <option value="id" ${(!user.idType || user.idType==='id') ? 'selected' : ''}>🪪 תעודת זהות</option>
+              <option value="passport" ${user.idType==='passport' ? 'selected' : ''}>🛂 דרכון</option>
+            </select>
+          </div>
+          <div style="flex:2;">
+            <label style="${LABEL}">מספר מסמך</label>
+            <input type="text" id="ceo-edit-idnumber" value="${user.idNumber || ''}" placeholder="מספר ת&quot;ז / דרכון..." style="${INPUT}" onfocus="this.style.borderColor='#0071e3'" onblur="this.style.borderColor='#d2d2d7'">
+          </div>
         </div>
-        <div onclick="toggleFieldWorkerUI()" id="fieldworker-toggle-wrap"
-          style="width:44px;height:24px;border-radius:24px;background:${user.fieldWorker ? '#e8a820' : '#ccc'};cursor:pointer;position:relative;transition:background 0.25s;flex-shrink:0;">
-          <div id="fieldworker-thumb"
-            style="position:absolute;top:3px;width:18px;height:18px;border-radius:50%;background:white;box-shadow:0 1px 3px rgba(0,0,0,0.2);transition:left 0.25s;left:${user.fieldWorker ? '23px' : '3px'};"></div>
+      </div>
+
+      <!-- שם משתמש -->
+      <div style="${SECTION}">
+        <div style="font-size:11px;font-weight:700;color:#86868b;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:12px;">פרטי כניסה</div>
+        <label style="${LABEL}">שם משתמש</label>
+        <input type="text" id="ceo-edit-username" value="${user.username}" placeholder="שם משתמש..." style="${INPUT}margin-bottom:4px;" onfocus="this.style.borderColor='#0071e3'" onblur="this.style.borderColor='#d2d2d7'">
+        <div style="font-size:11px;color:#86868b;margin-bottom:10px;">באנגלית, ללא רווחים</div>
+        <div style="display:flex;gap:10px;">
+          <div style="flex:1;">
+            <label style="${LABEL}">סיסמה חדשה</label>
+            <div style="display:flex;gap:6px;">
+              <input type="password" id="ceo-new-pass" placeholder="ריק = ללא שינוי" style="${INPUT}flex:1;" onfocus="this.style.borderColor='#0071e3'" onblur="this.style.borderColor='#d2d2d7'">
+              <button onclick="toggleCeoNewPass()" id="ceo-new-pass-eye" style="background:#f5f5f7;border:1.5px solid #d2d2d7;border-radius:10px;padding:0 12px;cursor:pointer;font-size:14px;flex-shrink:0;">👁️</button>
+            </div>
+          </div>
+          <div style="flex:1;">
+            <label style="${LABEL}">אימות סיסמה</label>
+            <input type="password" id="ceo-confirm-pass" placeholder="הכנס שוב..." style="${INPUT}" onfocus="this.style.borderColor='#0071e3'" onblur="this.style.borderColor='#d2d2d7'">
+          </div>
         </div>
-        <input type="hidden" id="ceo-edit-fieldworker" value="${user.fieldWorker ? '1' : '0'}">
       </div>
-    </div>` : ''}
 
-    <div class="form-group">
-      <label>שם משתמש</label>
-      <input type="text" id="ceo-edit-username" class="form-input" value="${user.username}" placeholder="שם משתמש...">
-      <div style="font-size:11px;color:var(--text3);margin-top:4px;">שם המשתמש חייב להיות באנגלית, ללא רווחים</div>
-    </div>
+      ${user.role === 'employee' ? `
+      <!-- הרשאות -->
+      <div style="${SECTION}">
+        <div style="font-size:11px;font-weight:700;color:#86868b;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:12px;">הרשאות</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #e5e5ea;">
+          <div>
+            <div style="font-size:14px;font-weight:600;color:#1d1d1f;">👑 ממשק עובד מורחב</div>
+            <div style="font-size:12px;color:#86868b;margin-top:2px;">גישה לניהול החברה כמנכ"ל</div>
+          </div>
+          <div onclick="toggleCeoInterfaceUI()" id="ceo-interface-toggle-wrap"
+            style="width:44px;height:26px;border-radius:26px;background:${user.ceoInterface ? '#0071e3' : '#e5e5ea'};cursor:pointer;position:relative;transition:background 0.25s;flex-shrink:0;">
+            <div id="ceo-interface-thumb"
+              style="position:absolute;top:3px;width:20px;height:20px;border-radius:50%;background:white;box-shadow:0 1px 4px rgba(0,0,0,0.2);transition:left 0.25s;left:${user.ceoInterface ? '21px' : '3px'};"></div>
+          </div>
+          <input type="hidden" id="ceo-edit-ceointerface" value="${user.ceoInterface ? '1' : '0'}">
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;">
+          <div>
+            <div style="font-size:14px;font-weight:600;color:#1d1d1f;">🏗️ עובד שטח</div>
+            <div style="font-size:12px;color:#86868b;margin-top:2px;">ניהול פועלים ושעות ללא הוספת עובדים</div>
+          </div>
+          <div onclick="toggleFieldWorkerUI()" id="fieldworker-toggle-wrap"
+            style="width:44px;height:26px;border-radius:26px;background:${user.fieldWorker ? '#0071e3' : '#e5e5ea'};cursor:pointer;position:relative;transition:background 0.25s;flex-shrink:0;">
+            <div id="fieldworker-thumb"
+              style="position:absolute;top:3px;width:20px;height:20px;border-radius:50%;background:white;box-shadow:0 1px 4px rgba(0,0,0,0.2);transition:left 0.25s;left:${user.fieldWorker ? '21px' : '3px'};"></div>
+          </div>
+          <input type="hidden" id="ceo-edit-fieldworker" value="${user.fieldWorker ? '1' : '0'}">
+        </div>
+      </div>` : ''}
 
-    <div style="border-top:1px solid var(--border);margin:16px 0;"></div>
+      <div id="ceo-pass-error" style="color:#ff3b30;font-size:12px;margin-bottom:12px;display:none;padding:10px 14px;background:#fff5f5;border-radius:10px;border:1px solid #ffc0c0;"></div>
 
-    <div style="display:flex;gap:10px;margin-bottom:14px;">
-      <div style="flex:1;">
-        <label style="font-size:13px;font-weight:600;color:var(--text);display:block;margin-bottom:6px;">סוג מסמך</label>
-        <select id="ceo-edit-idtype" class="form-input" style="padding:8px 12px;">
-          <option value="id" ${(!user.idType || user.idType==='id') ? 'selected' : ''}>🪪 תעודת זהות</option>
-          <option value="passport" ${user.idType==='passport' ? 'selected' : ''}>🛂 דרכון</option>
-        </select>
+      <!-- כפתורים -->
+      <div style="display:flex;gap:10px;margin-top:4px;">
+        <button onclick="ceoSaveCredentials(${userId})" style="flex:1;background:#0071e3;border:none;border-radius:980px;padding:12px;font-size:15px;color:#fff;cursor:pointer;font-family:inherit;font-weight:600;transition:background 0.15s;" onmouseover="this.style.background='#0077ed'" onmouseout="this.style.background='#0071e3'">שמור שינויים</button>
+        <button onclick="closeModal()" style="background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:12px 20px;font-size:15px;color:#1d1d1f;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.borderColor='#1d1d1f'" onmouseout="this.style.borderColor='#d2d2d7'">ביטול</button>
       </div>
-      <div style="flex:2;">
-        <label style="font-size:13px;font-weight:600;color:var(--text);display:block;margin-bottom:6px;">מספר מסמך</label>
-        <input type="text" id="ceo-edit-idnumber" class="form-input" value="${user.idNumber || ''}" placeholder="מספר ת&quot;ז / דרכון...">
-      </div>
-    </div>
-
-    <div style="border-top:1px solid var(--border);margin:16px 0;"></div>
-
-    <div class="form-group">
-      <label>סיסמה חדשה <span style="color:var(--text3);font-weight:400;font-size:11px;">(השאר ריק אם לא רוצה לשנות)</span></label>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <input type="password" id="ceo-new-pass" class="form-input" placeholder="סיסמה חדשה..." style="flex:1;">
-        <button onclick="toggleCeoNewPass()" id="ceo-new-pass-eye" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px 10px;cursor:pointer;font-size:14px;flex-shrink:0;">👁️</button>
-      </div>
-    </div>
-    <div class="form-group">
-      <label>אימות סיסמה</label>
-      <input type="password" id="ceo-confirm-pass" class="form-input" placeholder="הכנס שוב את הסיסמה...">
-    </div>
-
-    <div id="ceo-pass-error" style="color:#c0506a;font-size:12px;margin-bottom:10px;display:none;padding:8px 12px;background:#fff5f5;border-radius:6px;border:1px solid #f0c0c8;"></div>
-    <div class="modal-actions">
-      <button class="btn btn-primary" onclick="ceoSaveCredentials(${userId})">💾 שמור שינויים</button>
-      <button class="btn btn-outline" onclick="closeModal()">ביטול</button>
     </div>`;
   openModal();
   setTimeout(() => document.getElementById('ceo-edit-name')?.focus(), 100);
