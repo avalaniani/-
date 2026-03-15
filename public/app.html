@@ -5218,32 +5218,112 @@ function setSignMonthToToday() {
 function ceoOpenAddMember(role) {
   const roleLabel = role === 'employee' ? 'עובד' : 'פועל';
   const roleEmoji = role === 'employee' ? '💼' : '🔧';
+  const S = 'font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Arial,sans-serif;';
+  const SECTION = 'background:#f5f5f7;border-radius:14px;padding:16px;margin-bottom:12px;';
+  const INPUT   = 'width:100%;border:1.5px solid #d2d2d7;border-radius:10px;padding:10px 14px;font-size:14px;font-family:inherit;background:#fff;color:#1d1d1f;outline:none;box-sizing:border-box;';
+  const LABEL   = 'font-size:12px;font-weight:600;color:#86868b;display:block;margin-bottom:6px;letter-spacing:0.3px;';
   document.getElementById('modalBody').innerHTML = `
-    <div class="modal-title">${roleEmoji} הוסף ${roleLabel} חדש לחברה</div>
-    <div class="form-group"><label>שם מלא</label><input type="text" id="cm-name" placeholder="שם מלא..."></div>
-    <div class="form-group"><label>שם משתמש</label><input type="text" id="cm-username" placeholder="username (אנגלית בלבד)..."></div>
-    <div class="form-group"><label>סיסמה</label><input type="password" id="cm-pass" placeholder="סיסמה ראשונית..."></div>
-    <div style="display:flex;gap:10px;margin-bottom:14px;">
-      <div style="flex:1;">
-        <label style="font-size:13px;font-weight:600;color:var(--text);display:block;margin-bottom:6px;">סוג מסמך</label>
-        <select id="cm-idtype" class="form-input" style="padding:8px 12px;">
-          <option value="id">🪪 תעודת זהות</option>
-          <option value="passport">🛂 דרכון</option>
-        </select>
+    <div style="\${S}max-width:420px;width:100%;">
+      <div style="font-size:18px;font-weight:700;color:#1d1d1f;letter-spacing:-0.3px;margin-bottom:20px;">\${roleEmoji} הוסף \${roleLabel} חדש</div>
+
+      <!-- פרטים אישיים -->
+      <div style="\background:#f5f5f7;border-radius:14px;padding:16px;margin-bottom:12px;">
+        <div style="font-size:11px;font-weight:700;color:#86868b;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:12px;">פרטי זהות</div>
+        <label style="\font-size:12px;font-weight:600;color:#86868b;display:block;margin-bottom:6px;letter-spacing:0.3px;">שם מלא</label>
+        <input type="text" id="cm-name" placeholder="שם מלא..." style="\width:100%;border:1.5px solid #d2d2d7;border-radius:10px;padding:10px 14px;font-size:14px;font-family:inherit;background:#fff;color:#1d1d1f;outline:none;box-sizing:border-box;margin-bottom:10px;" onfocus="this.style.borderColor='#0071e3'" onblur="this.style.borderColor='#d2d2d7'">
+        <div style="display:flex;gap:10px;">
+          <div style="flex:1;">
+            <label style="\font-size:12px;font-weight:600;color:#86868b;display:block;margin-bottom:6px;letter-spacing:0.3px;">סוג מסמך</label>
+            <select id="cm-idtype" style="\width:100%;border:1.5px solid #d2d2d7;border-radius:10px;padding:10px 14px;font-size:14px;font-family:inherit;background:#fff;color:#1d1d1f;outline:none;box-sizing:border-box;padding:10px 12px;">
+              <option value="id">🪪 תעודת זהות</option>
+              <option value="passport">🛂 דרכון</option>
+            </select>
+          </div>
+          <div style="flex:2;">
+            <label style="\font-size:12px;font-weight:600;color:#86868b;display:block;margin-bottom:6px;letter-spacing:0.3px;">מספר מסמך</label>
+            <input type="text" id="cm-idnumber" placeholder='מספר ת"ז / דרכון...' style="\width:100%;border:1.5px solid #d2d2d7;border-radius:10px;padding:10px 14px;font-size:14px;font-family:inherit;background:#fff;color:#1d1d1f;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#0071e3'" onblur="this.style.borderColor='#d2d2d7'">
+          </div>
+        </div>
       </div>
-      <div style="flex:2;">
-        <label style="font-size:13px;font-weight:600;color:var(--text);display:block;margin-bottom:6px;">מספר מסמך</label>
-        <input type="text" id="cm-idnumber" class="form-input" placeholder="מספר ת&quot;ז / דרכון...">
+
+      <!-- פרטי כניסה -->
+      <div style="\background:#f5f5f7;border-radius:14px;padding:16px;margin-bottom:12px;">
+        <div style="font-size:11px;font-weight:700;color:#86868b;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:12px;">פרטי כניסה</div>
+        <label style="\font-size:12px;font-weight:600;color:#86868b;display:block;margin-bottom:6px;letter-spacing:0.3px;">שם משתמש</label>
+        <input type="text" id="cm-username" placeholder="username (אנגלית בלבד)..." style="\width:100%;border:1.5px solid #d2d2d7;border-radius:10px;padding:10px 14px;font-size:14px;font-family:inherit;background:#fff;color:#1d1d1f;outline:none;box-sizing:border-box;margin-bottom:4px;" onfocus="this.style.borderColor='#0071e3'" onblur="this.style.borderColor='#d2d2d7'">
+        <div style="font-size:11px;color:#86868b;margin-bottom:10px;">באנגלית, ללא רווחים</div>
+        <label style="\font-size:12px;font-weight:600;color:#86868b;display:block;margin-bottom:6px;letter-spacing:0.3px;">סיסמה ראשונית</label>
+        <input type="password" id="cm-pass" placeholder="סיסמה..." style="\width:100%;border:1.5px solid #d2d2d7;border-radius:10px;padding:10px 14px;font-size:14px;font-family:inherit;background:#fff;color:#1d1d1f;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#0071e3'" onblur="this.style.borderColor='#d2d2d7'">
       </div>
-    </div>
-    <div style="padding:12px;background:var(--bg3);border-radius:8px;font-size:12px;color:var(--text2);margin-bottom:8px;">
-      ℹ️ ה${roleLabel} יצורף אוטומטית לחברה שלך: <strong>${DATA.companies.find(c=>c.id===currentUser.company)?.name || ''}</strong>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-primary" onclick="ceoAddMember('${role}')">+ הוסף ${roleLabel}</button>
-      <button class="btn btn-outline" onclick="closeModal()">ביטול</button>
+
+      \${role === 'employee' ? \`
+      <!-- הרשאות -->
+      <div style="\background:#f5f5f7;border-radius:14px;padding:16px;margin-bottom:12px;">
+        <div style="font-size:11px;font-weight:700;color:#86868b;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:12px;">הרשאות</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #e5e5ea;">
+          <div>
+            <div style="font-size:14px;font-weight:600;color:#1d1d1f;">👑 ממשק עובד מורחב</div>
+            <div style="font-size:12px;color:#86868b;margin-top:2px;">גישה לניהול החברה כמנכ"ל</div>
+          </div>
+          <div onclick="toggleNewMemberCeoInterface()" id="cm-ceo-toggle"
+            style="width:44px;height:26px;border-radius:26px;background:#e5e5ea;cursor:pointer;position:relative;transition:background 0.25s;flex-shrink:0;">
+            <div id="cm-ceo-thumb" style="position:absolute;top:3px;width:20px;height:20px;border-radius:50%;background:white;box-shadow:0 1px 4px rgba(0,0,0,0.2);transition:left 0.25s;left:3px;"></div>
+          </div>
+          <input type="hidden" id="cm-ceointerface" value="0">
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;">
+          <div>
+            <div style="font-size:14px;font-weight:600;color:#1d1d1f;">🏗️ עובד שטח</div>
+            <div style="font-size:12px;color:#86868b;margin-top:2px;">ניהול פועלים ושעות ללא הוספת עובדים</div>
+          </div>
+          <div onclick="toggleNewMemberFieldWorker()" id="cm-fw-toggle"
+            style="width:44px;height:26px;border-radius:26px;background:#e5e5ea;cursor:pointer;position:relative;transition:background 0.25s;flex-shrink:0;">
+            <div id="cm-fw-thumb" style="position:absolute;top:3px;width:20px;height:20px;border-radius:50%;background:white;box-shadow:0 1px 4px rgba(0,0,0,0.2);transition:left 0.25s;left:3px;"></div>
+          </div>
+          <input type="hidden" id="cm-fieldworker" value="0">
+        </div>
+      </div>\` : ''}
+
+      <div style="display:flex;gap:10px;margin-top:4px;">
+        <button onclick="ceoAddMember('\${role}')" style="flex:1;background:#0071e3;border:none;border-radius:980px;padding:12px;font-size:15px;color:#fff;cursor:pointer;font-family:inherit;font-weight:600;transition:background 0.15s;" onmouseover="this.style.background='#0077ed'" onmouseout="this.style.background='#0071e3'">+ הוסף \${roleLabel}</button>
+        <button onclick="closeModal()" style="background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:12px 20px;font-size:15px;color:#1d1d1f;cursor:pointer;font-family:inherit;font-weight:500;" onmouseover="this.style.borderColor='#1d1d1f'" onmouseout="this.style.borderColor='#d2d2d7'">ביטול</button>
+      </div>
     </div>`;
   openModal();
+}
+
+function toggleNewMemberCeoInterface() {
+  const input = document.getElementById('cm-ceointerface');
+  const wrap  = document.getElementById('cm-ceo-toggle');
+  const thumb = document.getElementById('cm-ceo-thumb');
+  if (!input) return;
+  const on = input.value !== '1';
+  input.value = on ? '1' : '0';
+  wrap.style.background = on ? '#0071e3' : '#e5e5ea';
+  thumb.style.left = on ? '21px' : '3px';
+  if (on) { // mutual exclusion
+    const fw = document.getElementById('cm-fieldworker');
+    const fwW = document.getElementById('cm-fw-toggle');
+    const fwT = document.getElementById('cm-fw-thumb');
+    if (fw) { fw.value='0'; if(fwW) fwW.style.background='#e5e5ea'; if(fwT) fwT.style.left='3px'; }
+  }
+}
+
+function toggleNewMemberFieldWorker() {
+  const input = document.getElementById('cm-fieldworker');
+  const wrap  = document.getElementById('cm-fw-toggle');
+  const thumb = document.getElementById('cm-fw-thumb');
+  if (!input) return;
+  const on = input.value !== '1';
+  input.value = on ? '1' : '0';
+  wrap.style.background = on ? '#0071e3' : '#e5e5ea';
+  thumb.style.left = on ? '21px' : '3px';
+  if (on) { // mutual exclusion
+    const ci = document.getElementById('cm-ceointerface');
+    const ciW = document.getElementById('cm-ceo-toggle');
+    const ciT = document.getElementById('cm-ceo-thumb');
+    if (ci) { ci.value='0'; if(ciW) ciW.style.background='#e5e5ea'; if(ciT) ciT.style.left='3px'; }
+  }
 }
 
 async function ceoAddMember(role) {
@@ -5256,11 +5336,14 @@ async function ceoAddMember(role) {
   if (DATA.users.find(u => u.username === username)) { showToast('❌ שם משתמש כבר קיים במערכת', 'error'); return; }
   const colors = { employee:'#4ade80', worker:'#fb923c' };
   const avatars = { employee:'💼', worker:'🔧' };
+  const ceoInterface = document.getElementById('cm-ceointerface')?.value === '1';
+  const fieldWorker  = document.getElementById('cm-fieldworker')?.value === '1';
   const payload = {
     username, password: pass, name, role,
     company_id: currentUser.company,
     avatar: avatars[role], avatar_color: colors[role],
     id_type: idType, id_number: idNumber,
+    ceo_interface: ceoInterface, field_worker: fieldWorker,
   };
   if (HAS_SUPABASE) {
     const res = await sbCreateUser(payload);
@@ -5268,7 +5351,8 @@ async function ceoAddMember(role) {
   } else {
     DATA.users.push({ id: Math.max(...DATA.users.map(u => u.id)) + 1,
       username, password: pass, name, role, company: currentUser.company,
-      avatar: avatars[role], avatarColor: colors[role], idType, idNumber });
+      avatar: avatars[role], avatarColor: colors[role], idType, idNumber,
+      ceoInterface, fieldWorker });
   }
   closeModal();
   if (role === 'employee') renderCeoEmployees();
