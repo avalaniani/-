@@ -6946,27 +6946,15 @@ function updateBulkBar() {
 
 // ── מודל הוספת/עריכת אתר ──
 function openEditContractorModal(contractorName) {
-  const phone = DATA.workSites.find(s=>s.contractor===contractorName)?.contractorPhone || '';
-  const notes = DATA.workSites.find(s=>s.contractor===contractorName)?.contractorNotes || '';
   showModal(`
     <div style="padding:22px;max-width:360px;width:100%;">
       <div style="font-size:16px;font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:8px;">
         <span style="font-size:22px;">🏢</span> עריכת קבלן
       </div>
       <div style="font-size:12px;color:var(--text2);margin-bottom:18px;">שינוי השם יעדכן את כל אתרי העבודה של הקבלן</div>
-      <div style="display:flex;flex-direction:column;gap:12px;">
-        <div>
-          <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">שם הקבלן *</label>
-          <input id="edit-contractor-name" class="search-input" value="${contractorName}" style="width:100%;font-size:14px;">
-        </div>
-        <div>
-          <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">טלפון איש קשר</label>
-          <input id="edit-contractor-phone" class="search-input" placeholder="050-0000000" value="${phone}" style="width:100%;font-size:14px;">
-        </div>
-        <div>
-          <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">הערות</label>
-          <textarea id="edit-contractor-notes" class="search-input" placeholder="הערות..." rows="2" style="width:100%;font-size:13px;resize:none;">${notes}</textarea>
-        </div>
+      <div>
+        <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">שם הקבלן *</label>
+        <input id="edit-contractor-name" class="search-input" value="${contractorName}" style="width:100%;font-size:14px;">
       </div>
       <div style="display:flex;gap:8px;margin-top:20px;">
         <button class="btn btn-primary" style="flex:1;" onclick="saveEditContractor('${contractorName.replace(/'/g,"\'")}')">💾 שמור</button>
