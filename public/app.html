@@ -6937,7 +6937,7 @@ function renderWorkSites() {
             ${cSites[0]?.contractorNotes ? `<div style="font-size:11px;color:var(--text2);margin-top:2px;">${cSites[0].contractorNotes}</div>` : ''}
           </div>
         </div>
-        <button onclick="openEditContractorModal('${contractor.replace(/'/g,"\'")}')" class="btn btn-outline btn-sm" style="white-space:nowrap;flex-shrink:0;">✏️ ערוך קבלן</button>
+        <button onclick="openEditContractorModal('${contractor.replace(/'/g,"\'")}')" style="background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:5px 14px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:500;color:#1d1d1f;transition:all 0.15s;white-space:nowrap;flex-shrink:0;" onmouseover="this.style.background='#1d1d1f';this.style.color='#fff';this.style.borderColor='#1d1d1f'" onmouseout="this.style.background='transparent';this.style.color='#1d1d1f';this.style.borderColor='#d2d2d7'">✏️ ערוך קבלן</button>
       </div>
       ${cSites.map(site => {
         const siteWorkers = workers.filter(w => w.siteId === site.id);
@@ -6960,12 +6960,12 @@ function renderWorkSites() {
                     <button onclick="openWorkerSiteHistory(${w.id})" title="היסטוריית שיוכים" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:11px;padding:0 2px;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text3)'">📋</button>
                     <button onclick="removeWorkerFromSite(${w.id})" title="הסר מאתר" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:0 2px;line-height:1;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'">×</button>
                   </span>`).join('') : `<span style="font-size:12px;color:var(--text3);font-style:italic;">אין פועלים משויכים</span>`}
-                <button onclick="openAssignToSiteFromList(${site.id})" title="הוסף פועל לאתר" style="display:inline-flex;align-items:center;gap:3px;background:none;border:1px dashed var(--accent);color:var(--accent);border-radius:20px;padding:3px 8px;font-size:12px;cursor:pointer;">+ הוסף פועל</button>
+                <button onclick="openAssignToSiteFromList(${site.id})" title="הוסף פועל לאתר" style="display:inline-flex;align-items:center;gap:4px;background:transparent;border:1.5px solid #0071e3;color:#0071e3;border-radius:980px;padding:4px 12px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">+ הוסף פועל</button>
               </div>
             </div>
             <!-- כפתורי פעולה -->
             <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
-              <button class="btn btn-outline btn-sm" onclick="openEditSiteModal(${site.id})" style="white-space:nowrap;">✏️ ערוך</button>
+              <button onclick="openEditSiteModal(${site.id})" style="background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:5px 14px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:500;color:#1d1d1f;transition:all 0.15s;white-space:nowrap;" onmouseover="this.style.background='#1d1d1f';this.style.color='#fff';this.style.borderColor='#1d1d1f'" onmouseout="this.style.background='transparent';this.style.color='#1d1d1f';this.style.borderColor='#d2d2d7'">✏️ ערוך</button>
               <button class="btn btn-danger btn-sm" onclick="deleteSite(${site.id})" style="white-space:nowrap;">🗑️ מחק</button>
             </div>
           </div>
