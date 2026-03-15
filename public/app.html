@@ -1175,15 +1175,15 @@
               <span id="grid-toggle-icon" style="font-size:13px;transition:transform 0.2s;display:inline-block;color:#86868b;">▾</span>
               <span style="font-size:17px;font-weight:700;color:#1d1d1f;letter-spacing:-0.5px;">לוח שעות חודשי</span>
             </div>
-            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-right:auto;">
-              <div style="display:flex;align-items:center;gap:0;background:rgba(0,0,0,0.06);border-radius:980px;padding:2px;">
-                <button onclick="changeGridMonth(-1)" style="background:transparent;border:none;border-radius:980px;width:28px;height:28px;font-size:12px;cursor:pointer;color:#1d1d1f;display:flex;align-items:center;justify-content:center;transition:all 0.15s;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">▶</button>
-                <span id="grid-month-label" style="font-size:14px;font-weight:600;min-width:100px;text-align:center;color:#1d1d1f;letter-spacing:-0.2px;padding:0 4px;"></span>
-                <button onclick="changeGridMonth(1)" style="background:transparent;border:none;border-radius:980px;width:28px;height:28px;font-size:12px;cursor:pointer;color:#1d1d1f;display:flex;align-items:center;justify-content:center;transition:all 0.15s;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">◀</button>
-              </div>
-              <span id="grid-zoom-label" style="display:none;">11px</span>
-              <input type="range" id="grid-zoom-slider" min="7" max="18" step="0.5" value="11" oninput="applyGridZoom(this.value, false)" style="display:none;">
+            <span style="flex:1;"></span>
+            <div style="display:flex;align-items:center;gap:6px;background:rgba(0,0,0,0.06);border-radius:980px;padding:3px 6px;">
+              <button onclick="changeGridMonth(-1)" style="background:transparent;border:none;border-radius:980px;padding:6px 12px;font-size:12px;cursor:pointer;color:#1d1d1f;display:flex;align-items:center;gap:5px;font-family:inherit;font-weight:500;transition:all 0.15s;white-space:nowrap;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">▶ חודש קודם</button>
+              <span id="grid-month-label" style="font-size:14px;font-weight:600;min-width:100px;text-align:center;color:#1d1d1f;letter-spacing:-0.2px;padding:0 6px;border-right:1px solid rgba(0,0,0,0.12);border-left:1px solid rgba(0,0,0,0.12);"></span>
+              <button onclick="changeGridMonth(1)" style="background:transparent;border:none;border-radius:980px;padding:6px 12px;font-size:12px;cursor:pointer;color:#1d1d1f;display:flex;align-items:center;gap:5px;font-family:inherit;font-weight:500;transition:all 0.15s;white-space:nowrap;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">חודש הבא ◀</button>
             </div>
+            <span style="flex:1;"></span>
+            <span id="grid-zoom-label" style="display:none;">11px</span>
+            <input type="range" id="grid-zoom-slider" min="7" max="18" step="0.5" value="11" oninput="applyGridZoom(this.value, false)" style="display:none;">
           </div>
 
           <div id="grid-section" style="padding:16px 22px 24px;">
