@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #f0f4f8;
+    --bg: #eceef4;
     --bg2: #e8eef5;
     --bg3: #eaf0f7;
     --card: #ffffff;
@@ -37,9 +37,14 @@
 
   * { margin:0; padding:0; box-sizing:border-box; }
 
+  html {
+    background: linear-gradient(160deg,#e8eef8 0%,#f0f0f7 40%,#e8f0eb 100%);
+    background-attachment: fixed;
+    min-height: 100%;
+  }
   body {
     font-family: 'Heebo', sans-serif;
-    background: var(--bg);
+    background: transparent;
     color: var(--text);
     min-height: 100vh;
     overflow-x: hidden;
@@ -1175,7 +1180,7 @@
       </div>
 
       <!-- CEO Workers -->
-      <div class="page" id="page-ceo-workers" style="background:linear-gradient(160deg,#e8eef8 0%,#f0f0f7 40%,#e8f0eb 100%);min-height:100vh;padding:24px;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',Arial,sans-serif;">
+      <div class="page" id="page-ceo-workers" style="background:transparent;min-height:100vh;padding:24px;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',Arial,sans-serif;">
         <!-- Monthly Grid View -->
         <div style="background:rgba(255,255,255,0.72);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:20px;box-shadow:0 4px 30px rgba(0,0,0,0.08),0 1px 0 rgba(255,255,255,0.9) inset;border:1px solid rgba(255,255,255,0.6);margin-bottom:24px;overflow:hidden;">
           <div style="padding:18px 22px 14px;display:flex;align-items:center;flex-wrap:wrap;gap:10px;border-bottom:1px solid rgba(0,0,0,0.06);">
@@ -1381,7 +1386,7 @@
 
 
       <!-- ════════════════ CEO WORK SITES PAGE ════════════════ -->
-      <div class="page" id="page-ceo-sites" style="background:linear-gradient(160deg,#e8eef8 0%,#f0f0f7 40%,#e8f0eb 100%);min-height:100vh;padding:24px;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',Arial,sans-serif;">
+      <div class="page" id="page-ceo-sites" style="background:transparent;min-height:100vh;padding:24px;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',Arial,sans-serif;">
         <!-- Header bar -->
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:20px;">
           <button onclick="openAddSiteModal()" style="background:transparent;border:1.5px solid #1d1d1f;color:#1d1d1f;border-radius:980px;font-size:13px;padding:9px 18px;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;white-space:nowrap;" onmouseover="this.style.background='#1d1d1f';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#1d1d1f'">+ הוסף אתר עבודה חדש</button>
