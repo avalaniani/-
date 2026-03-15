@@ -1177,9 +1177,9 @@
             </div>
             <span style="flex:1;"></span>
             <div style="display:flex;align-items:center;gap:6px;background:rgba(0,0,0,0.06);border-radius:980px;padding:3px 6px;">
-              <button onclick="changeGridMonth(-1)" style="background:transparent;border:none;border-radius:980px;padding:6px 14px;font-size:14px;cursor:pointer;color:#1d1d1f;display:flex;align-items:center;gap:5px;font-family:inherit;font-weight:500;transition:all 0.15s;white-space:nowrap;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#1d1d1f'">▶ חודש קודם</button>
-              <span id="grid-month-label" style="font-size:14px;font-weight:600;min-width:100px;text-align:center;color:#1d1d1f;letter-spacing:-0.2px;padding:0 6px;border-right:1px solid rgba(0,0,0,0.12);border-left:1px solid rgba(0,0,0,0.12);"></span>
-              <button onclick="changeGridMonth(1)" style="background:transparent;border:none;border-radius:980px;padding:6px 14px;font-size:14px;cursor:pointer;color:#1d1d1f;display:flex;align-items:center;gap:5px;font-family:inherit;font-weight:500;transition:all 0.15s;white-space:nowrap;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#1d1d1f'">חודש הבא ◀</button>
+              <button onclick="changeGridMonth(-1)" style="background:transparent;border:none;border-radius:980px;padding:6px 14px;font-size:14px;cursor:pointer;color:#1d1d1f;display:flex;align-items:center;gap:5px;font-family:inherit;font-weight:500;transition:all 0.15s;white-space:nowrap;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#1d1d1f'"><span style='font-size:10px;'>▶</span> חודש קודם</button>
+              <span id="grid-month-label" style="font-size:18px;font-weight:700;min-width:110px;text-align:center;color:#1d1d1f;letter-spacing:-0.3px;padding:0 10px;border-right:1px solid rgba(0,0,0,0.12);border-left:1px solid rgba(0,0,0,0.12);"></span>
+              <button onclick="changeGridMonth(1)" style="background:transparent;border:none;border-radius:980px;padding:6px 14px;font-size:14px;cursor:pointer;color:#1d1d1f;display:flex;align-items:center;gap:5px;font-family:inherit;font-weight:500;transition:all 0.15s;white-space:nowrap;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#1d1d1f'">חודש הבא <span style='font-size:10px;'>◀</span></button>
             </div>
             <span style="flex:1;"></span>
             <span id="grid-zoom-label" style="display:none;">11px</span>
@@ -1675,9 +1675,9 @@
         </div>
       </div>
       <div style="display:flex;gap:8px;align-items:center;">
-        <button class="btn btn-outline btn-sm" onclick="changeGridMonthFS(-1)">▶ חודש קודם</button>
+        <button class="btn btn-outline btn-sm" onclick="changeGridMonthFS(-1)"><span style='font-size:10px;'>▶</span> חודש קודם</button>
         <span id="fs-grid-month-label" style="font-size:14px;font-weight:700;min-width:110px;text-align:center;"></span>
-        <button class="btn btn-outline btn-sm" onclick="changeGridMonthFS(1)">חודש הבא ◀</button>
+        <button class="btn btn-outline btn-sm" onclick="changeGridMonthFS(1)">חודש הבא <span style='font-size:10px;'>◀</span></button>
 
         <!-- FS Zoom control hidden -->
         <span id="fs-grid-zoom-label" style="display:none;">13px</span>
