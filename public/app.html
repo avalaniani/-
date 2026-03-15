@@ -4304,7 +4304,7 @@ function cycleGridSearchType() {
   btn.textContent = isName ? '🪪' : '🔎';
   btn.title = isName ? 'מחפש לפי ת"ז/דרכון — לחץ להחלפה' : 'מחפש לפי שם — לחץ להחלפה';
   input.placeholder = isName ? 'הכנס ת"ז או דרכון...' : 'הקלד שם...';
-  if (input.value) renderCeoWorkersGrid(false);
+  renderCeoWorkersGrid(false);
 }
 
 function setGridSearchType(val, label) {
