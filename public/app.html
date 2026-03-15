@@ -7119,7 +7119,16 @@ async function _confirmAssignWorker(workerId, siteId, dateInputId) {
   const fromDate = dateInputId ? (document.getElementById(dateInputId) ? document.getElementById(dateInputId).value : null) : null;
   if (siteId && !fromDate) { showToast('יש לבחור תאריך התחלה', 'error'); return; }
 
-  // שמור בהיסטוריה
+  // סגור את הרשומה הפעילה הקודמת בהיסטוריה
+  const yesterday = fromDate ? (() => {
+    const d = new Date(fromDate); d.setDate(d.getDate() - 1);
+    return d.toISOString().split('T')[0];
+  })() : new Date().toISOString().split('T')[0];
+  DATA.workerSiteHistory
+    .filter(h => h.workerId === workerId && !h.toDate)
+    .forEach(h => { h.toDate = yesterday; });
+
+  // הוסף רשומה חדשה
   if (siteId && fromDate) {
     const site = DATA.workSites.find(s=>s.id===siteId);
     DATA.workerSiteHistory.push({
@@ -7127,13 +7136,13 @@ async function _confirmAssignWorker(workerId, siteId, dateInputId) {
       siteName: site ? site.name : '', contractor: site ? (site.contractor||'') : '',
       fromDate: fromDate, toDate: null,
     });
-    const worker = DATA.users.find(u=>u.id===workerId);
-    if (worker) _saveWorkerSiteHistoryLocal(worker.company);
   }
+  const worker = DATA.users.find(u=>u.id===workerId);
+  if (worker) _saveWorkerSiteHistoryLocal(worker.company);
 
   await sbAssignWorkerSite(workerId, siteId);
   const site = siteId ? DATA.workSites.find(s=>s.id===siteId) : null;
-  showToast(site ? ('\u2705 שויך ל' + site.name) : '\u2705 שיוך הוסר');
+  showToast(site ? ('✅ שויך ל' + site.name) : '✅ שיוך הוסר');
   closeModal();
   if (currentPage==='ceo-sites') renderWorkSites();
   if (currentPage==='ceo-workers') renderCeoWorkersGrid(false);
@@ -7236,7 +7245,7 @@ function updateHistAddContractor(sel) {
   }
 }
 
-function saveAddHistoryEntry(workerId) {
+async function saveAddHistoryEntry(workerId) {
   const siteEl = document.getElementById('hist-add-site');
   const siteId = siteEl?.value ? parseInt(siteEl.value) || siteEl.value : null;
   const site = DATA.workSites.find(s=>String(s.id)===String(siteId));
@@ -7244,11 +7253,28 @@ function saveAddHistoryEntry(workerId) {
   if (!site) { showToast('בחר אתר עבודה', 'error'); return; }
   if (!fromDate) { showToast('יש להזין תאריך התחלה', 'error'); return; }
 
+  // סגור את הרשומה הפעילה הקודמת
+  const yesterday = (() => {
+    const d = new Date(fromDate); d.setDate(d.getDate() - 1);
+    return d.toISOString().split('T')[0];
+  })();
+  DATA.workerSiteHistory
+    .filter(h => h.workerId === workerId && !h.toDate)
+    .forEach(h => { h.toDate = yesterday; });
+
+  // הוסף רשומה חדשה
   DATA.workerSiteHistory.push({ workerId, siteId: site.id, siteName: site.name, contractor: site.contractor||'', fromDate, toDate: null });
+
   const worker = DATA.users.find(u=>u.id===workerId);
   if (worker) _saveWorkerSiteHistoryLocal(worker.company);
-  showToast('✅ תקופה נוספה');
+
+  // עדכן siteId של הפועל
+  await sbAssignWorkerSite(workerId, site.id);
+
+  showToast('✅ תקופה נוספה והפועל שויך לאתר');
   openWorkerSiteHistory(workerId);
+  if (currentPage==='ceo-sites') renderWorkSites();
+  if (currentPage==='ceo-workers') renderCeoWorkersGrid(false);
 }
 
 function editHistoryEntry(workerId, idx) {
