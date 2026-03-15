@@ -1387,11 +1387,6 @@
 
       <!-- ════════════════ CEO WORK SITES PAGE ════════════════ -->
       <div class="page" id="page-ceo-sites" style="background:transparent;min-height:100vh;padding:24px;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',Arial,sans-serif;">
-        <!-- Header bar -->
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:20px;">
-          <button onclick="openAddSiteModal()" style="background:transparent;border:1.5px solid #1d1d1f;color:#1d1d1f;border-radius:980px;font-size:13px;padding:9px 18px;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;white-space:nowrap;" onmouseover="this.style.background='#1d1d1f';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#1d1d1f'">+ הוסף אתר עבודה חדש</button>
-        </div>
-
         <!-- Hours summary -->
         <div style="background:rgba(255,255,255,0.72);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:20px;box-shadow:0 4px 30px rgba(0,0,0,0.08),0 1px 0 rgba(255,255,255,0.9) inset;border:1px solid rgba(255,255,255,0.6);margin-bottom:24px;overflow:hidden;padding:20px 22px 16px;">
           <div class="card-header" style="flex-wrap:wrap;gap:10px;">
@@ -6950,7 +6945,10 @@ function renderWorkSites() {
             ${cSites[0]?.contractorNotes ? `<div style="font-size:11px;color:var(--text2);margin-top:2px;">${cSites[0].contractorNotes}</div>` : ''}
           </div>
         </div>
-        <button onclick="openEditContractorModal('${contractor.replace(/'/g,"\'")}')" style="background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:5px 14px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:500;color:#1d1d1f;transition:all 0.15s;white-space:nowrap;flex-shrink:0;" onmouseover="this.style.background='#1d1d1f';this.style.color='#fff';this.style.borderColor='#1d1d1f'" onmouseout="this.style.background='transparent';this.style.color='#1d1d1f';this.style.borderColor='#d2d2d7'">✏️ ערוך קבלן</button>
+        <div style="display:flex;gap:8px;flex-shrink:0;">
+          <button onclick="openAddSiteModal('${contractor.replace(/'/g,"\'")}')" style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:5px 14px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:500;color:#0071e3;transition:all 0.15s;white-space:nowrap;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">+ הוסף אתר</button>
+          <button onclick="openEditContractorModal('${contractor.replace(/'/g,"\'")}')" style="background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:5px 14px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:500;color:#1d1d1f;transition:all 0.15s;white-space:nowrap;" onmouseover="this.style.background='#1d1d1f';this.style.color='#fff';this.style.borderColor='#1d1d1f'" onmouseout="this.style.background='transparent';this.style.color='#1d1d1f';this.style.borderColor='#d2d2d7'">✏️ ערוך קבלן</button>
+        </div>
       </div>
       ${cSites.map(site => {
         const siteWorkers = workers.filter(w => w.siteId === site.id);
@@ -7133,10 +7131,10 @@ async function deleteContractor(contractorName) {
   renderWorkSites();
 }
 
-function openAddSiteModal() { openSiteModal(null); }
+function openAddSiteModal(prefilledContractor) { openSiteModal(null, prefilledContractor || ''); }
 function openEditSiteModal(siteId) { openSiteModal(siteId); }
 
-function openSiteModal(siteId) {
+function openSiteModal(siteId, prefilledContractor) {
   const site = siteId ? DATA.workSites.find(s=>s.id===siteId) : null;
   const isEdit = !!site;
   const company = currentUser.company;
