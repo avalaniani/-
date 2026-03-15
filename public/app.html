@@ -1191,7 +1191,7 @@
           <div id="grid-section" style="padding:16px 22px 24px;">
             <!-- Status filter dropdown -->
             <div style="padding-bottom:12px;position:relative;display:inline-block;">
-              <button id="grid-status-btn" onclick="toggleGridStatusDropdown('grid-status-dropdown')" style="background:transparent;border:1.5px solid #1d1d1f;color:#1d1d1f;border-radius:980px;font-size:13px;padding:5px 14px;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.background='#1d1d1f';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#1d1d1f'">
+              <button id="grid-status-btn" onclick="toggleGridStatusDropdown('grid-status-dropdown')" style="background:transparent;border:1.5px solid #1d1d1f;color:#1d1d1f;border-radius:980px;font-size:13px;padding:9px 18px;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.background='#1d1d1f';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#1d1d1f'">
                 <span id="grid-status-btn-label">📋 כל הפועלים</span>
                 <span style="font-size:10px;color:#86868b;">▾</span>
               </button>
@@ -1233,7 +1233,7 @@
             <div style="padding:0 0 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
               <!-- Search type custom dropdown -->
               <div style="position:relative;display:inline-block;">
-                <button id="grid-search-type-btn" onclick="toggleGridStatusDropdown('grid-search-type-dd')" style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:5px 14px;font-size:12px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">
+                <button id="grid-search-type-btn" onclick="toggleGridStatusDropdown('grid-search-type-dd')" style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:9px 18px;font-size:13px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">
                   <span id="grid-search-type-label">🪪 חיפוש לפי ת&quot;ז / דרכון</span><span style="font-size:10px;">▾</span>
                 </button>
                 <div id="grid-search-type-dd" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:#fff;border:none;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,0.14);z-index:300;min-width:180px;overflow:hidden;">
@@ -1243,10 +1243,10 @@
                 <select id="grid-search-type" style="display:none;"><option value="name">שם</option><option value="idpassport" selected>ת"ז</option></select>
               </div>
               <input type="text" id="grid-search-input" placeholder="הקלד לחיפוש..." oninput="renderCeoWorkersGrid(false)"
-                style="border:1.5px solid #d2d2d7;border-radius:980px;padding:5px 14px;font-size:12px;background:#fff;color:#1d1d1f;min-width:150px;font-family:inherit;outline:none;">
+                style="border:1.5px solid #d2d2d7;border-radius:980px;padding:9px 18px;font-size:13px;background:#fff;color:#1d1d1f;min-width:150px;font-family:inherit;outline:none;">
               <!-- Contractor custom dropdown -->
               <div style="position:relative;display:inline-block;">
-                <button id="grid-filter-contractor-btn" onclick="toggleGridStatusDropdown('grid-filter-contractor-dd')" style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:5px 14px;font-size:12px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">
+                <button id="grid-filter-contractor-btn" onclick="toggleGridStatusDropdown('grid-filter-contractor-dd')" style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:9px 18px;font-size:13px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">
                   <span id="grid-filter-contractor-label">🏢 כל הקבלנים</span><span style="font-size:10px;">▾</span>
                 </button>
                 <div id="grid-filter-contractor-dd" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:#fff;border:none;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,0.14);z-index:300;min-width:180px;overflow:hidden;">
@@ -1256,7 +1256,7 @@
               </div>
               <!-- Site custom dropdown -->
               <div style="position:relative;display:inline-block;">
-                <button id="grid-filter-site-btn" onclick="toggleGridStatusDropdown('grid-filter-site-dd')" style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:5px 14px;font-size:12px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">
+                <button id="grid-filter-site-btn" onclick="toggleGridStatusDropdown('grid-filter-site-dd')" style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:9px 18px;font-size:13px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">
                   <span id="grid-filter-site-label">🏗️ כל האתרים</span><span style="font-size:10px;">▾</span>
                 </button>
                 <div id="grid-filter-site-dd" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:#fff;border:none;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,0.14);z-index:300;min-width:180px;overflow:hidden;">
@@ -1265,8 +1265,8 @@
                 <select id="grid-filter-site" style="display:none;" onchange="renderCeoWorkersGrid(false)"><option value="">כל האתרים</option></select>
               </div>
               <span style="margin-right:auto;"></span>
-              <button onclick="openGridFullscreen()" title="מסך מלא" style="background:transparent;border:1.5px solid #1d1d1f;border-radius:980px;padding:5px 14px;font-size:12px;cursor:pointer;color:#1d1d1f;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.background='#1d1d1f';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#1d1d1f'">⛶ מסך מלא</button>
-              <button onclick="copyGridToExcel()" style="background:transparent;border:1.5px solid #34c759;border-radius:980px;padding:5px 14px;font-size:12px;color:#34c759;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.background='#34c759';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#34c759'">📋 אקסל</button>
+              <button onclick="openGridFullscreen()" title="מסך מלא" style="background:transparent;border:1.5px solid #1d1d1f;border-radius:980px;padding:9px 18px;font-size:13px;cursor:pointer;color:#1d1d1f;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.background='#1d1d1f';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#1d1d1f'">⛶ מסך מלא</button>
+              <button onclick="copyGridToExcel()" style="background:transparent;border:1.5px solid #34c759;border-radius:980px;padding:9px 18px;font-size:13px;color:#34c759;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.background='#34c759';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#34c759'">📋 אקסל</button>
               <span id="grid-search-count" style="font-size:12px;color:#86868b;"></span>
             </div>
 
