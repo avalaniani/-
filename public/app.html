@@ -1390,6 +1390,19 @@
             style="margin-top:12px;width:100%;border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:14px;font-family:inherit;background:white;color:var(--text);outline:none;box-sizing:border-box;">
         </div>
 
+        <!-- Hours summary -->
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-header" style="flex-wrap:wrap;gap:10px;">
+            <div class="card-title">📊 סיכום שעות לפי קבלן ואתר</div>
+            <div style="display:flex;align-items:center;gap:6px;background:var(--bg3);border-radius:20px;padding:3px 6px;margin-right:auto;">
+              <button onclick="changeSitesMonth(-1)" style="background:transparent;border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:13px;color:var(--text);display:flex;align-items:center;justify-content:center;" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background='transparent'">▶</button>
+              <span id="sites-month-label" style="font-size:14px;font-weight:700;min-width:100px;text-align:center;color:var(--text);"></span>
+              <button onclick="changeSitesMonth(1)" style="background:transparent;border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:13px;color:var(--text);display:flex;align-items:center;justify-content:center;" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background='transparent'">◀</button>
+            </div>
+          </div>
+          <div id="sites-hours-summary"></div>
+        </div>
+
         <!-- Sites list -->
         <div id="sites-list-container"></div>
 
@@ -2780,7 +2793,7 @@ function renderPage(pageId) {
   }
   else if (pageId === 'ceo-workers') { renderCeoWorkersGrid(false); setTimeout(() => { fitGridToScreen(false); updateSliderFill(document.getElementById('grid-zoom-slider')); }, 80); }
   else if (pageId === 'ceo-credentials') renderCeoCredentials();
-  else if (pageId === 'ceo-sites') renderWorkSites();
+  else if (pageId === 'ceo-sites') { renderWorkSites(); renderSitesHoursSummary(); }
   else if (pageId === 'ceo-notes') renderNotes('ceo');
   else if (pageId === 'ceo-calendar') renderCalendar('ceo');
   else if (pageId === 'ceo-requests') renderCeoRequests();
@@ -6632,7 +6645,142 @@ function autoSaveNotes(type, textarea) {
 let _bulkSelected = new Set(); // מזהי פועלים נבחרים לשיוך מרובה
 
 // ── הצג את עמוד אתרי העבודה ──
+let sitesYear  = new Date().getFullYear();
+let sitesMonth = new Date().getMonth();
+
+function changeSitesMonth(delta) {
+  sitesMonth += delta;
+  if (sitesMonth > 11) { sitesMonth = 0; sitesYear++; }
+  if (sitesMonth < 0)  { sitesMonth = 11; sitesYear--; }
+  renderSitesHoursSummary();
+}
+
+function renderSitesHoursSummary() {
+  const monthNames = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+  const lbl = document.getElementById('sites-month-label');
+  if (lbl) lbl.textContent = monthNames[sitesMonth] + ' ' + sitesYear;
+
+  const wrap = document.getElementById('sites-hours-summary');
+  if (!wrap) return;
+
+  const company  = DATA.companies.find(c => c.id === currentUser.company);
+  const workers  = DATA.users.filter(u => u.company === currentUser.company && u.role === 'worker');
+  const allSites = (DATA.workSites || []).filter(s => s.companyId === currentUser.company);
+  const signed   = company?.signed || {};
+
+  // קבץ לפי קבלן → אתר
+  const contractorMap = {}; // { contractorName: { siteId: { siteName, hours, signedHours, workers:Set } } }
+
+  workers.forEach(w => {
+    const key = w.id + '-' + sitesYear + '-' + sitesMonth;
+    const hours = DATA.workerHours[key] || {};
+    const signedInfo = signed[key];
+    const isFullSigned = signedInfo?.type === 'full';
+    const partialDays  = signedInfo?.type === 'partial' ? (signedInfo.days || []) : [];
+
+    // מצא את האתר של הפועל בחודש זה (לפי היסטוריה)
+    const daysInMonth = new Date(sitesYear, sitesMonth + 1, 0).getDate();
+    // קח את האתר הנוכחי/האחרון בחודש
+    const midDate = `${sitesYear}-${String(sitesMonth+1).padStart(2,'0')}-15`;
+    const hist = (DATA.workerSiteHistory || [])
+      .filter(h => h.workerId === w.id && h.fromDate && h.fromDate <= midDate && (!h.toDate || h.toDate >= midDate))
+      .sort((a,b) => b.fromDate.localeCompare(a.fromDate));
+    const siteHist = hist[0];
+    const site = siteHist ? allSites.find(s => s.id == siteHist.siteId) :
+                            allSites.find(s => s.id == w.siteId);
+    if (!site) return;
+
+    const contractor = site.contractor || '— ללא קבלן';
+    const siteId     = site.id;
+    const siteName   = site.name;
+
+    if (!contractorMap[contractor]) contractorMap[contractor] = {};
+    if (!contractorMap[contractor][siteId]) contractorMap[contractor][siteId] = { siteName, hours: 0, signedHours: 0, workers: new Set() };
+
+    let wTotal = 0, wSigned = 0;
+    for (let d = 1; d <= daysInMonth; d++) {
+      const e = hours[d];
+      if (!e) continue;
+      const h = parseFloat(e.hours) || 0;
+      if (h <= 0 && !(e.start && e.end)) continue;
+      wTotal += h;
+      if (isFullSigned || partialDays.includes(d)) wSigned += h;
+    }
+    if (wTotal > 0) {
+      contractorMap[contractor][siteId].hours       += wTotal;
+      contractorMap[contractor][siteId].signedHours += wSigned;
+      contractorMap[contractor][siteId].workers.add(w.id);
+    }
+  });
+
+  const contractors = Object.keys(contractorMap).sort((a,b) => {
+    if (a === '— ללא קבלן') return 1;
+    if (b === '— ללא קבלן') return -1;
+    return a.localeCompare(b, 'he');
+  });
+
+  if (!contractors.length) {
+    wrap.innerHTML = '<div style="text-align:center;color:var(--text3);padding:24px;">אין נתוני שעות לחודש זה</div>';
+    return;
+  }
+
+  let html = '';
+  contractors.forEach(contr => {
+    const sites = contractorMap[contr];
+    const totalHours  = Object.values(sites).reduce((s,v) => s + v.hours, 0);
+    const signedHours = Object.values(sites).reduce((s,v) => s + v.signedHours, 0);
+    const unsignedHours = totalHours - signedHours;
+    const totalWorkers = new Set(Object.values(sites).flatMap(v => [...v.workers])).size;
+    const signedPct = totalHours > 0 ? Math.round(signedHours / totalHours * 100) : 0;
+
+    html += `<div style="border:1px solid var(--border);border-radius:14px;margin-bottom:12px;overflow:hidden;">
+      <!-- כותרת קבלן -->
+      <div style="background:linear-gradient(135deg,var(--bg3),var(--bg2));padding:14px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div style="font-size:22px;">🏢</div>
+        <div style="flex:1;">
+          <div style="font-size:15px;font-weight:800;color:var(--text);">${contr}</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:2px;">${totalWorkers} פועלים · ${totalHours.toFixed(1)} שעות סה"כ</div>
+        </div>
+        <div style="text-align:left;">
+          <div style="font-size:11px;color:#2a7a5a;font-weight:700;">✅ ${signedHours.toFixed(1)} חתומות</div>
+          <div style="font-size:11px;color:#a03030;font-weight:700;">⏳ ${unsignedHours.toFixed(1)} לא חתומות</div>
+        </div>
+      </div>
+      <!-- פס התקדמות חתימה -->
+      <div style="height:4px;background:#f0f0f5;">
+        <div style="height:4px;background:#34c759;width:${signedPct}%;transition:width 0.4s;"></div>
+      </div>
+      <!-- אתרים -->
+      <div style="padding:8px 12px 12px;">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead><tr style="color:var(--text3);font-size:11px;font-weight:700;border-bottom:1px solid var(--border);">
+            <th style="padding:6px 8px;text-align:right;">אתר עבודה</th>
+            <th style="padding:6px 4px;text-align:center;">פועלים</th>
+            <th style="padding:6px 4px;text-align:center;">שעות</th>
+            <th style="padding:6px 4px;text-align:center;color:#2a7a5a;">✅ חתומות</th>
+            <th style="padding:6px 4px;text-align:center;color:#a03030;">⏳ לא חתומות</th>
+          </tr></thead>
+          <tbody>`;
+
+    Object.values(sites).sort((a,b) => b.hours - a.hours).forEach(s => {
+      const unsigned = s.hours - s.signedHours;
+      html += `<tr style="border-bottom:1px solid var(--border);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+        <td style="padding:8px 8px;font-weight:600;color:var(--text);">🏗️ ${s.siteName}</td>
+        <td style="padding:8px 4px;text-align:center;color:var(--text2);">${s.workers.size}</td>
+        <td style="padding:8px 4px;text-align:center;font-weight:700;color:var(--text);">${s.hours.toFixed(1)}</td>
+        <td style="padding:8px 4px;text-align:center;color:#2a7a5a;font-weight:600;">${s.signedHours.toFixed(1)}</td>
+        <td style="padding:8px 4px;text-align:center;color:${unsigned > 0 ? '#a03030' : 'var(--text3)'};font-weight:600;">${unsigned.toFixed(1)}</td>
+      </tr>`;
+    });
+
+    html += `</tbody></table></div></div>`;
+  });
+
+  wrap.innerHTML = html;
+}
+
 function renderWorkSites() {
+  if (document.getElementById('sites-hours-summary')) renderSitesHoursSummary();
   const company = currentUser.company;
   const q = (document.getElementById('sites-search')?.value || '').trim().toLowerCase();
   const sites = DATA.workSites.filter(s => s.companyId === company && (
