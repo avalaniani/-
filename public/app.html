@@ -1176,8 +1176,6 @@
               <span style="font-size:17px;font-weight:700;color:#1d1d1f;letter-spacing:-0.5px;">לוח שעות חודשי</span>
             </div>
             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-right:auto;">
-              <button id="btn-add-worker" onclick="ceoOpenAddMember('worker')" style="font-size:13px;padding:9px 18px;background:transparent;border:1.5px solid #0071e3;color:#0071e3;border-radius:980px;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">+ הוסף פועל</button>
-              <button id="btn-import-workers" onclick="openBulkImportWorkers()" style="font-size:13px;padding:9px 18px;background:transparent;border:1.5px solid #34c759;color:#34c759;border-radius:980px;cursor:pointer;font-family:inherit;font-weight:500;white-space:nowrap;transition:all 0.15s;" onmouseover="this.style.background='#34c759';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#34c759'">📥 ייבוא מאקסל</button>
               <div style="display:flex;align-items:center;gap:0;background:rgba(0,0,0,0.06);border-radius:980px;padding:2px;">
                 <button onclick="changeGridMonth(-1)" style="background:transparent;border:none;border-radius:980px;width:28px;height:28px;font-size:12px;cursor:pointer;color:#1d1d1f;display:flex;align-items:center;justify-content:center;transition:all 0.15s;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">▶</button>
                 <span id="grid-month-label" style="font-size:14px;font-weight:600;min-width:100px;text-align:center;color:#1d1d1f;letter-spacing:-0.2px;padding:0 4px;"></span>
@@ -1322,6 +1320,10 @@
         <div class="card">
           <div class="card-header">
             <div class="card-title">🔧 פועלים</div>
+            <div style="display:flex;gap:8px;margin-right:auto;">
+              <button id="btn-add-worker" onclick="ceoOpenAddMember('worker')" style="font-size:13px;padding:9px 18px;background:transparent;border:1.5px solid #0071e3;color:#0071e3;border-radius:980px;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">+ הוסף פועל</button>
+              <button id="btn-import-workers" onclick="openBulkImportWorkers()" style="font-size:13px;padding:9px 18px;background:transparent;border:1.5px solid #34c759;color:#34c759;border-radius:980px;cursor:pointer;font-family:inherit;font-weight:500;white-space:nowrap;transition:all 0.15s;" onmouseover="this.style.background='#34c759';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#34c759'">📥 ייבוא מאקסל</button>
+            </div>
           </div>
           <div class="table-wrap">
             <table>
