@@ -1234,8 +1234,8 @@
                 <input type="text" id="grid-search-input" placeholder="הקלד לחיפוש..." oninput="renderCeoWorkersGrid(false)"
                   style="flex:1;border:none;padding:9px 14px;font-size:13px;background:transparent;color:#1d1d1f;font-family:inherit;outline:none;min-width:0;">
                 <button id="grid-search-type-toggle" onclick="cycleGridSearchType()" title="החלף סוג חיפוש"
-                  style="background:#f5f5f7;border:none;border-right:1.5px solid #e5e5ea;padding:0 12px;height:100%;cursor:pointer;font-size:14px;color:#86868b;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background 0.15s;white-space:nowrap;"
-                  onmouseover="this.style.background='#e5e5ea'" onmouseout="this.style.background='#f5f5f7'">🪪</button>
+                  style="background:transparent;border:none;border-right:1.5px solid #e5e5ea;padding:0 10px;height:100%;cursor:pointer;font-size:14px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s;white-space:nowrap;"
+                  onmouseover="this.querySelector('span').style.borderColor='#0071e3'" onmouseout="this.querySelector('span').style.borderColor='#d2d2d7'"><span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border:1.5px solid #d2d2d7;border-radius:50%;font-size:13px;transition:border-color 0.15s;">🪪</span></button>
                 <select id="grid-search-type" style="display:none;"><option value="name">שם</option><option value="idpassport" selected>ת"ז</option></select>
               </div>
               <!-- Contractor custom dropdown -->
@@ -4301,7 +4301,8 @@ function cycleGridSearchType() {
   if (!sel || !btn) return;
   const isName = sel.value === 'name';
   sel.value = isName ? 'idpassport' : 'name';
-  btn.textContent = isName ? '🪪' : '🔎';
+  const span = btn.querySelector('span');
+  if (span) span.textContent = isName ? '🪪' : '🔎';
   btn.title = isName ? 'מחפש לפי ת"ז/דרכון — לחץ להחלפה' : 'מחפש לפי שם — לחץ להחלפה';
   input.placeholder = isName ? 'הכנס ת"ז או דרכון...' : 'הקלד שם...';
   renderCeoWorkersGrid(false);
