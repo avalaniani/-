@@ -4302,7 +4302,7 @@ function cycleGridSearchType() {
   const isName = sel.value === 'name';
   sel.value = isName ? 'idpassport' : 'name';
   const span = btn.querySelector('span');
-  if (span) span.textContent = isName ? '🪪' : '🔎';
+  if (span) span.textContent = isName ? '🪪' : '👤';
   btn.title = isName ? 'מחפש לפי ת"ז/דרכון — לחץ להחלפה' : 'מחפש לפי שם — לחץ להחלפה';
   input.placeholder = isName ? 'הכנס ת"ז או דרכון...' : 'הקלד שם...';
   renderCeoWorkersGrid(false);
