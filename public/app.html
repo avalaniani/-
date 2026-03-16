@@ -8855,37 +8855,30 @@ function openWheelTimePicker(inputEl, day, field, workerId) {
           ${items.map(v => `<div style="height:${ITEM_H}px;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;color:#1d1d1f;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',monospace;scroll-snap-align:center;position:relative;z-index:1;letter-spacing:1px;">${v}</div>`).join('')}
           <div style="height:${ITEM_H*2}px;"></div>
         </div>
-        <div style="position:absolute;top:0;left:0;right:0;height:${ITEM_H*2}px;background:linear-gradient(to bottom,rgba(255,255,255,0.95) 20%,transparent);pointer-events:none;z-index:2;"></div>
-        <div style="position:absolute;bottom:0;left:0;right:0;height:${ITEM_H*2}px;background:linear-gradient(to top,rgba(255,255,255,0.95) 20%,transparent);pointer-events:none;z-index:2;"></div>
+        <div style="position:absolute;top:0;left:0;right:0;height:${ITEM_H*2}px;background:linear-gradient(to bottom,rgba(255,255,255,0.82) 20%,transparent);pointer-events:none;z-index:2;"></div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:${ITEM_H*2}px;background:linear-gradient(to top,rgba(255,255,255,0.82) 20%,transparent);pointer-events:none;z-index:2;"></div>
       </div>`;
   }
 
-  const fieldLabel = field === 'start' ? 'שעת הגעה' : 'שעת יציאה';
-
   const ov = document.createElement('div');
   ov.id = 'wtp-overlay';
-  ov.style.cssText = 'position:fixed;inset:0;z-index:10000;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0.4);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);';
+  ov.style.cssText = 'position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);';
 
   ov.innerHTML = `
-    <div style="background:rgba(255,255,255,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);width:100%;max-width:400px;border-radius:20px 20px 0 0;box-shadow:0 -4px 40px rgba(0,0,0,0.15);overflow:hidden;animation:wtpSlideUp 0.22s cubic-bezier(0.34,1.56,0.64,1);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;">
-      <!-- כותרת -->
-      <div style="padding:16px 20px 0;text-align:center;">
-        <div style="width:36px;height:4px;background:#d2d2d7;border-radius:2px;margin:0 auto 14px;"></div>
-        <div style="font-size:13px;font-weight:600;color:#86868b;letter-spacing:0.3px;text-transform:uppercase;">${fieldLabel}</div>
-      </div>
-      <!-- גלגלים -->
-      <div style="display:flex;align-items:center;position:relative;padding:8px 20px;justify-content:center;gap:0;">
+    <div style="background:rgba(255,255,255,0.82);backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);width:210px;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.22);overflow:hidden;animation:wtpSlideUp 0.18s ease;">
+      <div style="display:flex;align-items:center;position:relative;padding:0 4px;justify-content:center;">
         ${buildWheel('wtp-m', 60, initM)}
-        <div style="font-size:28px;font-weight:300;color:#1d1d1f;margin:0 4px;flex-shrink:0;padding-bottom:2px;">:</div>
+        <div style="font-size:22px;font-weight:700;color:var(--text);margin:0;flex-shrink:0;">:</div>
         ${buildWheel('wtp-h', 24, initH)}
-        <!-- רצועת בחירה -->
-        <div style="position:absolute;left:20px;right:20px;top:calc(50% - ${ITEM_H/2}px);height:${ITEM_H}px;background:rgba(0,113,227,0.08);border-radius:12px;pointer-events:none;z-index:0;border:1.5px solid rgba(0,113,227,0.15);"></div>
+        <!-- רצועת בחירה — מאחורי המספרים -->
+        <div style="position:absolute;left:4px;right:4px;top:calc(50% - ${ITEM_H/2}px);height:${ITEM_H}px;background:rgba(0,0,0,0.06);border-radius:10px;pointer-events:none;z-index:0;"></div>
       </div>
-      <!-- כפתורים -->
-      <div style="display:flex;gap:10px;padding:12px 20px 32px;">
-        <button id="wtp-clear" style="flex:1;background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:12px;font-size:14px;color:#86868b;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.borderColor='#1d1d1f';this.style.color='#1d1d1f'" onmouseout="this.style.borderColor='#d2d2d7';this.style.color='#86868b'">נקה</button>
-        <button id="wtp-cancel" style="flex:1;background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:12px;font-size:14px;color:#1d1d1f;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.borderColor='#1d1d1f'" onmouseout="this.style.borderColor='#d2d2d7'">ביטול</button>
-        <button id="wtp-ok" style="flex:2;background:#0071e3;border:none;border-radius:980px;padding:12px;font-size:15px;color:#fff;cursor:pointer;font-family:inherit;font-weight:600;transition:background 0.15s;" onmouseover="this.style.background='#0077ed'" onmouseout="this.style.background='#0071e3'">אישור</button>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px 16px;">
+        <button id="wtp-clear" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--text3);font-family:inherit;padding:6px 10px;">נקה</button>
+        <button id="wtp-cancel" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--text2);font-family:inherit;padding:6px 10px;">ביטול</button>
+        <button id="wtp-ok" style="width:44px;height:44px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </button>
       </div>
     </div>`;
 
