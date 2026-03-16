@@ -1390,7 +1390,10 @@
         <!-- Hours summary -->
         <div style="background:rgba(255,255,255,0.72);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:20px;box-shadow:0 4px 30px rgba(0,0,0,0.08),0 1px 0 rgba(255,255,255,0.9) inset;border:1px solid rgba(255,255,255,0.6);margin-bottom:24px;overflow:hidden;">
           <div style="padding:18px 22px 14px;display:flex;align-items:center;flex-wrap:wrap;gap:10px;border-bottom:1px solid rgba(0,0,0,0.06);">
-            <span style="font-size:17px;font-weight:700;color:#1d1d1f;letter-spacing:-0.5px;">📊 סיכום שעות לפי קבלן ואתר</span>
+            <div style="display:flex;align-items:center;gap:8px;cursor:pointer;" onclick="toggleSection('sites-hours-section','sites-hours-toggle-icon')">
+              <span id="sites-hours-toggle-icon" style="font-size:13px;transition:transform 0.2s;display:inline-block;color:#86868b;">▾</span>
+              <span style="font-size:17px;font-weight:700;color:#1d1d1f;letter-spacing:-0.5px;">סיכום שעות לפי קבלן ואתר</span>
+            </div>
             <span style="flex:1;"></span>
             <div style="display:flex;align-items:center;gap:6px;background:rgba(0,0,0,0.06);border-radius:980px;padding:3px 6px;">
               <button onclick="changeSitesMonth(-1)" style="background:transparent;border:none;border-radius:980px;padding:6px 14px;font-size:14px;cursor:pointer;color:#1d1d1f;display:flex;align-items:center;gap:5px;font-family:inherit;font-weight:500;transition:all 0.15s;white-space:nowrap;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#1d1d1f'"><span style="font-size:10px;">▶</span> חודש קודם</button>
@@ -1399,11 +1402,13 @@
             </div>
             <span style="flex:1;"></span>
           </div>
-          <div style="padding:8px 0 4px;">
-            <input type="text" id="sites-hours-search" placeholder="חפש קבלן או אתר" oninput="renderSitesHoursSummary()"
-              style="width:180px;border:1.5px solid rgba(255,255,255,0.6);border-radius:980px;padding:10px 14px;font-size:12px;font-family:inherit;background:rgba(255,255,255,0.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#1d1d1f;outline:none;box-shadow:0 1px 8px rgba(0,0,0,0.06);transition:border-color 0.15s;" onfocus="this.style.borderColor='#0071e3'" onblur="this.style.borderColor='rgba(255,255,255,0.6)'">
+          <div id="sites-hours-section">
+            <div style="padding:12px 0 4px;">
+              <input type="text" id="sites-hours-search" placeholder="חפש קבלן או אתר" oninput="renderSitesHoursSummary()"
+                style="width:180px;border:1.5px solid rgba(255,255,255,0.6);border-radius:980px;padding:10px 14px;font-size:12px;font-family:inherit;background:rgba(255,255,255,0.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#1d1d1f;outline:none;box-shadow:0 1px 8px rgba(0,0,0,0.06);transition:border-color 0.15s;" onfocus="this.style.borderColor='#0071e3'" onblur="this.style.borderColor='rgba(255,255,255,0.6)'">
+            </div>
+            <div id="sites-hours-summary"></div>
           </div>
-          <div id="sites-hours-summary"></div>
         </div>
 
         <!-- Sites list -->
