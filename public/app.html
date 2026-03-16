@@ -6901,7 +6901,10 @@ function renderSitesHoursSummary() {
         contractorMap[contractor][siteId]._workerSignedDays[w.id].add(d);
       }
       // סמן אם פועל יש לו ימים לא חתומים באתר
-      if (!isSigned) {
+      if (isSigned) {
+        contractorMap[contractor][siteId]._workerSigned = contractorMap[contractor][siteId]._workerSigned || new Set();
+        contractorMap[contractor][siteId]._workerSigned.add(w.id);
+      } else {
         contractorMap[contractor][siteId]._workerUnsigned = contractorMap[contractor][siteId]._workerUnsigned || new Set();
         contractorMap[contractor][siteId]._workerUnsigned.add(w.id);
       }
@@ -6999,13 +7002,13 @@ function renderSitesHoursSummary() {
       if (!window._siteWorkerLists) window._siteWorkerLists = {};
       const listKey = contr + '|' + s.siteName;
       window._siteWorkerLists[listKey + '|all'] = [...s.workers].map(id => DATA.users.find(u=>u.id===id)?.name).filter(Boolean);
-      // signed = פועל שאין לו ימים לא חתומים באתר זה
-      // unsigned = פועל שיש לו לפחות יום אחד לא חתום
+      // signed   = פועל שיש לו לפחות יום אחד חתום באתר זה
+      // unsigned = פועל שיש לו לפחות יום אחד לא-חתום באתר זה
+      // (פועל יכול להופיע בשתי הרשימות אם חלק מימיו חתום וחלק לא)
+      const signedSet   = s._workerSigned   || new Set();
       const unsignedSet = s._workerUnsigned || new Set();
-      const signedWorkerIds = [...s.workers].filter(id => !unsignedSet.has(id));
-      const unsignedWorkerIds = [...s.workers].filter(id => unsignedSet.has(id));
-      window._siteWorkerLists[listKey + '|signed']   = signedWorkerIds.map(id=>DATA.users.find(u=>u.id===id)?.name).filter(Boolean);
-      window._siteWorkerLists[listKey + '|unsigned']  = unsignedWorkerIds.map(id=>DATA.users.find(u=>u.id===id)?.name).filter(Boolean);
+      window._siteWorkerLists[listKey + '|signed']   = [...signedSet].map(id=>DATA.users.find(u=>u.id===id)?.name).filter(Boolean);
+      window._siteWorkerLists[listKey + '|unsigned']  = [...unsignedSet].map(id=>DATA.users.find(u=>u.id===id)?.name).filter(Boolean);
       const lkSafe = (contr + '|' + s.siteName).replace(/'/g, "\'");
 
       html += `<tr style="border-bottom:1px solid var(--border);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
