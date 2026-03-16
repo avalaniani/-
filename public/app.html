@@ -6891,6 +6891,15 @@ function renderSitesHoursSummary() {
       contractorMap[contractor][siteId].workers.add(w.id);
       contractorMap[contractor][siteId]._workedDays = contractorMap[contractor][siteId]._workedDays || new Set();
       contractorMap[contractor][siteId]._workedDays.add(d);
+      // שמור ימים לכל פועל בנפרד
+      contractorMap[contractor][siteId]._workerDays = contractorMap[contractor][siteId]._workerDays || {};
+      contractorMap[contractor][siteId]._workerDays[w.id] = contractorMap[contractor][siteId]._workerDays[w.id] || new Set();
+      contractorMap[contractor][siteId]._workerDays[w.id].add(d);
+      if (isSigned) {
+        contractorMap[contractor][siteId]._workerSignedDays = contractorMap[contractor][siteId]._workerSignedDays || {};
+        contractorMap[contractor][siteId]._workerSignedDays[w.id] = contractorMap[contractor][siteId]._workerSignedDays[w.id] || new Set();
+        contractorMap[contractor][siteId]._workerSignedDays[w.id].add(d);
+      }
     }
   });
 
@@ -6986,18 +6995,11 @@ function renderSitesHoursSummary() {
       const listKey = contr + '|' + s.siteName;
       window._siteWorkerLists[listKey + '|all'] = [...s.workers].map(id => DATA.users.find(u=>u.id===id)?.name).filter(Boolean);
       const signedWorkerIds = [...s.workers].filter(id => {
-        const key = id+'-'+sitesYear+'-'+sitesMonth;
-        const si = DATA.companies.find(c=>c.id===currentUser.company)?.signed?.[key];
-        const isFS = si?.type==='full';
-        const partDays = si?.type==='partial' ? (si.days||[]) : [];
-        const hrs = DATA.workerHours[key]||{};
-        const daysInM = new Date(sitesYear,sitesMonth+1,0).getDate();
-        for (let d=1;d<=daysInM;d++) {
-          const e=hrs[d]; if (!e) continue;
-          const h=parseFloat(e.hours)||0;
-          if ((h>0||(e.start&&e.end)) && (isFS||partDays.includes(d))) return true;
-        }
-        return false;
+        // פועל חתום אם כל ימיו באותו אתר חתומים
+        const workerDays   = s._workerDays?.[id] || new Set();
+        const signedDays   = s._workerSignedDays?.[id] || new Set();
+        if (!workerDays.size) return false;
+        return [...workerDays].every(d => signedDays.has(d));
       });
       window._siteWorkerLists[listKey + '|signed']   = signedWorkerIds.map(id=>DATA.users.find(u=>u.id===id)?.name).filter(Boolean);
       window._siteWorkerLists[listKey + '|unsigned']  = [...s.workers].filter(id=>!signedWorkerIds.includes(id)).map(id=>DATA.users.find(u=>u.id===id)?.name).filter(Boolean);
