@@ -7077,7 +7077,7 @@ function openEditContractorModal(contractorName) {
         <input id="edit-contractor-name" class="search-input" value="${contractorName}" style="width:100%;font-size:14px;">
       </div>
       <div style="display:flex;gap:10px;margin-top:20px;">
-        <button onclick="saveEditContractor('${contractorName.replace(/'/g,"\\'")}')" style="flex:1;background:#0071e3;border:none;border-radius:980px;padding:11px;font-size:14px;color:#fff;cursor:pointer;font-family:inherit;font-weight:600;transition:background 0.15s;" onmouseover="this.style.background='#0077ed'" onmouseout="this.style.background='#0071e3'">💾 שמור</button>
+        <button onclick="saveEditContractor('${contractorName.replace(/'/g,"\\'")}')" style="flex:1;background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:11px;font-size:14px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:600;transition:all 0.15s;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">💾 שמור</button>
         <button onclick="closeModal()" style="background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:11px 18px;font-size:14px;color:#1d1d1f;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.borderColor='#1d1d1f'" onmouseout="this.style.borderColor='#d2d2d7'">ביטול</button>
       </div>
       <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px;">
