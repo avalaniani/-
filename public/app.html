@@ -6972,7 +6972,26 @@ function renderSitesHoursSummary() {
       </tr>`;
     });
 
-    html += `</tbody></table></div></div>`;
+    // שורת סיכום לקבלן
+    const totalSigned   = Object.values(sites).reduce((a,v)=>a+v.signedHours,0);
+    const totalUnsigned = totalHours - totalSigned;
+    const totalCost     = Object.values(sites).reduce((a,v)=>a+(v.cost||0),0);
+    const hasAnyCost    = Object.values(sites).some(v=>v.cost!=null);
+    const vat           = parseFloat(document.getElementById('sites-vat-rate')?.value||18)/100;
+    const totalVat      = hasAnyCost ? Math.round(totalCost * vat) : null;
+    const totalWithVat  = hasAnyCost ? Math.round(totalCost * (1+vat)) : null;
+    const totalWorkersAll = new Set(Object.values(sites).flatMap(v=>[...v.workers])).size;
+
+    html += `<tr style="background:#f0f4f8;border-top:2px solid #d2d2d7;font-weight:800;font-size:12px;">
+      <td style="padding:8px 8px;color:#1d1d1f;">סה"כ</td>
+      <td style="padding:8px 4px;text-align:center;color:#1d1d1f;">${totalWorkersAll}</td>
+      <td style="padding:8px 4px;text-align:center;color:#2a7a5a;">${totalSigned.toFixed(1)}</td>
+      <td style="padding:8px 4px;text-align:center;color:${totalUnsigned>0?'#a03030':'#86868b'};">${totalUnsigned.toFixed(1)}</td>
+      <td style="padding:8px 4px;text-align:center;color:#1d1d1f;">${totalHours.toFixed(1)}</td>
+      <td style="padding:8px 4px;text-align:center;color:#0071e3;">${hasAnyCost ? '₪'+Math.round(totalCost).toLocaleString() : '—'}</td>
+      <td style="padding:8px 4px;text-align:center;color:#6c5ce7;">${totalVat!=null ? '₪'+totalVat.toLocaleString() : '—'}</td>
+      <td style="padding:8px 4px;text-align:center;color:#00b894;">${totalWithVat!=null ? '₪'+totalWithVat.toLocaleString() : '—'}</td>
+    </tr></tbody></table></div></div>`;
   });
 
   wrap.innerHTML = html;
