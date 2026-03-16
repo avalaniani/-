@@ -1403,9 +1403,25 @@
             <span style="flex:1;"></span>
           </div>
           <div id="sites-hours-section">
-            <div style="padding:12px 0 4px;">
+            <div style="padding:12px 0 4px;display:flex;align-items:center;gap:8px;">
               <input type="text" id="sites-hours-search" placeholder="חפש קבלן או אתר" oninput="renderSitesHoursSummary()"
                 style="width:180px;border:1.5px solid rgba(255,255,255,0.6);border-radius:980px;padding:10px 14px;font-size:12px;font-family:inherit;background:rgba(255,255,255,0.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#1d1d1f;outline:none;box-shadow:0 1px 8px rgba(0,0,0,0.06);transition:border-color 0.15s;" onfocus="this.style.borderColor='#0071e3'" onblur="this.style.borderColor='rgba(255,255,255,0.6)'">
+              <span style="flex:1;"></span>
+              <!-- VAT gear -->
+              <div style="position:relative;display:inline-block;">
+                <button id="vat-gear-btn" onclick="toggleVatDropdown()" title='שינוי מע"מ' style="background:transparent;border:none;font-size:16px;cursor:pointer;color:#86868b;padding:4px;display:flex;align-items:center;transition:color 0.15s;" onmouseover="this.style.color='#1d1d1f'" onmouseout="this.style.color='#86868b'">⚙️</button>
+                <div id="vat-dropdown" style="display:none;position:absolute;left:0;top:calc(100% + 6px);background:#fff;border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,0.13);z-index:300;padding:14px 16px;min-width:160px;">
+                  <div style="font-size:11px;font-weight:700;color:#86868b;letter-spacing:0.4px;text-transform:uppercase;margin-bottom:8px;">שיעור מע"מ</div>
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <input type="number" id="sites-vat-rate" value="18" min="0" max="100"
+                      style="width:60px;border:1.5px solid #d2d2d7;border-radius:8px;padding:6px 8px;font-size:14px;font-family:inherit;background:#fff;color:#1d1d1f;outline:none;text-align:center;"
+                      onfocus="this.style.borderColor='#0071e3'" onblur="this.style.borderColor='#d2d2d7'"
+                      oninput="renderSitesHoursSummary()">
+                    <span style="font-size:14px;color:#1d1d1f;font-weight:600;">%</span>
+                  </div>
+                  <div id="vat-display" style="font-size:11px;color:#86868b;margin-top:6px;"></div>
+                </div>
+              </div>
             </div>
             <div id="sites-hours-summary"></div>
           </div>
@@ -6767,6 +6783,24 @@ let _bulkSelected = new Set(); // מזהי פועלים נבחרים לשיוך 
 let sitesYear  = new Date().getFullYear();
 let sitesMonth = new Date().getMonth();
 
+function toggleVatDropdown() {
+  const dd = document.getElementById('vat-dropdown');
+  if (!dd) return;
+  const isOpen = dd.style.display !== 'none';
+  dd.style.display = isOpen ? 'none' : 'block';
+  if (!isOpen) {
+    setTimeout(() => document.getElementById('sites-vat-rate')?.focus(), 80);
+  }
+}
+// סגור VAT dropdown בלחיצה מחוץ
+document.addEventListener('click', function(e) {
+  const btn = document.getElementById('vat-gear-btn');
+  const dd  = document.getElementById('vat-dropdown');
+  if (dd && btn && !btn.contains(e.target) && !dd.contains(e.target)) {
+    dd.style.display = 'none';
+  }
+});
+
 function changeSitesMonth(delta) {
   sitesMonth += delta;
   if (sitesMonth > 11) { sitesMonth = 0; sitesYear++; }
@@ -6911,11 +6945,6 @@ function renderSitesHoursSummary() {
         <div style="height:4px;background:#34c759;width:${signedPct}%;transition:width 0.4s;"></div>
       </div>
       <!-- אתרים -->
-      <div style="display:flex;align-items:center;gap:8px;padding:8px 12px 4px;font-size:12px;color:var(--text2);">
-        <span>מע"מ:</span>
-        <input type="number" id="sites-vat-rate" value="18" min="0" max="100" style="width:60px;border:1.5px solid #d2d2d7;border-radius:8px;padding:4px 8px;font-size:12px;font-family:inherit;background:#fff;color:#1d1d1f;outline:none;text-align:center;" oninput="renderSitesHoursSummary()">
-        <span>%</span>
-      </div>
       <div style="padding:4px 12px 12px;">
         <table style="width:100%;border-collapse:collapse;font-size:13px;">
           <thead><tr style="color:var(--text3);font-size:11px;font-weight:700;border-bottom:1px solid var(--border);">
