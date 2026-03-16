@@ -6783,6 +6783,28 @@ let _bulkSelected = new Set(); // מזהי פועלים נבחרים לשיוך 
 let sitesYear  = new Date().getFullYear();
 let sitesMonth = new Date().getMonth();
 
+function showSiteWorkersList(siteName, workers, category, color) {
+  if (!workers.length) { showToast('אין פועלים בקטגוריה זו'); return; }
+  const S = "font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;";
+  showModal(`
+    <div style="${S}padding:22px;max-width:340px;width:100%;">
+      <div style="font-size:16px;font-weight:700;color:#1d1d1f;margin-bottom:4px;">🏗️ ${siteName}</div>
+      <div style="font-size:13px;font-weight:600;color:${color};margin-bottom:16px;">${category} · ${workers.length} פועלים</div>
+      <div style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;">
+        ${workers.map(name => {
+          const w = DATA.users.find(u=>u.name===name);
+          const col = w?.avatarColor || '#86868b';
+          return `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#f5f5f7;border-radius:10px;">
+            <div style="width:32px;height:32px;border-radius:50%;background:${col}22;color:${col};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;">${name[0]}</div>
+            <span style="font-size:14px;font-weight:500;color:#1d1d1f;">${name}</span>
+          </div>`;
+        }).join('')}
+      </div>
+      <button onclick="closeModal()" style="width:100%;margin-top:16px;background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:10px;font-size:14px;color:#1d1d1f;cursor:pointer;font-family:inherit;font-weight:500;" onmouseover="this.style.borderColor='#1d1d1f'" onmouseout="this.style.borderColor='#d2d2d7'">סגור</button>
+    </div>
+  `);
+}
+
 function toggleVatDropdown() {
   const dd = document.getElementById('vat-dropdown');
   if (!dd) return;
@@ -6934,11 +6956,7 @@ function renderSitesHoursSummary() {
           <div style="font-size:15px;font-weight:800;color:var(--text);">${contr}</div>
           <div style="font-size:12px;color:var(--text2);margin-top:2px;">${totalWorkers} פועלים · ${totalHours.toFixed(1)} שעות סה"כ</div>
         </div>
-        <div style="text-align:left;">
-          <div style="font-size:11px;color:#2a7a5a;font-weight:700;">✅ ${signedHours.toFixed(1)} חתומות</div>
-          <div style="font-size:11px;color:#a03030;font-weight:700;">⏳ ${unsignedHours.toFixed(1)} לא חתומות</div>
-          ${(() => { const tc = Object.values(sites).reduce((a,v)=>a+(v.cost||0),0); const hasAny = Object.values(sites).some(v=>v.cost!=null); if (!hasAny) return ''; const vat = parseFloat(document.getElementById('sites-vat-rate')?.value||18)/100; const total = Math.round(tc*(1+vat)); return `<div style="font-size:12px;color:#0071e3;font-weight:800;">💰 ₪${Math.round(tc).toLocaleString()}</div><div style="font-size:12px;color:#00b894;font-weight:800;">כולל מע"מ: ₪${total.toLocaleString()}</div>`; })()}
-        </div>
+
       </div>
       <!-- פס התקדמות חתימה -->
       <div style="height:4px;background:#f0f0f5;">
@@ -6961,11 +6979,30 @@ function renderSitesHoursSummary() {
 
     Object.values(sites).sort((a,b) => b.hours - a.hours).forEach(s => {
       const unsigned = s.hours - s.signedHours;
+      // בנה רשימות לפי קטגוריה
+      const workersList    = [...s.workers].map(id => DATA.users.find(u=>u.id===id)?.name).filter(Boolean);
+      const signedWorkers  = [...s.workers].filter(id => {
+        const w = DATA.users.find(u=>u.id===id); if (!w) return false;
+        const key = id+'-'+sitesYear+'-'+sitesMonth;
+        const si = DATA.companies.find(c=>c.id===currentUser.company)?.signed?.[key];
+        const isFS = si?.type==='full';
+        const partDays = si?.type==='partial' ? (si.days||[]) : [];
+        const hrs = DATA.workerHours[key]||{};
+        const daysInM = new Date(sitesYear,sitesMonth+1,0).getDate();
+        for (let d=1;d<=daysInM;d++) {
+          const e=hrs[d]; if (!e) continue;
+          const h=parseFloat(e.hours)||0;
+          if ((h>0||(e.start&&e.end)) && (isFS||partDays.includes(d))) return true;
+        }
+        return false;
+      }).map(id=>DATA.users.find(u=>u.id===id)?.name).filter(Boolean);
+      const unsignedWorkers = [...s.workers].filter(id=>!signedWorkers.includes(DATA.users.find(u=>u.id===id)?.name)).map(id=>DATA.users.find(u=>u.id===id)?.name).filter(Boolean);
+
       html += `<tr style="border-bottom:1px solid var(--border);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
         <td style="padding:8px 8px;font-weight:600;color:var(--text);">🏗️ ${s.siteName}</td>
-        <td style="padding:8px 4px;text-align:center;color:var(--text2);">${s.workers.size}</td>
-        <td style="padding:8px 4px;text-align:center;color:#2a7a5a;font-weight:600;">${s.signedHours.toFixed(1)}</td>
-        <td style="padding:8px 4px;text-align:center;color:${unsigned > 0 ? '#a03030' : 'var(--text3)'};font-weight:600;">${unsigned.toFixed(1)}</td>
+        <td style="padding:8px 4px;text-align:center;cursor:pointer;border-radius:6px;transition:background 0.15s;color:var(--text2);" onclick="showSiteWorkersList('${s.siteName.replace(/'/g,"\'")}', ${JSON.stringify(workersList)}, 'כל הפועלים', '#1d1d1f')" title="לחץ לרשימת פועלים" onmouseover="this.style.background='#f0f4f8'" onmouseout="this.style.background=''">${s.workers.size}${s.workers.size ? ' 👤' : ''}</td>
+        <td style="padding:8px 4px;text-align:center;cursor:pointer;border-radius:6px;transition:background 0.15s;color:#2a7a5a;font-weight:600;" onclick="showSiteWorkersList('${s.siteName.replace(/'/g,"\'")}', ${JSON.stringify(signedWorkers)}, '✅ חתומות', '#2a7a5a')" title="לחץ לרשימת פועלים חתומים" onmouseover="this.style.background='#f0fff4'" onmouseout="this.style.background=''">${s.signedHours.toFixed(1)}${signedWorkers.length ? ' 👤' : ''}</td>
+        <td style="padding:8px 4px;text-align:center;cursor:pointer;border-radius:6px;transition:background 0.15s;color:${unsigned > 0 ? '#a03030' : 'var(--text3)'};font-weight:600;" onclick="showSiteWorkersList('${s.siteName.replace(/'/g,"\'")}', ${JSON.stringify(unsignedWorkers)}, '⏳ לא חתומות', '#a03030')" title="לחץ לרשימת פועלים לא חתומים" onmouseover="this.style.background='#fff0f0'" onmouseout="this.style.background=''">${unsigned.toFixed(1)}${unsignedWorkers.length ? ' 👤' : ''}</td>
         <td style="padding:8px 4px;text-align:center;font-weight:700;color:var(--text);">${s.hours.toFixed(1)}</td>
         <td style="padding:8px 4px;text-align:center;color:#0071e3;font-weight:600;">${s.cost != null ? '₪' + Math.round(s.cost).toLocaleString() : '—'}</td>
         ${s.cost != null ? (() => { const vat = parseFloat(document.getElementById('sites-vat-rate')?.value||18)/100; const vatAmt = Math.round(s.cost * vat); const total = Math.round(s.cost * (1 + vat)); return `<td style="padding:8px 4px;text-align:center;color:#6c5ce7;font-weight:600;">₪${vatAmt.toLocaleString()}</td><td style="padding:8px 4px;text-align:center;color:#00b894;font-weight:700;">₪${total.toLocaleString()}</td>`; })() : '<td style="padding:8px 4px;text-align:center;color:var(--text3);">—</td><td style="padding:8px 4px;text-align:center;color:var(--text3);">—</td>'}
@@ -6982,7 +7019,7 @@ function renderSitesHoursSummary() {
     const totalWithVat  = hasAnyCost ? Math.round(totalCost * (1+vat)) : null;
     const totalWorkersAll = new Set(Object.values(sites).flatMap(v=>[...v.workers])).size;
 
-    html += `<tr style="background:#f0f4f8;border-top:2px solid #d2d2d7;font-weight:800;font-size:12px;">
+    html += `<tr style="background:#f0f4f8;border-top:2px solid #d2d2d7;font-weight:800;font-size:14px;">
       <td style="padding:8px 8px;color:#1d1d1f;">סה"כ</td>
       <td style="padding:8px 4px;text-align:center;color:#1d1d1f;">${totalWorkersAll}</td>
       <td style="padding:8px 4px;text-align:center;color:#2a7a5a;">${totalSigned.toFixed(1)}</td>
