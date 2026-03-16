@@ -8852,7 +8852,7 @@ function openWheelTimePicker(inputEl, day, field, workerId) {
       <div style="flex:1;position:relative;height:${ITEM_H*VISIBLE}px;overflow:hidden;z-index:1;max-width:75px;perspective:180px;">
         <div id="${id}" style="overflow-y:scroll;height:100%;scrollbar-width:none;-ms-overflow-style:none;scroll-snap-type:y mandatory;position:relative;z-index:1;">
           <div style="height:${ITEM_H*2}px;"></div>
-          ${items.map((v,i) => `<div style="height:${ITEM_H}px;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;color:#1d1d1f;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;scroll-snap-align:center;position:relative;z-index:1;">${v}</div>`).join('')}
+          ${items.map((v,i) => `<div style="height:${ITEM_H}px;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;color:#1d1d1f;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;scroll-snap-align:center;position:relative;z-index:1;transition:opacity 0.12s ease,font-size 0.12s ease,filter 0.12s ease,transform 0.12s ease;will-change:opacity,transform;">${v}</div>`).join('')}
           <div style="height:${ITEM_H*2}px;"></div>
         </div>
         <div style="position:absolute;top:0;left:0;right:0;height:${ITEM_H*2}px;background:linear-gradient(to bottom,rgba(255,255,255,0.01) 0%,transparent 100%);pointer-events:none;z-index:2;"></div>
@@ -8906,43 +8906,21 @@ function openWheelTimePicker(inputEl, day, field, workerId) {
     }, 80);
   }
   function updateOpacity(list) {
-    const center = Math.round(list.scrollTop / ITEM_H);
+    // חישוב מרחק רציף (לא עגול) לאנימציה חלקה
+    const exactCenter = list.scrollTop / ITEM_H;
     const divs = [...list.querySelectorAll('div[style*="scroll-snap-align"]')];
     divs.forEach((el, i) => {
-      const dist = Math.abs(i - center);
-      const angle = dist * 22; // זווית בדרגות
-      const rad   = angle * Math.PI / 180;
+      const dist = Math.abs(i - exactCenter);
+      // חישוב רציף — cos נותן קימור טבעי
+      const rad   = Math.min(dist * 0.38, Math.PI / 2);
       const scale = Math.cos(rad);
-      const tz    = -dist * 8; // תזוזה לאחור
-      if (dist === 0) {
-        el.style.opacity    = '1';
-        el.style.fontWeight = '400';
-        el.style.fontSize   = '28px';
-        el.style.filter     = 'none';
-        el.style.transform  = 'scale(1) translateZ(0)';
-        el.style.color      = '#1d1d1f';
-      } else if (dist === 1) {
-        el.style.opacity    = '0.5';
-        el.style.fontWeight = '300';
-        el.style.fontSize   = Math.round(28 * 0.88) + 'px';
-        el.style.filter     = 'blur(0.4px)';
-        el.style.transform  = `scale(${scale.toFixed(3)}) translateZ(${tz}px) rotateX(${dist > 0 ? angle : -angle}deg)`;
-        el.style.color      = '#1d1d1f';
-      } else if (dist === 2) {
-        el.style.opacity    = '0.22';
-        el.style.fontWeight = '300';
-        el.style.fontSize   = Math.round(28 * 0.76) + 'px';
-        el.style.filter     = 'blur(1px)';
-        el.style.transform  = `scale(${scale.toFixed(3)}) translateZ(${tz}px)`;
-        el.style.color      = '#1d1d1f';
-      } else {
-        el.style.opacity    = '0.08';
-        el.style.fontWeight = '300';
-        el.style.fontSize   = Math.round(28 * 0.64) + 'px';
-        el.style.filter     = 'blur(1.5px)';
-        el.style.transform  = `scale(${scale.toFixed(3)}) translateZ(${tz}px)`;
-        el.style.color      = '#1d1d1f';
-      }
+      const fs    = 28 * (0.62 + 0.38 * scale); // 28px במרכז, ~17px בקצה
+      const op    = Math.max(0.06, scale * scale); // opacity רציף
+      const blur  = Math.max(0, dist * 0.7 - 0.3); // blur מתחיל מ-±0.5
+      el.style.opacity   = op.toFixed(3);
+      el.style.fontSize  = fs.toFixed(1) + 'px';
+      el.style.filter    = blur > 0 ? `blur(${blur.toFixed(2)}px)` : 'none';
+      el.style.transform = `scale(${scale.toFixed(3)})`;
     });
   }
   hList.addEventListener('scroll', () => { snap(hList, 24); updateOpacity(hList); });
