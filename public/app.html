@@ -6921,9 +6921,9 @@ function renderSitesHoursSummary() {
           <thead><tr style="color:var(--text3);font-size:11px;font-weight:700;border-bottom:1px solid var(--border);">
             <th style="padding:6px 8px;text-align:right;">אתר עבודה</th>
             <th style="padding:6px 4px;text-align:center;">פועלים</th>
-            <th style="padding:6px 4px;text-align:center;">סה"כ שעות</th>
             <th style="padding:6px 4px;text-align:center;color:#2a7a5a;">✅ חתומות</th>
             <th style="padding:6px 4px;text-align:center;color:#a03030;">⏳ לא חתומות</th>
+            <th style="padding:6px 4px;text-align:center;">סה"כ שעות</th>
             <th style="padding:6px 4px;text-align:center;color:#0071e3;">💰 עלות</th>
             <th style="padding:6px 4px;text-align:center;color:#6c5ce7;">מע"מ</th>
             <th style="padding:6px 4px;text-align:center;color:#00b894;">כולל מע"מ</th>
@@ -6935,9 +6935,9 @@ function renderSitesHoursSummary() {
       html += `<tr style="border-bottom:1px solid var(--border);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
         <td style="padding:8px 8px;font-weight:600;color:var(--text);">🏗️ ${s.siteName}</td>
         <td style="padding:8px 4px;text-align:center;color:var(--text2);">${s.workers.size}</td>
-        <td style="padding:8px 4px;text-align:center;font-weight:700;color:var(--text);">${s.hours.toFixed(1)}</td>
         <td style="padding:8px 4px;text-align:center;color:#2a7a5a;font-weight:600;">${s.signedHours.toFixed(1)}</td>
         <td style="padding:8px 4px;text-align:center;color:${unsigned > 0 ? '#a03030' : 'var(--text3)'};font-weight:600;">${unsigned.toFixed(1)}</td>
+        <td style="padding:8px 4px;text-align:center;font-weight:700;color:var(--text);">${s.hours.toFixed(1)}</td>
         <td style="padding:8px 4px;text-align:center;color:#0071e3;font-weight:600;">${s.cost != null ? '₪' + Math.round(s.cost).toLocaleString() : '—'}</td>
         ${s.cost != null ? (() => { const vat = parseFloat(document.getElementById('sites-vat-rate')?.value||18)/100; const vatAmt = Math.round(s.cost * vat); const total = Math.round(s.cost * (1 + vat)); return `<td style="padding:8px 4px;text-align:center;color:#6c5ce7;font-weight:600;">₪${vatAmt.toLocaleString()}</td><td style="padding:8px 4px;text-align:center;color:#00b894;font-weight:700;">₪${total.toLocaleString()}</td>`; })() : '<td style="padding:8px 4px;text-align:center;color:var(--text3);">—</td><td style="padding:8px 4px;text-align:center;color:var(--text3);">—</td>'}
       </tr>`;
