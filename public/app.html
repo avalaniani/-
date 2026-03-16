@@ -6903,7 +6903,7 @@ function renderSitesHoursSummary() {
         <div style="text-align:left;">
           <div style="font-size:11px;color:#2a7a5a;font-weight:700;">✅ ${signedHours.toFixed(1)} חתומות</div>
           <div style="font-size:11px;color:#a03030;font-weight:700;">⏳ ${unsignedHours.toFixed(1)} לא חתומות</div>
-          ${(() => { const tc = Object.values(sites).reduce((a,v)=>a+(v.cost||0),0); const hasAny = Object.values(sites).some(v=>v.cost!=null); return hasAny ? `<div style="font-size:12px;color:#0071e3;font-weight:800;">💰 ₪${Math.round(tc).toLocaleString()}</div>` : ''; })()}
+          ${(() => { const tc = Object.values(sites).reduce((a,v)=>a+(v.cost||0),0); const hasAny = Object.values(sites).some(v=>v.cost!=null); if (!hasAny) return ''; const vat = parseFloat(document.getElementById('sites-vat-rate')?.value||18)/100; const total = Math.round(tc*(1+vat)); return `<div style="font-size:12px;color:#0071e3;font-weight:800;">💰 ₪${Math.round(tc).toLocaleString()}</div><div style="font-size:12px;color:#00b894;font-weight:800;">כולל מע"מ: ₪${total.toLocaleString()}</div>`; })()}
         </div>
       </div>
       <!-- פס התקדמות חתימה -->
@@ -6911,15 +6911,22 @@ function renderSitesHoursSummary() {
         <div style="height:4px;background:#34c759;width:${signedPct}%;transition:width 0.4s;"></div>
       </div>
       <!-- אתרים -->
-      <div style="padding:8px 12px 12px;">
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 12px 4px;font-size:12px;color:var(--text2);">
+        <span>מע"מ:</span>
+        <input type="number" id="sites-vat-rate" value="18" min="0" max="100" style="width:60px;border:1.5px solid #d2d2d7;border-radius:8px;padding:4px 8px;font-size:12px;font-family:inherit;background:#fff;color:#1d1d1f;outline:none;text-align:center;" oninput="renderSitesHoursSummary()">
+        <span>%</span>
+      </div>
+      <div style="padding:4px 12px 12px;">
         <table style="width:100%;border-collapse:collapse;font-size:13px;">
           <thead><tr style="color:var(--text3);font-size:11px;font-weight:700;border-bottom:1px solid var(--border);">
             <th style="padding:6px 8px;text-align:right;">אתר עבודה</th>
             <th style="padding:6px 4px;text-align:center;">פועלים</th>
-            <th style="padding:6px 4px;text-align:center;">שעות</th>
+            <th style="padding:6px 4px;text-align:center;">סה"כ שעות</th>
             <th style="padding:6px 4px;text-align:center;color:#2a7a5a;">✅ חתומות</th>
             <th style="padding:6px 4px;text-align:center;color:#a03030;">⏳ לא חתומות</th>
             <th style="padding:6px 4px;text-align:center;color:#0071e3;">💰 עלות</th>
+            <th style="padding:6px 4px;text-align:center;color:#6c5ce7;">מע"מ</th>
+            <th style="padding:6px 4px;text-align:center;color:#00b894;">כולל מע"מ</th>
           </tr></thead>
           <tbody>`;
 
@@ -6932,6 +6939,7 @@ function renderSitesHoursSummary() {
         <td style="padding:8px 4px;text-align:center;color:#2a7a5a;font-weight:600;">${s.signedHours.toFixed(1)}</td>
         <td style="padding:8px 4px;text-align:center;color:${unsigned > 0 ? '#a03030' : 'var(--text3)'};font-weight:600;">${unsigned.toFixed(1)}</td>
         <td style="padding:8px 4px;text-align:center;color:#0071e3;font-weight:600;">${s.cost != null ? '₪' + Math.round(s.cost).toLocaleString() : '—'}</td>
+        ${s.cost != null ? (() => { const vat = parseFloat(document.getElementById('sites-vat-rate')?.value||18)/100; const vatAmt = Math.round(s.cost * vat); const total = Math.round(s.cost * (1 + vat)); return `<td style="padding:8px 4px;text-align:center;color:#6c5ce7;font-weight:600;">₪${vatAmt.toLocaleString()}</td><td style="padding:8px 4px;text-align:center;color:#00b894;font-weight:700;">₪${total.toLocaleString()}</td>`; })() : '<td style="padding:8px 4px;text-align:center;color:var(--text3);">—</td><td style="padding:8px 4px;text-align:center;color:var(--text3);">—</td>'}
       </tr>`;
     });
 
