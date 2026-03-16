@@ -6783,21 +6783,23 @@ let _bulkSelected = new Set(); // מזהי פועלים נבחרים לשיוך 
 let sitesYear  = new Date().getFullYear();
 let sitesMonth = new Date().getMonth();
 
+function showSiteWorkersListByKey(listKey, type, category, color) {
+  const workers = (window._siteWorkerLists || {})[listKey + '|' + type] || [];
+  const siteName = listKey.split('|')[1] || listKey;
+  showSiteWorkersList(siteName, workers, category, color);
+}
+
 function showSiteWorkersList(siteName, workers, category, color) {
   if (!workers.length) { showToast('אין פועלים בקטגוריה זו'); return; }
-  const S = "font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;";
   showModal(`
-    <div style="${S}padding:22px;max-width:340px;width:100%;">
+    <div style="font-family:-apple-system,sans-serif;padding:22px;max-width:340px;width:100%;">
       <div style="font-size:16px;font-weight:700;color:#1d1d1f;margin-bottom:4px;">🏗️ ${siteName}</div>
       <div style="font-size:13px;font-weight:600;color:${color};margin-bottom:16px;">${category} · ${workers.length} פועלים</div>
       <div style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;">
         ${workers.map(name => {
           const w = DATA.users.find(u=>u.name===name);
           const col = w?.avatarColor || '#86868b';
-          return `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#f5f5f7;border-radius:10px;">
-            <div style="width:32px;height:32px;border-radius:50%;background:${col}22;color:${col};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;">${name[0]}</div>
-            <span style="font-size:14px;font-weight:500;color:#1d1d1f;">${name}</span>
-          </div>`;
+          return '<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#f5f5f7;border-radius:10px;"><div style="width:32px;height:32px;border-radius:50%;background:' + col + '22;color:' + col + ';display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;">' + name[0] + '</div><span style="font-size:14px;font-weight:500;color:#1d1d1f;">' + name + '</span></div>';
         }).join('')}
       </div>
       <button onclick="closeModal()" style="width:100%;margin-top:16px;background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:10px;font-size:14px;color:#1d1d1f;cursor:pointer;font-family:inherit;font-weight:500;" onmouseover="this.style.borderColor='#1d1d1f'" onmouseout="this.style.borderColor='#d2d2d7'">סגור</button>
@@ -6979,10 +6981,11 @@ function renderSitesHoursSummary() {
 
     Object.values(sites).sort((a,b) => b.hours - a.hours).forEach(s => {
       const unsigned = s.hours - s.signedHours;
-      // בנה רשימות לפי קטגוריה
-      const workersList    = [...s.workers].map(id => DATA.users.find(u=>u.id===id)?.name).filter(Boolean);
-      const signedWorkers  = [...s.workers].filter(id => {
-        const w = DATA.users.find(u=>u.id===id); if (!w) return false;
+      // בנה רשימות לפי קטגוריה — שמור ב-window לצורך onclick
+      if (!window._siteWorkerLists) window._siteWorkerLists = {};
+      const listKey = contr + '|' + s.siteName;
+      window._siteWorkerLists[listKey + '|all'] = [...s.workers].map(id => DATA.users.find(u=>u.id===id)?.name).filter(Boolean);
+      const signedWorkerIds = [...s.workers].filter(id => {
         const key = id+'-'+sitesYear+'-'+sitesMonth;
         const si = DATA.companies.find(c=>c.id===currentUser.company)?.signed?.[key];
         const isFS = si?.type==='full';
@@ -6995,19 +6998,31 @@ function renderSitesHoursSummary() {
           if ((h>0||(e.start&&e.end)) && (isFS||partDays.includes(d))) return true;
         }
         return false;
-      }).map(id=>DATA.users.find(u=>u.id===id)?.name).filter(Boolean);
-      const unsignedWorkers = [...s.workers].filter(id=>!signedWorkers.includes(DATA.users.find(u=>u.id===id)?.name)).map(id=>DATA.users.find(u=>u.id===id)?.name).filter(Boolean);
+      });
+      window._siteWorkerLists[listKey + '|signed']   = signedWorkerIds.map(id=>DATA.users.find(u=>u.id===id)?.name).filter(Boolean);
+      window._siteWorkerLists[listKey + '|unsigned']  = [...s.workers].filter(id=>!signedWorkerIds.includes(id)).map(id=>DATA.users.find(u=>u.id===id)?.name).filter(Boolean);
+      const lkSafe = (contr + '|' + s.siteName).replace(/'/g, "\'");
 
       html += `<tr style="border-bottom:1px solid var(--border);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
         <td style="padding:8px 8px;font-weight:600;color:var(--text);">🏗️ ${s.siteName}</td>
-        <td style="padding:8px 4px;text-align:center;cursor:pointer;border-radius:6px;transition:background 0.15s;color:var(--text2);" onclick="showSiteWorkersList('${s.siteName.replace(/'/g,"\'")}', ${JSON.stringify(workersList)}, 'כל הפועלים', '#1d1d1f')" title="לחץ לרשימת פועלים" onmouseover="this.style.background='#f0f4f8'" onmouseout="this.style.background=''">${s.workers.size}${s.workers.size ? ' 👤' : ''}</td>
-        <td style="padding:8px 4px;text-align:center;cursor:pointer;border-radius:6px;transition:background 0.15s;color:#2a7a5a;font-weight:600;" onclick="showSiteWorkersList('${s.siteName.replace(/'/g,"\'")}', ${JSON.stringify(signedWorkers)}, '✅ חתומות', '#2a7a5a')" title="לחץ לרשימת פועלים חתומים" onmouseover="this.style.background='#f0fff4'" onmouseout="this.style.background=''">${s.signedHours.toFixed(1)}${signedWorkers.length ? ' 👤' : ''}</td>
-        <td style="padding:8px 4px;text-align:center;cursor:pointer;border-radius:6px;transition:background 0.15s;color:${unsigned > 0 ? '#a03030' : 'var(--text3)'};font-weight:600;" onclick="showSiteWorkersList('${s.siteName.replace(/'/g,"\'")}', ${JSON.stringify(unsignedWorkers)}, '⏳ לא חתומות', '#a03030')" title="לחץ לרשימת פועלים לא חתומים" onmouseover="this.style.background='#fff0f0'" onmouseout="this.style.background=''">${unsigned.toFixed(1)}${unsignedWorkers.length ? ' 👤' : ''}</td>
+        <td style="padding:8px 4px;text-align:center;cursor:pointer;color:var(--text2);" onclick="showSiteWorkersListByKey('${lkSafe}','all','כל הפועלים','#1d1d1f')" onmouseover="this.style.background='#f0f4f8'" onmouseout="this.style.background=''">${s.workers.size}</td>
+        <td style="padding:8px 4px;text-align:center;cursor:pointer;color:#2a7a5a;font-weight:600;" onclick="showSiteWorkersListByKey('${lkSafe}','signed','✅ חתומות','#2a7a5a')" onmouseover="this.style.background='#f0fff4'" onmouseout="this.style.background=''">${s.signedHours.toFixed(1)}</td>
+        <td style="padding:8px 4px;text-align:center;cursor:pointer;color:${unsigned > 0 ? '#a03030' : 'var(--text3)'};font-weight:600;" onclick="showSiteWorkersListByKey('${lkSafe}','unsigned','⏳ לא חתומות','#a03030')" onmouseover="this.style.background='#fff0f0'" onmouseout="this.style.background=''">${unsigned.toFixed(1)}</td>
         <td style="padding:8px 4px;text-align:center;font-weight:700;color:var(--text);">${s.hours.toFixed(1)}</td>
         <td style="padding:8px 4px;text-align:center;color:#0071e3;font-weight:600;">${s.cost != null ? '₪' + Math.round(s.cost).toLocaleString() : '—'}</td>
         ${s.cost != null ? (() => { const vat = parseFloat(document.getElementById('sites-vat-rate')?.value||18)/100; const vatAmt = Math.round(s.cost * vat); const total = Math.round(s.cost * (1 + vat)); return `<td style="padding:8px 4px;text-align:center;color:#6c5ce7;font-weight:600;">₪${vatAmt.toLocaleString()}</td><td style="padding:8px 4px;text-align:center;color:#00b894;font-weight:700;">₪${total.toLocaleString()}</td>`; })() : '<td style="padding:8px 4px;text-align:center;color:var(--text3);">—</td><td style="padding:8px 4px;text-align:center;color:var(--text3);">—</td>'}
       </tr>`;
     });
+
+    // שמור רשימת כל פועלי הקבלן לשורת סה"כ
+    if (!window._siteWorkerLists) window._siteWorkerLists = {};
+    const allContrWorkers = [...new Set(Object.values(sites).flatMap(v=>[...v.workers]))];
+    window._siteWorkerLists[contr + '|סה"כ|all']      = allContrWorkers.map(id=>DATA.users.find(u=>u.id===id)?.name).filter(Boolean);
+    const allContrSigned   = [...new Set(Object.keys(window._siteWorkerLists).filter(k=>k.startsWith(contr+'|')&&k.endsWith('|signed')).flatMap(k=>window._siteWorkerLists[k]))];
+    const allContrUnsigned = [...new Set(Object.keys(window._siteWorkerLists).filter(k=>k.startsWith(contr+'|')&&k.endsWith('|unsigned')).flatMap(k=>window._siteWorkerLists[k]))];
+    window._siteWorkerLists[contr + '|סה"כ|signed']   = allContrSigned;
+    window._siteWorkerLists[contr + '|סה"כ|unsigned']  = allContrUnsigned;
+    const contrSafe = contr.replace(/'/g, "\'");
 
     // שורת סיכום לקבלן
     const totalSigned   = Object.values(sites).reduce((a,v)=>a+v.signedHours,0);
@@ -7021,9 +7036,9 @@ function renderSitesHoursSummary() {
 
     html += `<tr style="background:#f0f4f8;border-top:2px solid #d2d2d7;font-weight:800;font-size:14px;">
       <td style="padding:8px 8px;color:#1d1d1f;">סה"כ</td>
-      <td style="padding:8px 4px;text-align:center;color:#1d1d1f;">${totalWorkersAll}</td>
-      <td style="padding:8px 4px;text-align:center;color:#2a7a5a;">${totalSigned.toFixed(1)}</td>
-      <td style="padding:8px 4px;text-align:center;color:${totalUnsigned>0?'#a03030':'#86868b'};">${totalUnsigned.toFixed(1)}</td>
+      <td style="padding:8px 4px;text-align:center;cursor:pointer;color:#1d1d1f;" onclick="showSiteWorkersListByKey('${contrSafe}|סה&quot;כ','all','כל הפועלים','#1d1d1f')" onmouseover="this.style.background='#e8eef8'" onmouseout="this.style.background=''">${totalWorkersAll}</td>
+      <td style="padding:8px 4px;text-align:center;cursor:pointer;color:#2a7a5a;" onclick="showSiteWorkersListByKey('${contrSafe}|סה&quot;כ','signed','✅ חתומות','#2a7a5a')" onmouseover="this.style.background='#dcf5e8'" onmouseout="this.style.background=''">${totalSigned.toFixed(1)}</td>
+      <td style="padding:8px 4px;text-align:center;cursor:pointer;color:${totalUnsigned>0?'#a03030':'#86868b'};" onclick="showSiteWorkersListByKey('${contrSafe}|סה&quot;כ','unsigned','⏳ לא חתומות','#a03030')" onmouseover="this.style.background='#fce8e8'" onmouseout="this.style.background=''">${totalUnsigned.toFixed(1)}</td>
       <td style="padding:8px 4px;text-align:center;color:#1d1d1f;">${totalHours.toFixed(1)}</td>
       <td style="padding:8px 4px;text-align:center;color:#0071e3;">${hasAnyCost ? '₪'+Math.round(totalCost).toLocaleString() : '—'}</td>
       <td style="padding:8px 4px;text-align:center;color:#6c5ce7;">${totalVat!=null ? '₪'+totalVat.toLocaleString() : '—'}</td>
