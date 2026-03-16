@@ -6831,7 +6831,26 @@ function renderSitesHoursSummary() {
       contractorMap[contractor][siteId].hours       += h;
       if (isSigned) contractorMap[contractor][siteId].signedHours += h;
       contractorMap[contractor][siteId].workers.add(w.id);
+      contractorMap[contractor][siteId]._workedDays = contractorMap[contractor][siteId]._workedDays || new Set();
+      contractorMap[contractor][siteId]._workedDays.add(d);
     }
+  });
+
+  // חשב עלות לכל אתר
+  allSites.forEach(site => {
+    const contractor = site.contractor || '— ללא קבלן';
+    if (!contractorMap[contractor]?.[site.id]) return;
+    const entry = contractorMap[contractor][site.id];
+    // קבע מחיר ועלות
+    const priceType = site.priceType || site.contractorPriceType || 'hourly';
+    const price     = (site.price != null && site.price !== '') ? parseFloat(site.price) :
+                      (site.contractorPrice != null ? parseFloat(site.contractorPrice) : null);
+    if (!price) { entry.cost = null; return; }
+    const workedDays = entry._workedDays ? entry._workedDays.size : 0;
+    if (priceType === 'hourly')  entry.cost = entry.hours * price;
+    else if (priceType === 'daily')   entry.cost = workedDays * price;
+    else if (priceType === 'monthly') entry.cost = price;
+    else entry.cost = null;
   });
 
   // הוסף אתרים וקבלנים שאין בהם שעות כלל
@@ -6884,6 +6903,7 @@ function renderSitesHoursSummary() {
         <div style="text-align:left;">
           <div style="font-size:11px;color:#2a7a5a;font-weight:700;">✅ ${signedHours.toFixed(1)} חתומות</div>
           <div style="font-size:11px;color:#a03030;font-weight:700;">⏳ ${unsignedHours.toFixed(1)} לא חתומות</div>
+          ${(() => { const tc = Object.values(sites).reduce((a,v)=>a+(v.cost||0),0); const hasAny = Object.values(sites).some(v=>v.cost!=null); return hasAny ? `<div style="font-size:12px;color:#0071e3;font-weight:800;">💰 ₪${Math.round(tc).toLocaleString()}</div>` : ''; })()}
         </div>
       </div>
       <!-- פס התקדמות חתימה -->
@@ -6899,6 +6919,7 @@ function renderSitesHoursSummary() {
             <th style="padding:6px 4px;text-align:center;">שעות</th>
             <th style="padding:6px 4px;text-align:center;color:#2a7a5a;">✅ חתומות</th>
             <th style="padding:6px 4px;text-align:center;color:#a03030;">⏳ לא חתומות</th>
+            <th style="padding:6px 4px;text-align:center;color:#0071e3;">💰 עלות</th>
           </tr></thead>
           <tbody>`;
 
@@ -6910,6 +6931,7 @@ function renderSitesHoursSummary() {
         <td style="padding:8px 4px;text-align:center;font-weight:700;color:var(--text);">${s.hours.toFixed(1)}</td>
         <td style="padding:8px 4px;text-align:center;color:#2a7a5a;font-weight:600;">${s.signedHours.toFixed(1)}</td>
         <td style="padding:8px 4px;text-align:center;color:${unsigned > 0 ? '#a03030' : 'var(--text3)'};font-weight:600;">${unsigned.toFixed(1)}</td>
+        <td style="padding:8px 4px;text-align:center;color:#0071e3;font-weight:600;">${s.cost != null ? '₪' + Math.round(s.cost).toLocaleString() : '—'}</td>
       </tr>`;
     });
 
@@ -7073,10 +7095,28 @@ function openEditContractorModal(contractorName) {
       </div>
       <div style="font-size:12px;color:var(--text2);margin-bottom:18px;">שינוי השם יעדכן את כל אתרי העבודה של הקבלן</div>
       <div>
-        <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">שם הקבלן *</label>
+        <label style="font-size:12px;font-weight:600;color:#86868b;display:block;margin-bottom:5px;letter-spacing:0.3px;">שם הקבלן *</label>
         <input id="edit-contractor-name" class="search-input" value="${contractorName}" style="width:100%;font-size:14px;">
       </div>
-      <div style="display:flex;gap:10px;margin-top:20px;">
+      <div style="background:#f5f5f7;border-radius:12px;padding:14px;margin-top:14px;">
+        <div style="font-size:11px;font-weight:700;color:#86868b;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:12px;">מחיר ברירת מחדל לקבלן</div>
+        <div style="display:flex;gap:10px;margin-bottom:10px;">
+          <div style="flex:1;">
+            <label style="font-size:12px;font-weight:600;color:#86868b;display:block;margin-bottom:5px;letter-spacing:0.3px;">סוג מחיר</label>
+            <select id="edit-contractor-price-type" style="width:100%;border:1.5px solid #d2d2d7;border-radius:10px;padding:9px 14px;font-size:13px;font-family:inherit;background:#fff;color:#1d1d1f;outline:none;box-sizing:border-box;padding:9px 12px;" onchange="updateContractorPriceLabel()">
+              <option value="hourly" ${DATA.workSites.find(s=>s.contractor===contractorName)?.contractorPriceType==='hourly'||!DATA.workSites.find(s=>s.contractor===contractorName)?.contractorPriceType?'selected':''}>לשעה</option>
+              <option value="daily" ${DATA.workSites.find(s=>s.contractor===contractorName)?.contractorPriceType==='daily'?'selected':''}>ליום</option>
+              <option value="monthly" ${DATA.workSites.find(s=>s.contractor===contractorName)?.contractorPriceType==='monthly'?'selected':''}>לחודש</option>
+            </select>
+          </div>
+          <div style="flex:1;">
+            <label style="font-size:12px;font-weight:600;color:#86868b;display:block;margin-bottom:5px;letter-spacing:0.3px;" id="edit-contractor-price-lbl">מחיר לשעה (₪)</label>
+            <input id="edit-contractor-price" type="number" min="0" placeholder="0" value="${DATA.workSites.find(s=>s.contractor===contractorName)?.contractorPrice||''}" style="width:100%;border:1.5px solid #d2d2d7;border-radius:10px;padding:9px 14px;font-size:13px;font-family:inherit;background:#fff;color:#1d1d1f;outline:none;box-sizing:border-box;">
+          </div>
+        </div>
+        <div style="font-size:11px;color:#86868b;">ניתן לדרוס את המחיר הזה בכל אתר בנפרד</div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:16px;">
         <button onclick="saveEditContractor('${contractorName.replace(/'/g,"\\'")}')" style="flex:1;background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:11px;font-size:14px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:600;transition:all 0.15s;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">💾 שמור</button>
         <button onclick="closeModal()" style="background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:11px 18px;font-size:14px;color:#1d1d1f;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.borderColor='#1d1d1f'" onmouseout="this.style.borderColor='#d2d2d7'">ביטול</button>
       </div>
@@ -7091,10 +7131,17 @@ function openEditContractorModal(contractorName) {
   }, 80);
 }
 
+function updateContractorPriceLabel() {
+  const t = document.getElementById('edit-contractor-price-type')?.value;
+  const lbl = document.getElementById('edit-contractor-price-lbl');
+  if (!lbl) return;
+  lbl.textContent = t==='hourly' ? 'מחיר לשעה (₪)' : t==='daily' ? 'מחיר ליום (₪)' : 'מחיר לחודש (₪)';
+}
+
 async function saveEditContractor(oldName) {
-  const newName = document.getElementById('edit-contractor-name')?.value.trim();
-  const phone   = document.getElementById('edit-contractor-phone')?.value.trim() || '';
-  const notes   = document.getElementById('edit-contractor-notes')?.value.trim() || '';
+  const newName    = document.getElementById('edit-contractor-name')?.value.trim();
+  const priceType  = document.getElementById('edit-contractor-price-type')?.value || 'hourly';
+  const price      = parseFloat(document.getElementById('edit-contractor-price')?.value) || 0;
   if (!newName) { showToast('יש להזין שם קבלן', 'error'); return; }
 
   const company = currentUser.company;
@@ -7102,9 +7149,9 @@ async function saveEditContractor(oldName) {
 
   for (const site of sitesToUpdate) {
     site.contractor = newName;
-    site.contractorPhone = phone;
-    site.contractorNotes = notes;
-    await sbUpdateWorkSite(site.id, { contractor: newName, contractor_phone: phone, contractor_notes: notes });
+    site.contractorPriceType = priceType;
+    site.contractorPrice = price;
+    await sbUpdateWorkSite(site.id, { contractor: newName, contractor_price_type: priceType, contractor_price: price });
   }
 
   // עדכן גם בהיסטוריית שיוכים
@@ -7212,6 +7259,24 @@ function openSiteModal(siteId, prefilledContractor) {
           <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;">טלפון קבלן</label>
           <input id="site-phone" class="search-input" placeholder="מספר טלפון" value="${site?.phone||''}" style="width:100%;font-size:13px;direction:ltr;text-align:right;">
         </div>
+        <div style="background:#f5f5f7;border-radius:12px;padding:14px;">
+          <div style="font-size:11px;font-weight:700;color:#86868b;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:10px;">מחיר ספציפי לאתר (דורס מחיר קבלן)</div>
+          <div style="display:flex;gap:10px;">
+            <div style="flex:1;">
+              <label style="font-size:12px;font-weight:600;color:#86868b;display:block;margin-bottom:5px;letter-spacing:0.3px;">סוג מחיר</label>
+              <select id="site-price-type" style="width:100%;border:1.5px solid #d2d2d7;border-radius:10px;padding:9px 14px;font-size:13px;font-family:inherit;background:#fff;color:#1d1d1f;outline:none;box-sizing:border-box;padding:9px 12px;" onchange="updateSitePriceLabel()">
+                <option value="">— כמו הקבלן —</option>
+                <option value="hourly" ${site?.priceType==='hourly'?'selected':''}>לשעה</option>
+                <option value="daily" ${site?.priceType==='daily'?'selected':''}>ליום</option>
+                <option value="monthly" ${site?.priceType==='monthly'?'selected':''}>לחודש</option>
+              </select>
+            </div>
+            <div style="flex:1;">
+              <label style="font-size:12px;font-weight:600;color:#86868b;display:block;margin-bottom:5px;letter-spacing:0.3px;" id="site-price-lbl">מחיר (₪)</label>
+              <input id="site-price" type="number" min="0" placeholder="ריק = כמו קבלן" value="${site?.price||''}" style="width:100%;border:1.5px solid #d2d2d7;border-radius:10px;padding:9px 14px;font-size:13px;font-family:inherit;background:#fff;color:#1d1d1f;outline:none;box-sizing:border-box;">
+            </div>
+          </div>
+        </div>
       </div>
       <div style="display:flex;gap:8px;margin-top:18px;">
         <button onclick="saveSite(${siteId||'null'})" style="flex:1;background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:11px;font-size:14px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:600;transition:all 0.15s;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">
@@ -7224,6 +7289,13 @@ function openSiteModal(siteId, prefilledContractor) {
   setTimeout(() => document.getElementById('site-name')?.focus(), 100);
 }
 
+function updateSitePriceLabel() {
+  const t = document.getElementById('site-price-type')?.value;
+  const lbl = document.getElementById('site-price-lbl');
+  if (!lbl) return;
+  lbl.textContent = !t ? 'מחיר (₪)' : t==='hourly' ? 'מחיר לשעה (₪)' : t==='daily' ? 'מחיר ליום (₪)' : 'מחיר לחודש (₪)';
+}
+
 async function saveSite(siteId) {
   const name       = document.getElementById('site-name')?.value.trim();
   const contractor = document.getElementById('site-contractor')?.value.trim();
@@ -7232,12 +7304,17 @@ async function saveSite(siteId) {
 
   if (!name || !contractor) { showToast('יש למלא שם אתר וקבלן', 'error'); return; }
 
-  const payload = { companyId: currentUser.company, name, contractor, address, phone };
+  const priceType = document.getElementById('site-price-type')?.value || '';
+  const price     = parseFloat(document.getElementById('site-price')?.value) || null;
+  const payload = { companyId: currentUser.company, name, contractor, address, phone, priceType, price };
   if (siteId) {
-    await sbUpdateWorkSite(siteId, payload);
+    const site = DATA.workSites.find(s=>s.id===siteId);
+    if (site) { site.priceType = priceType; site.price = price; }
+    await sbUpdateWorkSite(siteId, { ...payload, price_type: priceType, site_price: price });
     showToast('✅ האתר עודכן');
   } else {
-    await sbCreateWorkSite(payload);
+    const res = await sbCreateWorkSite({ ...payload, price_type: priceType, site_price: price });
+    if (res?.ok && res?.data) DATA.workSites.push(res.data);
     showToast('✅ האתר נוסף');
   }
   closeModal();
