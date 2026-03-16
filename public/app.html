@@ -8852,11 +8852,11 @@ function openWheelTimePicker(inputEl, day, field, workerId) {
       <div style="flex:1;position:relative;height:${ITEM_H*VISIBLE}px;overflow:hidden;z-index:1;max-width:75px;">
         <div id="${id}" style="overflow-y:scroll;height:100%;scrollbar-width:none;-ms-overflow-style:none;scroll-snap-type:y mandatory;position:relative;z-index:1;">
           <div style="height:${ITEM_H*2}px;"></div>
-          ${items.map(v => `<div style="height:${ITEM_H}px;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;color:#1d1d1f;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',monospace;scroll-snap-align:center;position:relative;z-index:1;letter-spacing:1px;">${v}</div>`).join('')}
+          ${items.map((v,i) => `<div style="height:${ITEM_H}px;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;color:#1d1d1f;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;scroll-snap-align:center;position:relative;z-index:1;">${v}</div>`).join('')}
           <div style="height:${ITEM_H*2}px;"></div>
         </div>
-        <div style="position:absolute;top:0;left:0;right:0;height:${ITEM_H*2}px;background:linear-gradient(to bottom,rgba(255,255,255,0.82) 20%,transparent);pointer-events:none;z-index:2;"></div>
-        <div style="position:absolute;bottom:0;left:0;right:0;height:${ITEM_H*2}px;background:linear-gradient(to top,rgba(255,255,255,0.82) 20%,transparent);pointer-events:none;z-index:2;"></div>
+        <div style="position:absolute;top:0;left:0;right:0;height:${ITEM_H*2}px;background:linear-gradient(to bottom,rgba(255,255,255,0.95) 0%,rgba(255,255,255,0.7) 60%,transparent 100%);pointer-events:none;z-index:2;"></div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:${ITEM_H*2}px;background:linear-gradient(to top,rgba(255,255,255,0.95) 0%,rgba(255,255,255,0.7) 60%,transparent 100%);pointer-events:none;z-index:2;"></div>
       </div>`;
   }
 
@@ -8871,7 +8871,7 @@ function openWheelTimePicker(inputEl, day, field, workerId) {
         <div style="font-size:22px;font-weight:700;color:var(--text);margin:0;flex-shrink:0;">:</div>
         ${buildWheel('wtp-h', 24, initH)}
         <!-- רצועת בחירה — מאחורי המספרים -->
-        <div style="position:absolute;left:4px;right:4px;top:calc(50% - ${ITEM_H/2}px);height:${ITEM_H}px;background:rgba(0,0,0,0.06);border-radius:10px;pointer-events:none;z-index:0;"></div>
+        <div style="position:absolute;left:4px;right:4px;top:calc(50% - ${ITEM_H/2}px);height:${ITEM_H}px;background:rgba(0,0,0,0.07);border-radius:10px;pointer-events:none;z-index:0;border-top:0.5px solid rgba(0,0,0,0.1);border-bottom:0.5px solid rgba(0,0,0,0.1);"></div>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px 16px;">
         <button id="wtp-clear" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--text3);font-family:inherit;padding:6px 10px;">נקה</button>
@@ -8883,7 +8883,10 @@ function openWheelTimePicker(inputEl, day, field, workerId) {
     </div>`;
 
   const st = document.createElement('style');
-  st.textContent = '#wtp-h::-webkit-scrollbar,#wtp-m::-webkit-scrollbar{display:none;}';
+  st.textContent = `
+    #wtp-h::-webkit-scrollbar, #wtp-m::-webkit-scrollbar { display: none; }
+    #wtp-h > div, #wtp-m > div { transition: opacity 0.1s, font-weight 0.1s; }
+  `;
   ov.appendChild(st);
   document.body.appendChild(ov);
 
@@ -8902,8 +8905,20 @@ function openWheelTimePicker(inputEl, day, field, workerId) {
       list.scrollTo({ top: idx * ITEM_H, behavior: 'smooth' });
     }, 80);
   }
-  hList.addEventListener('scroll', () => snap(hList, 24));
-  mList.addEventListener('scroll', () => snap(mList, 60));
+  function updateOpacity(list) {
+    const center = Math.round(list.scrollTop / ITEM_H);
+    const divs = [...list.querySelectorAll('div[style*="scroll-snap-align"]')];
+    divs.forEach((el, i) => {
+      const dist = Math.abs(i - center);
+      if (dist === 0) { el.style.opacity = '1'; el.style.fontWeight = '600'; el.style.color = '#1d1d1f'; }
+      else if (dist === 1) { el.style.opacity = '0.55'; el.style.fontWeight = '400'; el.style.color = '#1d1d1f'; }
+      else if (dist === 2) { el.style.opacity = '0.25'; el.style.fontWeight = '400'; el.style.color = '#1d1d1f'; }
+      else { el.style.opacity = '0.1'; el.style.fontWeight = '400'; }
+    });
+  }
+  hList.addEventListener('scroll', () => { snap(hList, 24); updateOpacity(hList); });
+  mList.addEventListener('scroll', () => { snap(mList, 60); updateOpacity(mList); });
+  setTimeout(() => { updateOpacity(hList); updateOpacity(mList); }, 50);
 
   function getVal(list) { return Math.round(list.scrollTop / ITEM_H); }
 
