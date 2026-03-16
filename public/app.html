@@ -8921,8 +8921,62 @@ function openWheelTimePicker(inputEl, day, field, workerId) {
       el.style.filter    = blur > 0.05 ? `blur(${blur.toFixed(2)}px)` : 'none';
     });
   }
-  hList.addEventListener('scroll', () => { snap(hList, 24); updateOpacity(hList); });
-  mList.addEventListener('scroll', () => { snap(mList, 60); updateOpacity(mList); });
+  // פונקציה ליירוט fling עם deceleration מותאם
+  function attachFlingControl(list, max) {
+    let lastY = 0, lastT = 0, velocity = 0;
+    let animId = null;
+
+    function cancelFling() { if (animId) { cancelAnimationFrame(animId); animId = null; } }
+
+    list.addEventListener('touchstart', e => {
+      cancelFling();
+      lastY = e.touches[0].clientY;
+      lastT = Date.now();
+      velocity = 0;
+    }, { passive: true });
+
+    list.addEventListener('touchmove', e => {
+      const y = e.touches[0].clientY;
+      const t = Date.now();
+      const dt = Math.max(1, t - lastT);
+      velocity = (lastY - y) / dt; // px/ms
+      lastY = y; lastT = t;
+    }, { passive: true });
+
+    list.addEventListener('touchend', () => {
+      cancelFling();
+      // הגבל velocity — deceleration חזק יותר
+      const DECEL = 0.92; // 0.92 = האטה מהירה (טבעי ~0.96)
+      const MAX_V = 1.2;  // מגבלת מהירות מקסימלית px/ms
+      let v = Math.max(-MAX_V, Math.min(MAX_V, velocity));
+      let pos = list.scrollTop;
+
+      function step() {
+        v *= DECEL;
+        if (Math.abs(v) < 0.05) {
+          // snap לסיום
+          let idx = Math.round(pos / ITEM_H);
+          idx = Math.max(0, Math.min(max - 1, idx));
+          list.scrollTo({ top: idx * ITEM_H, behavior: 'smooth' });
+          return;
+        }
+        pos += v * 16; // ~60fps frame
+        pos = Math.max(0, Math.min((max - 1) * ITEM_H, pos));
+        list.scrollTop = pos;
+        updateOpacity(list);
+        animId = requestAnimationFrame(step);
+      }
+      // עצור scroll native
+      list.style.overflow = 'hidden';
+      setTimeout(() => { list.style.overflow = 'scroll'; }, 0);
+      animId = requestAnimationFrame(step);
+    }, { passive: true });
+
+    list.addEventListener('scroll', () => { snap(list, max); updateOpacity(list); });
+  }
+
+  attachFlingControl(hList, 24);
+  attachFlingControl(mList, 60);
   setTimeout(() => { updateOpacity(hList); updateOpacity(mList); }, 50);
 
   function getVal(list) { return Math.round(list.scrollTop / ITEM_H); }
