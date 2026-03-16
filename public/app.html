@@ -6995,10 +6995,27 @@ function renderSitesHoursSummary() {
       const listKey = contr + '|' + s.siteName;
       window._siteWorkerLists[listKey + '|all'] = [...s.workers].map(id => DATA.users.find(u=>u.id===id)?.name).filter(Boolean);
       const signedWorkerIds = [...s.workers].filter(id => {
-        // פועל חתום אם כל ימיו באותו אתר חתומים
-        const workerDays   = s._workerDays?.[id] || new Set();
-        const signedDays   = s._workerSignedDays?.[id] || new Set();
-        if (!workerDays.size) return false;
+        const workerDays = s._workerDays?.[id] || new Set();
+        const signedDays = s._workerSignedDays?.[id] || new Set();
+        if (!workerDays.size) {
+          // אין ימים מפורטים — fallback: בדוק אם כל שעות הפועל בחודש חתומות
+          const key = id+'-'+sitesYear+'-'+sitesMonth;
+          const si = DATA.companies.find(c=>c.id===currentUser.company)?.signed?.[key];
+          const isFS = si?.type==='full';
+          const partDays = si?.type==='partial' ? (si.days||[]) : [];
+          const hrs = DATA.workerHours[key]||{};
+          const daysInM = new Date(sitesYear,sitesMonth+1,0).getDate();
+          let hasHours = false, allSigned = true;
+          for (let d=1;d<=daysInM;d++) {
+            const e=hrs[d]; if (!e) continue;
+            const h=parseFloat(e.hours)||0;
+            if (h>0||(e.start&&e.end)) {
+              hasHours = true;
+              if (!isFS && !partDays.includes(d)) { allSigned = false; break; }
+            }
+          }
+          return hasHours && allSigned;
+        }
         return [...workerDays].every(d => signedDays.has(d));
       });
       window._siteWorkerLists[listKey + '|signed']   = signedWorkerIds.map(id=>DATA.users.find(u=>u.id===id)?.name).filter(Boolean);
