@@ -7214,7 +7214,7 @@ function openSiteModal(siteId, prefilledContractor) {
         </div>
       </div>
       <div style="display:flex;gap:8px;margin-top:18px;">
-        <button onclick="saveSite(${siteId||'null'})" style="flex:1;background:#0071e3;border:none;border-radius:980px;padding:11px;font-size:14px;color:#fff;cursor:pointer;font-family:inherit;font-weight:600;transition:background 0.15s;" onmouseover="this.style.background='#0077ed'" onmouseout="this.style.background='#0071e3'">
+        <button onclick="saveSite(${siteId||'null'})" style="flex:1;background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:11px;font-size:14px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:600;transition:all 0.15s;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">
           ${isEdit ? '💾 שמור שינויים' : '+ הוסף אתר'}
         </button>
         <button onclick="closeModal()" style="background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:11px 18px;font-size:14px;color:#1d1d1f;cursor:pointer;font-family:inherit;font-weight:500;" onmouseover="this.style.borderColor='#1d1d1f'" onmouseout="this.style.borderColor='#d2d2d7'">ביטול</button>
