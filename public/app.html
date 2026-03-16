@@ -8849,7 +8849,7 @@ function openWheelTimePicker(inputEl, day, field, workerId) {
   function buildWheel(id, count, init) {
     const items = Array.from({length: count}, (_,i) => String(i).padStart(2,'0'));
     return `
-      <div style="flex:1;position:relative;height:${ITEM_H*VISIBLE}px;overflow:hidden;z-index:1;max-width:75px;">
+      <div style="flex:1;position:relative;height:${ITEM_H*VISIBLE}px;overflow:hidden;z-index:1;max-width:75px;perspective:180px;">
         <div id="${id}" style="overflow-y:scroll;height:100%;scrollbar-width:none;-ms-overflow-style:none;scroll-snap-type:y mandatory;position:relative;z-index:1;">
           <div style="height:${ITEM_H*2}px;"></div>
           ${items.map((v,i) => `<div style="height:${ITEM_H}px;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;color:#1d1d1f;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;scroll-snap-align:center;position:relative;z-index:1;">${v}</div>`).join('')}
@@ -8910,10 +8910,39 @@ function openWheelTimePicker(inputEl, day, field, workerId) {
     const divs = [...list.querySelectorAll('div[style*="scroll-snap-align"]')];
     divs.forEach((el, i) => {
       const dist = Math.abs(i - center);
-      if (dist === 0) { el.style.opacity = '1'; el.style.fontWeight = '600'; el.style.color = '#1d1d1f'; }
-      else if (dist === 1) { el.style.opacity = '0.55'; el.style.fontWeight = '400'; el.style.color = '#1d1d1f'; }
-      else if (dist === 2) { el.style.opacity = '0.25'; el.style.fontWeight = '400'; el.style.color = '#1d1d1f'; }
-      else { el.style.opacity = '0.1'; el.style.fontWeight = '400'; }
+      const angle = dist * 22; // זווית בדרגות
+      const rad   = angle * Math.PI / 180;
+      const scale = Math.cos(rad);
+      const tz    = -dist * 8; // תזוזה לאחור
+      if (dist === 0) {
+        el.style.opacity    = '1';
+        el.style.fontWeight = '400';
+        el.style.fontSize   = '28px';
+        el.style.filter     = 'none';
+        el.style.transform  = 'scale(1) translateZ(0)';
+        el.style.color      = '#1d1d1f';
+      } else if (dist === 1) {
+        el.style.opacity    = '0.5';
+        el.style.fontWeight = '300';
+        el.style.fontSize   = Math.round(28 * 0.88) + 'px';
+        el.style.filter     = 'blur(0.4px)';
+        el.style.transform  = `scale(${scale.toFixed(3)}) translateZ(${tz}px) rotateX(${dist > 0 ? angle : -angle}deg)`;
+        el.style.color      = '#1d1d1f';
+      } else if (dist === 2) {
+        el.style.opacity    = '0.22';
+        el.style.fontWeight = '300';
+        el.style.fontSize   = Math.round(28 * 0.76) + 'px';
+        el.style.filter     = 'blur(1px)';
+        el.style.transform  = `scale(${scale.toFixed(3)}) translateZ(${tz}px)`;
+        el.style.color      = '#1d1d1f';
+      } else {
+        el.style.opacity    = '0.08';
+        el.style.fontWeight = '300';
+        el.style.fontSize   = Math.round(28 * 0.64) + 'px';
+        el.style.filter     = 'blur(1.5px)';
+        el.style.transform  = `scale(${scale.toFixed(3)}) translateZ(${tz}px)`;
+        el.style.color      = '#1d1d1f';
+      }
     });
   }
   hList.addEventListener('scroll', () => { snap(hList, 24); updateOpacity(hList); });
