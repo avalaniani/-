@@ -1556,9 +1556,28 @@
       <div class="page" id="page-worker-hours">
         <div class="card" style="margin-bottom:20px;padding:20px;background:linear-gradient(135deg,#fdf0e8,#fdf5e8);border-color:var(--orange);">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
-            <div>
-              <div style="font-size:20px;font-weight:800;" id="worker-name-display">שם הפועל</div>
-              <div style="color:var(--text2);font-size:13px;" id="worker-company-display">חברה</div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div>
+                <div style="font-size:20px;font-weight:800;" id="worker-name-display">שם הפועל</div>
+                <div style="color:var(--text2);font-size:13px;" id="worker-company-display">חברה</div>
+              </div>
+              <!-- כפתור שפה -->
+              <div style="position:relative;">
+                <button id="lang-btn" onclick="toggleLangDropdown()" style="background:rgba(255,255,255,0.7);border:1.5px solid rgba(0,0,0,0.12);border-radius:980px;padding:5px 12px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:500;display:flex;align-items:center;gap:5px;white-space:nowrap;">
+                  <span id="lang-btn-label">🇮🇱 עברית</span>
+                </button>
+                <div id="lang-dropdown" style="display:none;position:absolute;top:calc(100%+6px);right:0;background:#fff;border-radius:14px;box-shadow:0 6px 24px rgba(0,0,0,0.13);z-index:500;overflow:hidden;min-width:150px;">
+                  <div onclick="setWorkerLang('he')"  style="padding:10px 16px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#f5f5f7'" onmouseout="this.style.background=''">🇮🇱 עברית</div>
+                  <div onclick="setWorkerLang('en')"  style="padding:10px 16px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#f5f5f7'" onmouseout="this.style.background=''">🇺🇸 English</div>
+                  <div onclick="setWorkerLang('ru')"  style="padding:10px 16px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#f5f5f7'" onmouseout="this.style.background=''">🇷🇺 Русский</div>
+                  <div onclick="setWorkerLang('uz')"  style="padding:10px 16px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#f5f5f7'" onmouseout="this.style.background=''">🇺🇿 Oʻzbekcha</div>
+                  <div onclick="setWorkerLang('zh')"  style="padding:10px 16px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#f5f5f7'" onmouseout="this.style.background=''">🇨🇳 中文</div>
+                  <div onclick="setWorkerLang('si')"  style="padding:10px 16px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#f5f5f7'" onmouseout="this.style.background=''">🇱🇰 සිංහල</div>
+                  <div onclick="setWorkerLang('ta')"  style="padding:10px 16px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#f5f5f7'" onmouseout="this.style.background=''">🇮🇳 தமிழ்</div>
+                  <div onclick="setWorkerLang('hi')"  style="padding:10px 16px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#f5f5f7'" onmouseout="this.style.background=''">🇮🇳 हिंदी</div>
+                  <div onclick="setWorkerLang('th')"  style="padding:10px 16px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#f5f5f7'" onmouseout="this.style.background=''">🇹🇭 ภาษาไทย</div>
+                </div>
+              </div>
             </div>
             <div style="display:flex;gap:6px;align-items:center;flex-wrap:nowrap;">
               <button class="btn btn-outline btn-sm" onclick="changeWorkerMonth(-1)" style="padding:6px 10px;white-space:nowrap;">▶ חודש קודם</button>
@@ -1567,15 +1586,15 @@
             </div>
           </div>
           <div style="margin-top:14px;display:flex;gap:20px;flex-wrap:wrap;">
-            <div><div style="font-size:26px;font-weight:800;color:#b06830;" id="worker-total-hours">0</div><div style="font-size:12px;color:var(--text2);">סה"כ שעות</div></div>
-            <div><div style="font-size:26px;font-weight:800;color:#a07820;" id="worker-work-days">0</div><div style="font-size:12px;color:var(--text2);">ימי עבודה</div></div>
-            <div><div style="font-size:26px;font-weight:800;color:#3a9a7a;" id="worker-avg-hours">0</div><div style="font-size:12px;color:var(--text2);">ממוצע יומי</div></div>
+            <div><div style="font-size:26px;font-weight:800;color:#b06830;" id="worker-total-hours">0</div><div style="font-size:12px;color:var(--text2);" data-wt="total_hours">סה"כ שעות</div></div>
+            <div><div style="font-size:26px;font-weight:800;color:#a07820;" id="worker-work-days">0</div><div style="font-size:12px;color:var(--text2);" data-wt="work_days">ימי עבודה</div></div>
+            <div><div style="font-size:26px;font-weight:800;color:#3a9a7a;" id="worker-avg-hours">0</div><div style="font-size:12px;color:var(--text2);" data-wt="daily_avg">ממוצע יומי</div></div>
           </div>
         </div>
 
         <div class="card">
           <div class="card-header" style="flex-wrap:wrap;gap:8px;">
-            <div class="card-title" style="white-space:nowrap;">📊 דוח שעות חודשי</div>
+            <div class="card-title" style="white-space:nowrap;" data-wt="monthly_report">📊 דוח שעות חודשי</div>
             <div style="display:flex;gap:8px;flex-wrap:nowrap;">
               <button class="btn btn-outline btn-sm" onclick="exportHours()" style="white-space:nowrap;">📥 ייצוא</button>
               <button class="btn btn-success btn-sm" id="worker-save-btn" onclick="saveWorkerHours()" style="white-space:nowrap;">💾 שמור</button>
@@ -1594,18 +1613,18 @@
 
         <div class="card" style="margin-top:16px;">
           <div class="card-header">
-            <div class="card-title">✍️ אישור מנהל אתר</div>
+            <div class="card-title" data-wt="manager_approval">✍️ אישור מנהל אתר</div>
           </div>
           <div id="sig-status-area">
             <!-- Unsigned state -->
             <div class="sig-box" id="sig-unsigned">
               <div style="font-size:36px;margin-bottom:10px;">📋</div>
-              <div style="color:var(--text2);margin-bottom:18px;font-size:14px;">הדוח טרם אושר על ידי מנהל האתר</div>
+              <div style="color:var(--text2);margin-bottom:18px;font-size:14px;" data-wt="not_approved">הדוח טרם אושר על ידי מנהל האתר</div>
 
               <!-- Sign specific days -->
               <div style="background:#f5f0ff;border:1px solid #d8c8f5;border-radius:10px;padding:16px;text-align:right;">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px;">
-                  <div style="font-size:13px;font-weight:700;color:#7b63d8;">📅 חתימה על ימים</div>
+                  <div style="font-size:13px;font-weight:700;color:#7b63d8;" data-wt="sign_days">📅 חתימה על ימים</div>
                   <div style="display:flex;gap:6px;flex-wrap:wrap;">
                     <button class="btn btn-sm" style="background:#e8e0ff;color:#7b63d8;border:1px solid #d8c8f5;font-size:11px;padding:5px 10px;" onclick="setSignToday()">📌 סמן להיום</button>
                     <button class="btn btn-sm" style="background:#d8f0e8;color:#2a7a5a;border:1px solid #a8d8c0;font-size:11px;padding:5px 10px;" onclick="setSignMonthToToday()">📆 מתחילת החודש</button>
@@ -1622,7 +1641,7 @@
                   </div>
                 </div>
                 <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px;">
-                  <input type="password" id="sigPasswordVerifyPartial" class="search-input" placeholder="סיסמת מנהל אתר" style="width:190px;flex:1;min-width:0;">
+                  <input type="password" id="sigPasswordVerifyPartial" class="search-input" placeholder="סיסמת מנהל אתר" data-wt-placeholder="manager_password" style="width:190px;flex:1;min-width:0;">
                   <button class="btn btn-sm" style="background:#7b63d8;color:white;" onclick="signReport('partial')">📅 חתום על טווח ימים</button>
                 </div>
               </div>
@@ -1643,7 +1662,7 @@
               <div style="margin-top:16px;background:#fff5f5;border:1px solid #f0c0c8;border-radius:10px;padding:14px;">
                 <div style="font-size:12px;color:#c0506a;margin-bottom:10px;">לביטול החתימה, יש להזין את סיסמת מנהל האתר:</div>
                 <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                  <input type="password" id="unsignPassword" class="search-input" placeholder="סיסמת מנהל אתר" style="width:190px;flex:1;min-width:0;">
+                  <input type="password" id="unsignPassword" class="search-input" placeholder="סיסמת מנהל אתר" data-wt-placeholder="manager_password" style="width:190px;flex:1;min-width:0;">
                   <button class="btn btn-danger btn-sm" onclick="unsignReport()">❌ בטל אישור</button>
                 </div>
               </div>
@@ -8942,6 +8961,282 @@ function openWheelTimePicker(inputEl, day, field, workerId) {
     ov.remove();
   };
 }
+
+
+// ═══════════════════════════════════════════════════════════
+// WORKER INTERFACE TRANSLATION SYSTEM
+// ═══════════════════════════════════════════════════════════
+const WORKER_LANGS = {
+  he: { name:'עברית', flag:'🇮🇱', dir:'rtl', translations:{
+    prev_month:'▶ חודש קודם', next_month:'חודש הבא ◀',
+    total_hours:'סה"כ שעות', work_days:'ימי עבודה', daily_avg:'ממוצע יומי',
+    monthly_report:'📊 דוח שעות חודשי', export:'📥 ייצוא', save:'💾 שמור',
+    locked_banner:'🔒 הדוח נחתם על ידי מנהל האתר — לא ניתן לערוך שעות. לשינוי, פנה למנהל האתר לביטול החתימה.',
+    date:'תאריך', day:'יום', arrival:'הגעה', departure:'יציאה', hours:'שעות',
+    manager_approval:'✍️ אישור מנהל אתר',
+    not_approved:'הדוח טרם אושר על ידי מנהל האתר',
+    sign_days:'📅 חתימה על ימים', mark_today:'📌 סמן להיום', from_month_start:'📆 מתחילת החודש',
+    from:'מ:', to:'עד:', sign_range:'📅 חתום על טווח ימים',
+    manager_password:'סיסמת מנהל אתר',
+    approved:'✓ אושר', approved_by:'אושר על ידי מנהל האתר',
+    continue_sign:'📅 ניתן להמשיך ולחתום על ימים נוספים באמצעות הטופס למטה',
+    cancel_sign_prompt:'לביטול החתימה, יש להזין את סיסמת מנהל האתר:',
+    cancel_approval:'❌ בטל אישור',
+    signed_dates:'📅 תאריכים חתומים:',
+    requests_title:'פניות ובקשות',
+    requests_subtitle:'שלח בקשה למנכ"ל — ציוד חסר, בעיה, הצעה או כל פנייה אחרת',
+    language:'שפה'
+  }},
+  en: { name:'English', flag:'🇺🇸', dir:'ltr', translations:{
+    prev_month:'◀ Prev Month', next_month:'Next Month ▶',
+    total_hours:'Total Hours', work_days:'Work Days', daily_avg:'Daily Avg',
+    monthly_report:'📊 Monthly Hours Report', export:'📥 Export', save:'💾 Save',
+    locked_banner:'🔒 Report signed by site manager — cannot edit hours. Contact manager to cancel.',
+    date:'Date', day:'Day', arrival:'Arrival', departure:'Departure', hours:'Hours',
+    manager_approval:'✍️ Manager Approval',
+    not_approved:'Report not yet approved by site manager',
+    sign_days:'📅 Sign Days', mark_today:'📌 Today', from_month_start:'📆 From Month Start',
+    from:'From:', to:'To:', sign_range:'📅 Sign Date Range',
+    manager_password:'Manager password',
+    approved:'✓ Approved', approved_by:'Approved by site manager',
+    continue_sign:'📅 You can continue signing additional days using the form below',
+    cancel_sign_prompt:'To cancel approval, enter the site manager password:',
+    cancel_approval:'❌ Cancel Approval',
+    signed_dates:'📅 Signed dates:',
+    requests_title:'Requests',
+    requests_subtitle:'Send a request to manager — missing equipment, issue, suggestion or any inquiry',
+    language:'Language'
+  }},
+  ru: { name:'Русский', flag:'🇷🇺', dir:'ltr', translations:{
+    prev_month:'◀ Пред. месяц', next_month:'След. месяц ▶',
+    total_hours:'Всего часов', work_days:'Рабочие дни', daily_avg:'Среднее в день',
+    monthly_report:'📊 Отчёт за месяц', export:'📥 Экспорт', save:'💾 Сохранить',
+    locked_banner:'🔒 Отчёт подписан менеджером — редактирование недоступно.',
+    date:'Дата', day:'День', arrival:'Приход', departure:'Уход', hours:'Часы',
+    manager_approval:'✍️ Утверждение менеджера',
+    not_approved:'Отчёт ещё не утверждён менеджером',
+    sign_days:'📅 Подписать дни', mark_today:'📌 Сегодня', from_month_start:'📆 С начала месяца',
+    from:'С:', to:'По:', sign_range:'📅 Подписать диапазон',
+    manager_password:'Пароль менеджера',
+    approved:'✓ Утверждено', approved_by:'Утверждено менеджером',
+    continue_sign:'📅 Можно продолжить подписывать дополнительные дни',
+    cancel_sign_prompt:'Для отмены утверждения введите пароль менеджера:',
+    cancel_approval:'❌ Отменить утверждение',
+    signed_dates:'📅 Подписанные даты:',
+    requests_title:'Запросы',
+    requests_subtitle:'Отправить запрос менеджеру — оборудование, проблема, предложение',
+    language:'Язык'
+  }},
+  uz: { name:'Oʻzbekcha', flag:'🇺🇿', dir:'ltr', translations:{
+    prev_month:'◀ Oldingi oy', next_month:'Keyingi oy ▶',
+    total_hours:'Jami soatlar', work_days:'Ish kunlari', daily_avg:'Kunlik oʻrtacha',
+    monthly_report:'📊 Oylik hisobot', export:'📥 Eksport', save:'💾 Saqlash',
+    locked_banner:'🔒 Hisobot menejer tomonidan imzolangan — tahrirlash mumkin emas.',
+    date:'Sana', day:'Kun', arrival:'Kelish', departure:'Ketish', hours:'Soatlar',
+    manager_approval:'✍️ Menejer tasdiqi',
+    not_approved:'Hisobot hali menejer tomonidan tasdiqlanmagan',
+    sign_days:'📅 Kunlarni imzolash', mark_today:'📌 Bugun', from_month_start:'📆 Oy boshidan',
+    from:'Dan:', to:'Gacha:', sign_range:'📅 Muddatni imzolash',
+    manager_password:'Menejer paroli',
+    approved:'✓ Tasdiqlangan', approved_by:'Menejer tomonidan tasdiqlangan',
+    continue_sign:'📅 Qoʻshimcha kunlarni imzolashni davom ettirish mumkin',
+    cancel_sign_prompt:'Tasdiqlashni bekor qilish uchun menejer parolini kiriting:',
+    cancel_approval:'❌ Tasdiqlashni bekor qilish',
+    signed_dates:'📅 Imzolangan sanalar:',
+    requests_title:'Soʻrovlar',
+    requests_subtitle:'Menejerga soʻrov yuboring — uskunalar, muammo, taklif',
+    language:'Til'
+  }},
+  zh: { name:'中文', flag:'🇨🇳', dir:'ltr', translations:{
+    prev_month:'◀ 上个月', next_month:'下个月 ▶',
+    total_hours:'总工时', work_days:'工作天数', daily_avg:'日均工时',
+    monthly_report:'📊 月度报告', export:'📥 导出', save:'💾 保存',
+    locked_banner:'🔒 报告已由工地经理签署 — 无法编辑工时。',
+    date:'日期', day:'星期', arrival:'上班', departure:'下班', hours:'工时',
+    manager_approval:'✍️ 经理审批',
+    not_approved:'报告尚未获得工地经理批准',
+    sign_days:'📅 签署天数', mark_today:'📌 今天', from_month_start:'📆 从月初',
+    from:'从:', to:'至:', sign_range:'📅 签署日期范围',
+    manager_password:'经理密码',
+    approved:'✓ 已批准', approved_by:'已由工地经理批准',
+    continue_sign:'📅 可以继续签署更多天数',
+    cancel_sign_prompt:'要取消批准，请输入工地经理密码：',
+    cancel_approval:'❌ 取消批准',
+    signed_dates:'📅 已签署日期：',
+    requests_title:'申请',
+    requests_subtitle:'向经理发送申请 — 缺少设备、问题、建议或其他事项',
+    language:'语言'
+  }},
+  si: { name:'සිංහල', flag:'🇱🇰', dir:'ltr', translations:{
+    prev_month:'◀ පෙර මාසය', next_month:'ඊළඟ මාසය ▶',
+    total_hours:'මුළු පැය', work_days:'වැඩ දින', daily_avg:'දෛනික සාමාන්‍යය',
+    monthly_report:'📊 මාසික වාර්තාව', export:'📥 නිර්යාතය', save:'💾 සුරකින්න',
+    locked_banner:'🔒 වාර්තාව කළමනාකරු විසින් අත්සන් කර ඇත — සංස්කරණය කළ නොහැක.',
+    date:'දිනය', day:'දිනය', arrival:'පැමිණීම', departure:'පිටවීම', hours:'පැය',
+    manager_approval:'✍️ කළමනාකරු අනුමැතිය',
+    not_approved:'වාර්තාව තවම කළමනාකරු විසින් අනුමත කර නැත',
+    sign_days:'📅 දින අත්සන් කරන්න', mark_today:'📌 අද', from_month_start:'📆 මාසයේ ආරම්භයේ සිට',
+    from:'සිට:', to:'දක්වා:', sign_range:'📅 දින පරාසය අත්සන් කරන්න',
+    manager_password:'කළමනාකරු මුරපදය',
+    approved:'✓ අනුමත', approved_by:'කළමනාකරු විසින් අනුමත කරන ලදී',
+    continue_sign:'📅 අතිරේක දින අත්සන් කිරීම දිගටම කළ හැකිය',
+    cancel_sign_prompt:'අනුමැතිය අවලංගු කිරීමට කළමනාකරු මුරපදය ඇතුළත් කරන්න:',
+    cancel_approval:'❌ අනුමැතිය අවලංගු කරන්න',
+    signed_dates:'📅 අත්සන් කළ දිනයන්:',
+    requests_title:'ඉල්ලීම්',
+    requests_subtitle:'කළමනාකරු වෙත ඉල්ලීමක් යවන්න',
+    language:'භාෂාව'
+  }},
+  ta: { name:'தமிழ்', flag:'🇮🇳', dir:'ltr', translations:{
+    prev_month:'◀ முந்தைய மாதம்', next_month:'அடுத்த மாதம் ▶',
+    total_hours:'மொத்த மணி நேரம்', work_days:'வேலை நாட்கள்', daily_avg:'தினசரி சராசரி',
+    monthly_report:'📊 மாதாந்திர அறிக்கை', export:'📥 ஏற்றுமதி', save:'💾 சேமி',
+    locked_banner:'🔒 அறிக்கை மேலாளரால் கையொப்பமிடப்பட்டது — திருத்த முடியாது.',
+    date:'தேதி', day:'நாள்', arrival:'வருகை', departure:'புறப்பாடு', hours:'மணி நேரம்',
+    manager_approval:'✍️ மேலாளர் அனுமதி',
+    not_approved:'அறிக்கை இன்னும் மேலாளரால் அங்கீகரிக்கப்படவில்லை',
+    sign_days:'📅 நாட்களில் கையொப்மிட', mark_today:'📌 இன்று', from_month_start:'📆 மாதத்தின் தொடக்கத்தில் இருந்து',
+    from:'இல் இருந்து:', to:'வரை:', sign_range:'📅 தேதி வரம்பில் கையொப்பமிட',
+    manager_password:'மேலாளர் கடவுச்சொல்',
+    approved:'✓ அங்கீகரிக்கப்பட்டது', approved_by:'மேலாளரால் அங்கீகரிக்கப்பட்டது',
+    continue_sign:'📅 கூடுதல் நாட்களில் கையொப்பமிடலாம்',
+    cancel_sign_prompt:'அனுமதியை ரத்து செய்ய மேலாளர் கடவுச்சொல்லை உள்ளிடவும்:',
+    cancel_approval:'❌ அனுமதியை ரத்து செய்',
+    signed_dates:'📅 கையொப்பமிடப்பட்ட தேதிகள்:',
+    requests_title:'கோரிக்கைகள்',
+    requests_subtitle:'மேலாளருக்கு கோரிக்கை அனுப்பவும்',
+    language:'மொழி'
+  }},
+  hi: { name:'हिंदी', flag:'🇮🇳', dir:'ltr', translations:{
+    prev_month:'◀ पिछला महीना', next_month:'अगला महीना ▶',
+    total_hours:'कुल घंटे', work_days:'कार्य दिवस', daily_avg:'दैनिक औसत',
+    monthly_report:'📊 मासिक रिपोर्ट', export:'📥 निर्यात', save:'💾 सहेजें',
+    locked_banner:'🔒 रिपोर्ट साइट मैनेजर द्वारा हस्ताक्षरित है — संपादन संभव नहीं।',
+    date:'तारीख', day:'दिन', arrival:'आगमन', departure:'प्रस्थान', hours:'घंटे',
+    manager_approval:'✍️ मैनेजर की स्वीकृति',
+    not_approved:'रिपोर्ट अभी तक साइट मैनेजर द्वारा अनुमोदित नहीं है',
+    sign_days:'📅 दिनों पर हस्ताक्षर', mark_today:'📌 आज', from_month_start:'📆 महीने की शुरुआत से',
+    from:'से:', to:'तक:', sign_range:'📅 तारीख सीमा पर हस्ताक्षर',
+    manager_password:'मैनेजर पासवर्ड',
+    approved:'✓ स्वीकृत', approved_by:'साइट मैनेजर द्वारा स्वीकृत',
+    continue_sign:'📅 अतिरिक्त दिनों पर हस्ताक्षर जारी रखा जा सकता है',
+    cancel_sign_prompt:'स्वीकृति रद्द करने के लिए साइट मैनेजर का पासवर्ड दर्ज करें:',
+    cancel_approval:'❌ स्वीकृति रद्द करें',
+    signed_dates:'📅 हस्ताक्षरित तारीखें:',
+    requests_title:'अनुरोध',
+    requests_subtitle:'मैनेजर को अनुरोध भेजें — उपकरण, समस्या, सुझाव',
+    language:'भाषा'
+  }},
+  th: { name:'ภาษาไทย', flag:'🇹🇭', dir:'ltr', translations:{
+    prev_month:'◀ เดือนก่อน', next_month:'เดือนถัดไป ▶',
+    total_hours:'รวมชั่วโมง', work_days:'วันทำงาน', daily_avg:'เฉลี่ยต่อวัน',
+    monthly_report:'📊 รายงานประจำเดือน', export:'📥 ส่งออก', save:'💾 บันทึก',
+    locked_banner:'🔒 รายงานได้รับการลงนามโดยผู้จัดการ — ไม่สามารถแก้ไขได้',
+    date:'วันที่', day:'วัน', arrival:'เข้างาน', departure:'ออกงาน', hours:'ชั่วโมง',
+    manager_approval:'✍️ การอนุมัติของผู้จัดการ',
+    not_approved:'รายงานยังไม่ได้รับการอนุมัติจากผู้จัดการ',
+    sign_days:'📅 ลงนามวัน', mark_today:'📌 วันนี้', from_month_start:'📆 ตั้งแต่ต้นเดือน',
+    from:'ตั้งแต่:', to:'ถึง:', sign_range:'📅 ลงนามช่วงวันที่',
+    manager_password:'รหัสผ่านผู้จัดการ',
+    approved:'✓ อนุมัติแล้ว', approved_by:'อนุมัติโดยผู้จัดการ',
+    continue_sign:'📅 สามารถลงนามวันเพิ่มเติมได้',
+    cancel_sign_prompt:'กรอกรหัสผ่านผู้จัดการเพื่อยกเลิกการอนุมัติ:',
+    cancel_approval:'❌ ยกเลิกการอนุมัติ',
+    signed_dates:'📅 วันที่ลงนามแล้ว:',
+    requests_title:'คำขอ',
+    requests_subtitle:'ส่งคำขอถึงผู้จัดการ — อุปกรณ์ ปัญหา ข้อเสนอแนะ',
+    language:'ภาษา'
+  }}
+};
+
+let _workerLang = localStorage.getItem('workerLang') || 'he';
+
+function wt(key) {
+  return (WORKER_LANGS[_workerLang]?.translations[key]) || (WORKER_LANGS.he.translations[key]) || key;
+}
+
+function setWorkerLang(lang) {
+  _workerLang = lang;
+  localStorage.setItem('workerLang', lang);
+  applyWorkerTranslations();
+  const dd = document.getElementById('lang-dropdown');
+  if (dd) dd.style.display = 'none';
+}
+
+function applyWorkerTranslations() {
+  const L = WORKER_LANGS[_workerLang];
+  if (!L) return;
+  const dir = L.dir;
+
+  // כיוון דף
+  const workerPages = document.querySelectorAll('#page-worker-hours, #page-worker-requests');
+  workerPages.forEach(p => { p.style.direction = dir; p.style.textAlign = dir === 'rtl' ? 'right' : 'left'; });
+
+  // כפתורי חודש
+  const prevBtn = document.querySelector('[onclick="changeWorkerMonth(-1)"]');
+  const nextBtn = document.querySelector('[onclick="changeWorkerMonth(1)"]');
+  if (prevBtn) prevBtn.textContent = wt('prev_month');
+  if (nextBtn) nextBtn.textContent = wt('next_month');
+
+  // כותרות סטטיסטיקה
+  const labels = document.querySelectorAll('#page-worker-hours .card:first-child .wt-label');
+  // עדכן ע"י data-wt
+  document.querySelectorAll('[data-wt]').forEach(el => {
+    el.textContent = wt(el.getAttribute('data-wt'));
+  });
+
+  // כותרת טבלה
+  const thead = document.querySelector('#page-worker-hours .hours-table thead tr');
+  if (thead) {
+    const ths = thead.querySelectorAll('th');
+    const keys = ['date','day','arrival','departure','hours'];
+    ths.forEach((th, i) => { if (keys[i]) th.textContent = wt(keys[i]); });
+  }
+
+  // כפתורים
+  const exportBtn = document.querySelector('[onclick="exportHours()"]');
+  if (exportBtn) exportBtn.textContent = wt('export');
+  const saveBtn = document.getElementById('worker-save-btn');
+  if (saveBtn) saveBtn.textContent = wt('save');
+
+  // כותרת דוח
+  document.querySelectorAll('.card-title').forEach(el => {
+    if (el.getAttribute('data-wt')) el.textContent = wt(el.getAttribute('data-wt'));
+  });
+
+  // banner נעול
+  const banner = document.getElementById('worker-locked-banner');
+  if (banner) banner.textContent = wt('locked_banner');
+
+  // אישור מנהל
+  const notApproved = document.querySelector('#sig-unsigned [data-wt="not_approved"]');
+  if (notApproved) notApproved.textContent = wt('not_approved');
+
+  // placeholder סיסמה
+  document.querySelectorAll('#sigPasswordVerifyPartial, #unsignPassword').forEach(el => {
+    el.placeholder = wt('manager_password');
+  });
+
+  // כפתורי חתימה
+  document.querySelectorAll('[data-wt-btn]').forEach(el => {
+    el.textContent = wt(el.getAttribute('data-wt-btn'));
+  });
+
+  // עדכן label כפתור שפה
+  const langLabel = document.getElementById('lang-btn-label');
+  if (langLabel) langLabel.textContent = L.flag + ' ' + L.name;
+}
+
+function toggleLangDropdown() {
+  const dd = document.getElementById('lang-dropdown');
+  if (!dd) return;
+  dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+}
+document.addEventListener('click', e => {
+  const btn = document.getElementById('lang-btn');
+  const dd  = document.getElementById('lang-dropdown');
+  if (dd && btn && !btn.contains(e.target) && !dd.contains(e.target)) dd.style.display = 'none';
+});
 
 </script>
 </body>
