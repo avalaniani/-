@@ -8873,12 +8873,10 @@ function openWheelTimePicker(inputEl, day, field, workerId) {
         <!-- רצועת בחירה — מאחורי המספרים -->
         <div style="position:absolute;left:4px;right:4px;top:calc(50% - ${ITEM_H/2}px);height:${ITEM_H}px;background:rgba(0,0,0,0.07);border-radius:10px;pointer-events:none;z-index:0;border-top:0.5px solid rgba(0,0,0,0.1);border-bottom:0.5px solid rgba(0,0,0,0.1);"></div>
       </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px 16px;">
-        <button id="wtp-clear" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--text3);font-family:inherit;padding:6px 10px;">נקה</button>
-        <button id="wtp-cancel" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--text2);font-family:inherit;padding:6px 10px;">ביטול</button>
-        <button id="wtp-ok" style="width:44px;height:44px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-        </button>
+      <div style="display:flex;align-items:center;gap:8px;padding:10px 14px 16px;">
+        <button id="wtp-clear" style="flex:1;background:transparent;border:1.5px solid rgba(0,0,0,0.12);border-radius:980px;padding:9px 0;font-size:13px;color:#86868b;font-family:-apple-system,sans-serif;cursor:pointer;font-weight:500;transition:all 0.15s;" onmouseover="this.style.borderColor='#1d1d1f';this.style.color='#1d1d1f'" onmouseout="this.style.borderColor='rgba(0,0,0,0.12)';this.style.color='#86868b'">נקה</button>
+        <button id="wtp-cancel" style="flex:1;background:transparent;border:1.5px solid rgba(0,0,0,0.12);border-radius:980px;padding:9px 0;font-size:13px;color:#1d1d1f;font-family:-apple-system,sans-serif;cursor:pointer;font-weight:500;transition:all 0.15s;" onmouseover="this.style.borderColor='#1d1d1f'" onmouseout="this.style.borderColor='rgba(0,0,0,0.12)'">ביטול</button>
+        <button id="wtp-ok" style="flex:1;background:#0071e3;border:none;border-radius:980px;padding:10px 0;font-size:13px;color:#fff;font-family:-apple-system,sans-serif;cursor:pointer;font-weight:600;transition:background 0.15s;" onmouseover="this.style.background='#0077ed'" onmouseout="this.style.background='#0071e3'">✓</button>
       </div>
     </div>`;
 
