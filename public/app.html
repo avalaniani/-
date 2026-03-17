@@ -1684,7 +1684,7 @@
             <div style="font-size:32px;">📬</div>
             <div>
               <div style="font-size:17px;font-weight:800;">פניות ובקשות</div>
-              <div style="font-size:13px;color:var(--text2);">שלח בקשה למנכ"ל — ציוד חסר, בעיה, הצעה או כל פנייה אחרת</div>
+              <div style="font-size:13px;color:var(--text2);">שלח בקשה</div>
             </div>
           </div>
         </div>
@@ -6582,6 +6582,22 @@ async function submitWorkerRequest() {
   const type = document.getElementById('request-type').value;
   const text = document.getElementById('request-text').value.trim();
   if (!text) { showToast('❌ יש לכתוב תוכן לפנייה', 'error'); return; }
+  // אישור לפני שליחה
+  const confirmed = await new Promise(resolve => {
+    showModal(`
+      <div style="font-family:-apple-system,sans-serif;padding:22px;max-width:320px;width:100%;text-align:center;">
+        <div style="font-size:36px;margin-bottom:12px;">📤</div>
+        <div style="font-size:16px;font-weight:700;color:#1d1d1f;margin-bottom:8px;">שליחת פנייה</div>
+        <div style="font-size:14px;color:#86868b;margin-bottom:20px;">האם אתה בטוח שברצונך לשלוח את הפנייה?</div>
+        <div style="display:flex;gap:10px;">
+          <button onclick="document.getElementById('modalContent')._resolve(false);closeModal()" style="flex:1;background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:10px;font-size:14px;color:#1d1d1f;cursor:pointer;font-family:inherit;">ביטול</button>
+          <button onclick="document.getElementById('modalContent')._resolve(true);closeModal()" style="flex:1;background:#0071e3;border:none;border-radius:980px;padding:10px;font-size:14px;color:#fff;cursor:pointer;font-family:inherit;font-weight:600;">שלח</button>
+        </div>
+      </div>
+    `);
+    document.getElementById('modalContent')._resolve = resolve;
+  });
+  if (!confirmed) return;
   if (HAS_SUPABASE) {
     const res = await sbCreateRequest({ type, text });
     if (!res.ok) { showToast('❌ שגיאה בשליחת פנייה', 'error'); return; }
@@ -6595,7 +6611,35 @@ async function submitWorkerRequest() {
   document.getElementById('request-text').value = '';
   renderWorkerRequests();
   buildNav();
-  showToast('📤 הפנייה נשלחה למנכ"ל!');
+  showToast('📤 הפנייה נשלחה');
+}
+
+async function deleteWorkerRequest(reqId) {
+  const confirmed = await new Promise(resolve => {
+    showModal(`
+      <div style="font-family:-apple-system,sans-serif;padding:22px;max-width:300px;width:100%;text-align:center;">
+        <div style="font-size:32px;margin-bottom:10px;">🗑️</div>
+        <div style="font-size:15px;font-weight:700;color:#1d1d1f;margin-bottom:8px;">מחיקת פנייה</div>
+        <div style="font-size:13px;color:#86868b;margin-bottom:18px;">האם אתה בטוח שברצונך למחוק את הפנייה?</div>
+        <div style="display:flex;gap:10px;">
+          <button onclick="document.getElementById('modalContent')._resolve(false);closeModal()" style="flex:1;background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:10px;font-size:14px;color:#1d1d1f;cursor:pointer;font-family:inherit;">ביטול</button>
+          <button onclick="document.getElementById('modalContent')._resolve(true);closeModal()" style="flex:1;background:#ff3b30;border:none;border-radius:980px;padding:10px;font-size:14px;color:#fff;cursor:pointer;font-family:inherit;font-weight:600;">מחק</button>
+        </div>
+      </div>
+    `);
+    document.getElementById('modalContent')._resolve = resolve;
+  });
+  if (!confirmed) return;
+  if (HAS_SUPABASE) {
+    const res = await sbDeleteRequest(reqId);
+    if (!res.ok) { showToast('❌ שגיאה במחיקה', 'error'); return; }
+  } else {
+    const idx = DATA.requests.findIndex(x => x.id === reqId);
+    if (idx !== -1) DATA.requests.splice(idx, 1);
+  }
+  renderWorkerRequests();
+  buildNav();
+  showToast('🗑️ הפנייה נמחקה');
 }
 
 async function updateRequestStatus(reqId, status) {
@@ -6651,10 +6695,13 @@ function renderWorkerRequests() {
           <span class="tag tag-purple" style="font-size:11px;">${requestTypeLabels[r.type] || r.type}</span>
           <span class="tag ${st.cls}" style="font-size:11px;">${st.text}</span>
         </div>
-        <span style="font-size:11px;color:var(--text3);">${r.date}</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:11px;color:var(--text3);">${r.date}</span>
+          <button onclick="deleteWorkerRequest(${r.id})" style="background:transparent;border:1.5px solid #ff3b30;border-radius:980px;padding:3px 10px;font-size:11px;color:#ff3b30;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.background='#ff3b30';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#ff3b30'">🗑️ מחק</button>
+        </div>
       </div>
       <div style="font-size:13px;color:var(--text);line-height:1.5;">${r.text}</div>
-      ${r.reply ? `<div style="margin-top:8px;background:#f0fff4;border:1px solid #a8e8c0;border-radius:8px;padding:10px 12px;font-size:12px;color:#2d7a5a;"><strong>תשובת המנכ"ל:</strong> ${r.reply}</div>` : ''}
+      ${r.reply ? `<div style="margin-top:8px;background:#f0fff4;border:1px solid #a8e8c0;border-radius:8px;padding:10px 12px;font-size:12px;color:#2d7a5a;"><strong>תשובת המנהל:</strong> ${r.reply}</div>` : ''}
     </div>`;
   }).join('');
 }
@@ -8984,7 +9031,7 @@ const WORKER_LANGS = {
     cancel_approval:'❌ בטל אישור',
     signed_dates:'📅 תאריכים חתומים:',
     requests_title:'פניות ובקשות',
-    requests_subtitle:'שלח בקשה למנכ"ל — ציוד חסר, בעיה, הצעה או כל פנייה אחרת',
+    requests_subtitle:'שלח בקשה',
     language:'שפה'
   }},
   en: { name:'English', flag:'🇺🇸', dir:'ltr', translations:{
