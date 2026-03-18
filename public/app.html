@@ -2032,14 +2032,13 @@ async function loadAndInjectData(user) {
   const isWorker   = user.role === 'worker';
 
   // טען במקביל — הרבה יותר מהיר
-  const [companies, users, tasks, requests, notesData, workSitesRaw] = await Promise.all([
+  const [companies, users, tasks, requests, notesData] = await Promise.all([
     apiFetch('/companies'),
     apiFetch('/users'),
     apiFetch('/tasks'),
     apiFetch('/requests'),
     // טען הערות לפי user_id — ייחודי לכל משתמש
     apiFetch('/notes?note_type=user_' + (user.id || 'anon')).catch(() => ({ content: '' })),
-    apiFetch('/work-sites').catch(() => []),
   ]);
 
   // שעות — רק אם יש פועלים
@@ -2073,33 +2072,18 @@ async function loadAndInjectData(user) {
   DATA.tasks     = (tasks     || []).map(mapTask);
   DATA.requests  = (requests  || []).map(mapRequest);
   DATA.workerHours = buildHoursMap(hoursRows);
-  // טען אתרי עבודה מה-API (עם fallback ל-localStorage)
-  if (workSitesRaw && workSitesRaw.length > 0) {
-    DATA.workSites = workSitesRaw.map(s => ({
-      id:         s.id,
-      companyId:  s.company_id,
-      name:       s.name,
-      contractor: s.contractor || '',
-      address:    s.address   || '',
-      phone:      s.phone     || '',
-      price_type: s.price_type || '',
-      site_price: s.site_price || 0,
-    }));
-  } else {
-    try {
-      const sitesKey = 'workSites_' + (user.company || 'global');
-      const saved = localStorage.getItem(sitesKey);
-      DATA.workSites = saved ? JSON.parse(saved) : [];
-    } catch(e) { DATA.workSites = []; }
-  }
-  // טען שיוך פועל-אתר — מה-API (site_id כבר ב-users) ו-localStorage כ-fallback
+  // טען אתרי עבודה מ-localStorage לפי חברה
+  try {
+    const sitesKey = 'workSites_' + (user.company || 'global');
+    const saved = localStorage.getItem(sitesKey);
+    DATA.workSites = saved ? JSON.parse(saved) : [];
+  } catch(e) { DATA.workSites = []; }
+  // טען שיוך פועל-אתר מ-localStorage
   try {
     const assignKey = 'workerSites_' + (user.company || 'global');
     const savedAssign = localStorage.getItem(assignKey);
     const assignMap = savedAssign ? JSON.parse(savedAssign) : {};
-    DATA.users.forEach(u => {
-      if (u.siteId == null && assignMap[u.id] !== undefined) u.siteId = assignMap[u.id];
-    });
+    DATA.users.forEach(u => { if (assignMap[u.id] !== undefined) u.siteId = assignMap[u.id]; });
   } catch(e) {}
   // טען היסטוריית שיוכים
   try {
@@ -2350,21 +2334,13 @@ function _saveWorkerSitesLocal(companyId) {
 async function sbCreateWorkSite(payload) {
   try {
     const data = await apiFetch('/work-sites', 'POST', payload);
-    const mapped = {
-      id: data.id, companyId: data.company_id || payload.companyId,
-      name: data.name, contractor: data.contractor || '',
-      address: data.address || '', phone: data.phone || '',
-      price_type: data.price_type || '', site_price: data.site_price || 0,
-    };
-    DATA.workSites.push(mapped);
-    _saveWorkSitesLocal(mapped.companyId);
-    return { ok:true, data: mapped };
+    DATA.workSites.push(data);
   } catch(e) {
     const site = { ...payload, id: Date.now() };
     DATA.workSites.push(site);
-    _saveWorkSitesLocal(payload.companyId);
-    return { ok:true, data: site };
   }
+  _saveWorkSitesLocal(payload.companyId);
+  return { ok:true };
 }
 async function sbUpdateWorkSite(id, updates) {
   try {
@@ -7595,33 +7571,161 @@ function openAssignToSiteFromList(siteId) {
   const unassigned = DATA.users.filter(u => u.company===company && u.role==='worker' && u.siteId!==siteId);
   if (!unassigned.length) { showToast('כל הפועלים כבר משויכים לאתר זה'); return; }
 
-  const workersListId = 'assign-site-workers-list-' + siteId;
+  const today = new Date().toISOString().split('T')[0];
+
   showModal(`
-    <div style="padding:24px;max-width:380px;width:100%;">
-      <div style="font-size:17px;font-weight:800;margin-bottom:12px;">הוסף פועל ל: 📍 ${site?.name}</div>
-      <input type="text" id="assign-site-search" placeholder="🔍 חיפוש פועל..." oninput="filterAssignSiteWorkers('${workersListId}')"
+    <div style="padding:24px;max-width:400px;width:100%;">
+      <div style="font-size:17px;font-weight:800;margin-bottom:4px;">הוסף פועלים ל: 📍 ${site?.name}</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:14px;">ניתן לבחור מספר פועלים בבת אחת</div>
+
+      <input type="text" id="assign-site-search" placeholder="🔍 חיפוש פועל..."
+        oninput="filterAssignSiteWorkers()"
         style="width:100%;border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:14px;font-family:inherit;background:var(--bg3);color:var(--text);outline:none;box-sizing:border-box;margin-bottom:10px;">
-      <div id="${workersListId}" style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;margin-bottom:16px;">
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding:0 2px;">
+        <span style="font-size:12px;color:var(--text2);font-weight:600;" id="assign-selected-count">0 נבחרו</span>
+        <button onclick="toggleSelectAllSiteWorkers()" id="assign-select-all-btn"
+          style="background:none;border:none;font-size:12px;color:var(--accent);cursor:pointer;font-family:inherit;font-weight:600;padding:0;">
+          בחר הכל
+        </button>
+      </div>
+
+      <div id="assign-site-workers-list" style="display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto;margin-bottom:14px;">
         ${unassigned.map(w=>`
-          <label data-name="${w.name}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;border:1px solid var(--border);background:white;" onclick="closeModal();assignWorkerToSite(${w.id},${siteId});">
-            <span style="width:30px;height:30px;border-radius:50%;background:${w.avatarColor}33;color:${w.avatarColor};display:inline-flex;align-items:center;justify-content:center;font-weight:700;">${w.name[0]}</span>
-            <span style="font-weight:600;">${w.name}</span>
-            ${w.siteId ? `<span style="font-size:11px;color:var(--text3);margin-right:auto;">${DATA.workSites.find(s=>s.id===w.siteId)?.name||''}</span>` : ''}
+          <label data-name="${w.name}" data-id="${w.id}"
+            style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;border:1.5px solid var(--border);background:white;transition:all 0.15s;"
+            onclick="toggleSiteWorkerSelect(this)">
+            <span id="assign-chk-${w.id}" style="width:20px;height:20px;border-radius:6px;border:2px solid var(--border2);background:white;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;font-size:13px;transition:all 0.15s;"></span>
+            <span style="width:30px;height:30px;border-radius:50%;background:${w.avatarColor}33;color:${w.avatarColor};display:inline-flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;">${w.name[0]}</span>
+            <span style="font-weight:600;flex:1;">${w.name}</span>
+            ${w.siteId ? `<span style="font-size:11px;color:var(--text3);">${DATA.workSites.find(s=>s.id===w.siteId)?.name||''}</span>` : ''}
           </label>`).join('')}
       </div>
-      <button class="btn btn-outline" style="width:100%;" onclick="closeModal()">סגור</button>
+
+      <div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:14px;">
+        <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px;">📅 תאריך כניסה לאתר</label>
+        <input type="date" id="assign-bulk-date" value="${today}"
+          style="width:100%;border:2px solid var(--accent);border-radius:10px;padding:9px 12px;font-size:14px;font-family:inherit;background:white;direction:ltr;outline:none;box-sizing:border-box;">
+      </div>
+
+      <div style="display:flex;gap:10px;">
+        <button id="assign-bulk-confirm-btn" onclick="confirmBulkAssignToSite(${siteId})"
+          style="flex:1;background:#0071e3;border:none;border-radius:980px;padding:11px;font-size:14px;color:#fff;cursor:pointer;font-family:inherit;font-weight:600;opacity:0.4;pointer-events:none;transition:all 0.15s;">
+          ✅ שייך פועלים
+        </button>
+        <button onclick="closeModal()"
+          style="background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:11px 18px;font-size:14px;color:#1d1d1f;cursor:pointer;font-family:inherit;">
+          ביטול
+        </button>
+      </div>
     </div>
   `);
   setTimeout(() => document.getElementById('assign-site-search')?.focus(), 80);
 }
 
-function filterAssignSiteWorkers(listId) {
+function toggleSiteWorkerSelect(label) {
+  const chk = label.querySelector('[id^="assign-chk-"]');
+  const selected = chk.dataset.selected === '1';
+  if (selected) {
+    chk.dataset.selected = '0';
+    chk.textContent = '';
+    chk.style.background = 'white';
+    chk.style.borderColor = 'var(--border2)';
+    label.style.borderColor = 'var(--border)';
+    label.style.background = 'white';
+  } else {
+    chk.dataset.selected = '1';
+    chk.textContent = '✓';
+    chk.style.background = 'var(--accent)';
+    chk.style.borderColor = 'var(--accent)';
+    chk.style.color = 'white';
+    label.style.borderColor = 'var(--accent)';
+    label.style.background = 'var(--accent3)';
+  }
+  _updateAssignBulkState();
+}
+
+function toggleSelectAllSiteWorkers() {
+  const list = document.getElementById('assign-site-workers-list');
+  if (!list) return;
+  const labels = [...list.querySelectorAll('label[data-name]:not([style*="display: none"])')];
+  const allSelected = labels.every(l => l.querySelector('[id^="assign-chk-"]')?.dataset.selected === '1');
+  labels.forEach(label => {
+    const chk = label.querySelector('[id^="assign-chk-"]');
+    if (!chk) return;
+    if (allSelected) {
+      chk.dataset.selected = '0'; chk.textContent = '';
+      chk.style.background = 'white'; chk.style.borderColor = 'var(--border2)'; chk.style.color = '';
+      label.style.borderColor = 'var(--border)'; label.style.background = 'white';
+    } else {
+      chk.dataset.selected = '1'; chk.textContent = '✓';
+      chk.style.background = 'var(--accent)'; chk.style.borderColor = 'var(--accent)'; chk.style.color = 'white';
+      label.style.borderColor = 'var(--accent)'; label.style.background = 'var(--accent3)';
+    }
+  });
+  _updateAssignBulkState();
+}
+
+function _updateAssignBulkState() {
+  const list = document.getElementById('assign-site-workers-list');
+  const btn = document.getElementById('assign-bulk-confirm-btn');
+  const countEl = document.getElementById('assign-selected-count');
+  const allBtn = document.getElementById('assign-select-all-btn');
+  if (!list) return;
+  const count = list.querySelectorAll('[id^="assign-chk-"][data-selected="1"]').length;
+  const total = list.querySelectorAll('label[data-name]:not([style*="display: none"])').length;
+  if (countEl) countEl.textContent = count + ' נבחרו';
+  if (btn) { btn.style.opacity = count > 0 ? '1' : '0.4'; btn.style.pointerEvents = count > 0 ? 'auto' : 'none'; }
+  if (allBtn) allBtn.textContent = (count === total && total > 0) ? 'בטל הכל' : 'בחר הכל';
+}
+
+function filterAssignSiteWorkers() {
   const q = (document.getElementById('assign-site-search')?.value || '').toLowerCase();
-  const list = document.getElementById(listId);
+  const list = document.getElementById('assign-site-workers-list');
   if (!list) return;
   list.querySelectorAll('label[data-name]').forEach(el => {
     el.style.display = el.dataset.name.toLowerCase().includes(q) ? '' : 'none';
   });
+  _updateAssignBulkState();
+}
+
+async function confirmBulkAssignToSite(siteId) {
+  const list = document.getElementById('assign-site-workers-list');
+  const dateInput = document.getElementById('assign-bulk-date');
+  if (!list || !dateInput) return;
+  const fromDate = dateInput.value;
+  if (!fromDate) { showToast('יש לבחור תאריך התחלה', 'error'); return; }
+
+  const selectedIds = [...list.querySelectorAll('[id^="assign-chk-"][data-selected="1"]')]
+    .map(chk => parseInt(chk.id.replace('assign-chk-', '')));
+  if (!selectedIds.length) return;
+
+  const yesterday = (() => {
+    const d = new Date(fromDate); d.setDate(d.getDate() - 1);
+    return d.toISOString().split('T')[0];
+  })();
+
+  closeModal();
+
+  for (const workerId of selectedIds) {
+    DATA.workerSiteHistory
+      .filter(h => h.workerId === workerId && !h.toDate)
+      .forEach(h => { h.toDate = yesterday; });
+    const site = DATA.workSites.find(s=>s.id===siteId);
+    DATA.workerSiteHistory.push({
+      workerId, siteId,
+      siteName: site?.name || '', contractor: site?.contractor || '',
+      fromDate, toDate: null,
+    });
+    const worker = DATA.users.find(u=>u.id===workerId);
+    if (worker) { worker.siteId = siteId; _saveWorkerSiteHistoryLocal(worker.company); }
+    await sbAssignWorkerSite(workerId, siteId);
+  }
+
+  const site = DATA.workSites.find(s=>s.id===siteId);
+  showToast(`✅ ${selectedIds.length} פועלים שויכו ל${site?.name || 'האתר'}`);
+  if (currentPage==='ceo-sites') renderWorkSites();
+  if (currentPage==='ceo-workers') renderCeoWorkersGrid(false);
 }
 
 function assignWorkerToSite(workerId, siteId) {
