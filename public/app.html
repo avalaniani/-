@@ -2032,13 +2032,14 @@ async function loadAndInjectData(user) {
   const isWorker   = user.role === 'worker';
 
   // טען במקביל — הרבה יותר מהיר
-  const [companies, users, tasks, requests, notesData] = await Promise.all([
+  const [companies, users, tasks, requests, notesData, workSitesRaw] = await Promise.all([
     apiFetch('/companies'),
     apiFetch('/users'),
     apiFetch('/tasks'),
     apiFetch('/requests'),
     // טען הערות לפי user_id — ייחודי לכל משתמש
     apiFetch('/notes?note_type=user_' + (user.id || 'anon')).catch(() => ({ content: '' })),
+    apiFetch('/work-sites').catch(() => []),
   ]);
 
   // שעות — רק אם יש פועלים
@@ -2072,18 +2073,33 @@ async function loadAndInjectData(user) {
   DATA.tasks     = (tasks     || []).map(mapTask);
   DATA.requests  = (requests  || []).map(mapRequest);
   DATA.workerHours = buildHoursMap(hoursRows);
-  // טען אתרי עבודה מ-localStorage לפי חברה
-  try {
-    const sitesKey = 'workSites_' + (user.company || 'global');
-    const saved = localStorage.getItem(sitesKey);
-    DATA.workSites = saved ? JSON.parse(saved) : [];
-  } catch(e) { DATA.workSites = []; }
-  // טען שיוך פועל-אתר מ-localStorage
+  // טען אתרי עבודה מה-API (עם fallback ל-localStorage)
+  if (workSitesRaw && workSitesRaw.length > 0) {
+    DATA.workSites = workSitesRaw.map(s => ({
+      id:         s.id,
+      companyId:  s.company_id,
+      name:       s.name,
+      contractor: s.contractor || '',
+      address:    s.address   || '',
+      phone:      s.phone     || '',
+      price_type: s.price_type || '',
+      site_price: s.site_price || 0,
+    }));
+  } else {
+    try {
+      const sitesKey = 'workSites_' + (user.company || 'global');
+      const saved = localStorage.getItem(sitesKey);
+      DATA.workSites = saved ? JSON.parse(saved) : [];
+    } catch(e) { DATA.workSites = []; }
+  }
+  // טען שיוך פועל-אתר — מה-API (site_id כבר ב-users) ו-localStorage כ-fallback
   try {
     const assignKey = 'workerSites_' + (user.company || 'global');
     const savedAssign = localStorage.getItem(assignKey);
     const assignMap = savedAssign ? JSON.parse(savedAssign) : {};
-    DATA.users.forEach(u => { if (assignMap[u.id] !== undefined) u.siteId = assignMap[u.id]; });
+    DATA.users.forEach(u => {
+      if (u.siteId == null && assignMap[u.id] !== undefined) u.siteId = assignMap[u.id];
+    });
   } catch(e) {}
   // טען היסטוריית שיוכים
   try {
@@ -2334,13 +2350,21 @@ function _saveWorkerSitesLocal(companyId) {
 async function sbCreateWorkSite(payload) {
   try {
     const data = await apiFetch('/work-sites', 'POST', payload);
-    DATA.workSites.push(data);
+    const mapped = {
+      id: data.id, companyId: data.company_id || payload.companyId,
+      name: data.name, contractor: data.contractor || '',
+      address: data.address || '', phone: data.phone || '',
+      price_type: data.price_type || '', site_price: data.site_price || 0,
+    };
+    DATA.workSites.push(mapped);
+    _saveWorkSitesLocal(mapped.companyId);
+    return { ok:true, data: mapped };
   } catch(e) {
     const site = { ...payload, id: Date.now() };
     DATA.workSites.push(site);
+    _saveWorkSitesLocal(payload.companyId);
+    return { ok:true, data: site };
   }
-  _saveWorkSitesLocal(payload.companyId);
-  return { ok:true };
 }
 async function sbUpdateWorkSite(id, updates) {
   try {
