@@ -2387,10 +2387,16 @@ async function sbDeleteWorkSite(id) {
   return { ok:true };
 }
 async function sbAssignWorkerSite(workerId, siteId) {
-  try { await apiFetch('/users', 'PATCH', { id: workerId, site_id: siteId }); } catch(e) {}
+  try {
+    await apiFetch('/users', 'PATCH', { id: workerId, site_id: siteId });
+  } catch(e) {
+    console.error('sbAssignWorkerSite error:', e);
+    showToast('❌ שגיאה בשמירת שיוך', 'error');
+    return { ok: false };
+  }
   const u = DATA.users.find(u => u.id === workerId);
   if (u) { u.siteId = siteId; _saveWorkerSitesLocal(u.company); }
-  return { ok:true };
+  return { ok: true };
 }
 
 // ── Notes ──────────────────────────────────────────────────────
