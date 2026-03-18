@@ -2347,14 +2347,22 @@ function _saveWorkerSitesLocal(companyId) {
 }
 async function sbCreateWorkSite(payload) {
   try {
-    const data = await apiFetch('/work-sites', 'POST', payload);
-    DATA.workSites.push(data);
+    const raw = await apiFetch('/work-sites', 'POST', payload);
+    const mapped = {
+      id: raw.id, companyId: raw.company_id || payload.companyId,
+      name: raw.name, contractor: raw.contractor || '',
+      address: raw.address || '', phone: raw.phone || '',
+      price_type: raw.price_type || '', site_price: raw.site_price || 0,
+    };
+    DATA.workSites.push(mapped);
+    _saveWorkSitesLocal(mapped.companyId);
+    return { ok: true, data: mapped };
   } catch(e) {
     const site = { ...payload, id: Date.now() };
     DATA.workSites.push(site);
+    _saveWorkSitesLocal(payload.companyId);
+    return { ok: true, data: site };
   }
-  _saveWorkSitesLocal(payload.companyId);
-  return { ok:true };
 }
 async function sbUpdateWorkSite(id, updates) {
   try {
@@ -7172,7 +7180,10 @@ function renderWorkSites() {
             ${cSites[0]?.contractorNotes ? `<div style="font-size:11px;color:var(--text2);margin-top:2px;">${cSites[0].contractorNotes}</div>` : ''}
           </div>
         </div>
-        <button onclick="openEditContractorModal('${contractor.replace(/'/g,"\'")}')" style="background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:5px 14px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:500;color:#1d1d1f;transition:all 0.15s;white-space:nowrap;flex-shrink:0;" onmouseover="this.style.background='#1d1d1f';this.style.color='#fff';this.style.borderColor='#1d1d1f'" onmouseout="this.style.background='transparent';this.style.color='#1d1d1f';this.style.borderColor='#d2d2d7'">✏️ ערוך קבלן</button>
+        <div style="display:flex;gap:8px;flex-shrink:0;">
+          <button onclick="openEditContractorModal('${contractor.replace(/'/g,"\'")}')" style="background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:5px 14px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:500;color:#1d1d1f;transition:all 0.15s;white-space:nowrap;" onmouseover="this.style.background='#1d1d1f';this.style.color='#fff';this.style.borderColor='#1d1d1f'" onmouseout="this.style.background='transparent';this.style.color='#1d1d1f';this.style.borderColor='#d2d2d7'">✏️ ערוך קבלן</button>
+          <button onclick="deleteContractor('${contractor.replace(/'/g,"\'")}')" style="background:transparent;border:1.5px solid #ff3b30;border-radius:980px;padding:5px 14px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:500;color:#ff3b30;transition:all 0.15s;white-space:nowrap;" onmouseover="this.style.background='#ff3b30';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#ff3b30'">🗑️ מחק קבלן</button>
+        </div>
       </div>
       ${cSites.map(site => {
         const siteWorkers = workers.filter(w => w.siteId === site.id);
@@ -7407,10 +7418,10 @@ async function saveAddContractor() {
   if (DATA.workSites.some(s => s.companyId === company && s.contractor === name)) {
     showToast('קבלן בשם זה כבר קיים', 'error'); return;
   }
-  // הוסף אתר ריא עם שם הקבלן (placeholder)
+  // הוסף אתר ראשון עם שם הקבלן
   const payload = { name: `אתר ראשון של ${name}`, contractor: name, companyId: company, company_id: company, address: '', phone: '' };
   const res = await sbCreateWorkSite(payload);
-  if (res.ok && res.data) DATA.workSites.push(res.data);
+  // sbCreateWorkSite כבר מוסיף ל-DATA.workSites — אין push נוסף
   showToast(`✅ הקבלן "${name}" נוסף`);
   closeModal();
   renderWorkSites();
@@ -7520,12 +7531,50 @@ async function saveSite(siteId) {
 async function deleteSite(siteId) {
   const site = DATA.workSites.find(s=>s.id===siteId);
   if (!site) return;
+  const company = currentUser.company;
+  const contractorSites = DATA.workSites.filter(s => s.companyId === company && s.contractor === site.contractor);
   const workers = DATA.users.filter(u=>u.siteId===siteId);
+
+  // אם זה האתר האחרון של הקבלן — הצע למחוק את הקבלן כולו או רק את האתר
+  if (contractorSites.length === 1 && site.contractor) {
+    const workerMsg = workers.length ? ` (${workers.length} פועלים ישוחררו)` : '';
+    showModal(`
+      <div style="padding:22px;max-width:340px;width:100%;text-align:center;">
+        <div style="font-size:32px;margin-bottom:10px;">⚠️</div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:8px;">האתר האחרון של הקבלן</div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:20px;">
+          "<strong>${site.name}</strong>" הוא האתר האחרון של קבלן <strong>${site.contractor}</strong>${workerMsg}.<br>מה ברצונך לעשות?
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <button onclick="closeModal();_doDeleteSite(${siteId},false)"
+            style="background:transparent;border:1.5px solid #ff3b30;border-radius:980px;padding:10px;font-size:13px;color:#ff3b30;cursor:pointer;font-family:inherit;font-weight:600;">
+            🗑️ מחק רק את האתר (שמור קבלן)
+          </button>
+          <button onclick="closeModal();deleteContractor('${site.contractor.replace(/'/g, "\'")}')"
+            style="background:#ff3b30;border:none;border-radius:980px;padding:10px;font-size:13px;color:#fff;cursor:pointer;font-family:inherit;font-weight:600;">
+            🗑️ מחק גם את הקבלן
+          </button>
+          <button onclick="closeModal()"
+            style="background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:10px;font-size:13px;color:#1d1d1f;cursor:pointer;font-family:inherit;">
+            ביטול
+          </button>
+        </div>
+      </div>
+    `);
+    return;
+  }
+
   const msg = workers.length
     ? `מחיקת "${site.name}" תסיר שיוך מ-${workers.length} פועלים. להמשיך?`
     : `למחוק את "${site.name}"?`;
   if (!confirm(msg)) return;
-  // הסר שיוך מפועלים
+  await _doDeleteSite(siteId, false);
+}
+
+async function _doDeleteSite(siteId, skipConfirm) {
+  const site = DATA.workSites.find(s=>s.id===siteId);
+  if (!site) return;
+  const workers = DATA.users.filter(u=>u.siteId===siteId);
   for (const w of workers) await sbAssignWorkerSite(w.id, null);
   await sbDeleteWorkSite(siteId);
   showToast('🗑️ האתר נמחק');
