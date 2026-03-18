@@ -2301,7 +2301,11 @@ async function sbUpdateRequest(id, updates) {
 }
 
 async function sbDeleteRequest(id) {
-  await apiFetch('/requests', 'DELETE', { id });
+  try {
+    await apiFetch('/requests', 'DELETE', { id });
+  } catch(e) {
+    console.warn('sbDeleteRequest API error:', e);
+  }
   const idx = DATA.requests.findIndex(r => r.id === id);
   if (idx !== -1) DATA.requests.splice(idx, 1);
   return { ok: true };
