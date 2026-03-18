@@ -3,8 +3,8 @@ import { supabase } from '@/lib/supabase'
 import { ok, err, requireAuth } from '@/lib/api'
 import { hashPassword } from '@/lib/auth'
 
-const SAFE_COLS = 'id,username,name,role,company_id,avatar,avatar_color,id_type,id_number,ceo_interface,field_worker'
-const COLS_WITH_PASS = 'id,username,name,role,company_id,avatar,avatar_color,id_type,id_number,ceo_interface,field_worker,password_plain'
+const SAFE_COLS = 'id,username,name,role,company_id,avatar,avatar_color,id_type,id_number,ceo_interface,field_worker,site_id'
+const COLS_WITH_PASS = 'id,username,name,role,company_id,avatar,avatar_color,id_type,id_number,ceo_interface,field_worker,site_id,password_plain'
 
 export async function GET(req: NextRequest) {
   const session = requireAuth(req)
@@ -13,17 +13,15 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const companyId = searchParams.get('company_id')
 
-  // employee עם ceo_interface או field_worker גם מקבל password_plain
   let useCols = SAFE_COLS
   if (['admin','ceo'].includes(session.role)) {
     useCols = COLS_WITH_PASS
   } else if (session.role === 'employee') {
-    // בדוק אם הוא עובד מורחב או שטח
     const { data: me } = await supabase.from('users').select('ceo_interface,field_worker').eq('id', session.id).single()
     if (me?.ceo_interface || me?.field_worker) useCols = COLS_WITH_PASS
   }
-  const cols = useCols
-  let q = supabase.from('users').select(cols).order('name')
+
+  let q = supabase.from('users').select(useCols).order('name')
 
   if (session.role === 'admin') {
     if (companyId) q = q.eq('company_id', companyId)
@@ -46,7 +44,6 @@ export async function POST(req: NextRequest) {
   const body = await req.json()
   if (!body.username || !body.password || !body.name) return err('חסרים שדות חובה')
 
-  // בדוק אם שם משתמש קיים
   const { data: exists } = await supabase.from('users')
     .select('id').eq('username', body.username).single()
   if (exists) return err('שם משתמש כבר קיים')
@@ -56,18 +53,19 @@ export async function POST(req: NextRequest) {
   const avatars: Record<string,string> = { ceo:'🏢', employee:'💼', worker:'🔧' }
 
   const { data, error } = await supabase.from('users').insert({
-    username:     body.username,
+    username:      body.username,
     password_hash: hash,
     password_plain: body.password,
-    name:         body.name,
-    role:         body.role || 'worker',
-    company_id:   body.company_id || session.company,
-    avatar:       body.avatar       || avatars[body.role] || '💼',
-    avatar_color: body.avatar_color || colors[body.role]  || '#60a5fa',
-    id_type:      body.id_type   || 'id',
-    id_number:    body.id_number || null,
+    name:          body.name,
+    role:          body.role || 'worker',
+    company_id:    body.company_id || session.company,
+    avatar:        body.avatar       || avatars[body.role] || '💼',
+    avatar_color:  body.avatar_color || colors[body.role]  || '#60a5fa',
+    id_type:       body.id_type   || 'id',
+    id_number:     body.id_number || null,
     ceo_interface: false,
     field_worker:  false,
+    site_id:       body.site_id || null,
   }).select(COLS_WITH_PASS).single()
 
   if (error) return err(error.message, 500)
@@ -82,7 +80,6 @@ export async function PATCH(req: NextRequest) {
   const { id, ...updates } = body
   if (!id) return err('Missing id')
 
-  // הגנה: עובד/פועל יכול לעדכן רק את עצמו, ורק סיסמה
   if (session.role === 'worker' && id !== session.id) return err('Forbidden', 403)
 
   const allowed: Record<string,unknown> = {}
@@ -96,7 +93,11 @@ export async function PATCH(req: NextRequest) {
   if (updates.avatar_color  !== undefined) allowed.avatar_color  = updates.avatar_color
   if (updates.ceo_interface !== undefined) allowed.ceo_interface = updates.ceo_interface
   if (updates.field_worker  !== undefined) allowed.field_worker  = updates.field_worker
-  if (updates.password !== undefined) { allowed.password_hash = await hashPassword(updates.password); allowed.password_plain = updates.password; }
+  if (updates.site_id       !== undefined) allowed.site_id       = updates.site_id   // ← שיוך אתר
+  if (updates.password !== undefined) {
+    allowed.password_hash  = await hashPassword(updates.password)
+    allowed.password_plain = updates.password
+  }
 
   const { data, error } = await supabase.from('users').update(allowed).eq('id', id).select(SAFE_COLS).single()
   if (error) return err(error.message, 500)
@@ -109,7 +110,6 @@ export async function DELETE(req: NextRequest) {
   if (!['admin','ceo','employee'].includes(session.role)) return err('Forbidden', 403)
 
   const { id } = await req.json()
-  // ceo יכול למחוק רק ממחברה שלו
   if (session.role !== 'admin') {
     const { data: u } = await supabase.from('users').select('company_id').eq('id', id).single()
     if (u?.company_id !== session.company) return err('Forbidden', 403)
