@@ -2032,7 +2032,7 @@ async function loadAndInjectData(user) {
   const isWorker   = user.role === 'worker';
 
   // טען במקביל — הרבה יותר מהיר
-  const [companies, users, tasks, requests, notesData, workSitesRaw] = await Promise.all([
+  const [companies, users, tasks, requests, notesData, workSitesRaw, historyRaw] = await Promise.all([
     apiFetch('/companies'),
     apiFetch('/users'),
     apiFetch('/tasks'),
@@ -2040,6 +2040,7 @@ async function loadAndInjectData(user) {
     // טען הערות לפי user_id — ייחודי לכל משתמש
     apiFetch('/notes?note_type=user_' + (user.id || 'anon')).catch(() => ({ content: '' })),
     apiFetch('/work-sites').catch(() => []),
+    apiFetch('/worker-site-history').catch(() => []),
   ]);
 
   // שעות — רק אם יש פועלים
@@ -2099,12 +2100,24 @@ async function loadAndInjectData(user) {
     const assignMap = savedAssign ? JSON.parse(savedAssign) : {};
     DATA.users.forEach(u => { if (u.siteId == null && assignMap[u.id] !== undefined) u.siteId = assignMap[u.id]; });
   } catch(e) {}
-  // טען היסטוריית שיוכים
-  try {
-    const histKey = 'workerSiteHistory_' + (user.company || 'global');
-    const savedHist = localStorage.getItem(histKey);
-    DATA.workerSiteHistory = savedHist ? JSON.parse(savedHist) : [];
-  } catch(e) { DATA.workerSiteHistory = []; }
+  // טען היסטוריית שיוכים מה-API
+  if (historyRaw && historyRaw.length > 0) {
+    DATA.workerSiteHistory = historyRaw.map(h => ({
+      id:         h.id,
+      workerId:   h.worker_id,
+      siteId:     h.site_id,
+      siteName:   h.site_name  || '',
+      contractor: h.contractor || '',
+      fromDate:   h.from_date  || null,
+      toDate:     h.to_date    || null,
+    }));
+  } else {
+    try {
+      const histKey = 'workerSiteHistory_' + (user.company || 'global');
+      const savedHist = localStorage.getItem(histKey);
+      DATA.workerSiteHistory = savedHist ? JSON.parse(savedHist) : [];
+    } catch(e) { DATA.workerSiteHistory = []; }
+  }
   // הערות — נטען לפי role כדי להפריד ceo מ-emp (עובד עם ממשק מורחב)
   if (notesData?.content) {
     // שמור תחת user-id כדי ש-renderNotes ימצא אותן
@@ -7804,23 +7817,29 @@ async function confirmBulkAssignToSite(siteId) {
   })();
 
   closeModal();
+  const site = DATA.workSites.find(s=>s.id===siteId);
 
   for (const workerId of selectedIds) {
-    DATA.workerSiteHistory
-      .filter(h => h.workerId === workerId && !h.toDate)
-      .forEach(h => { h.toDate = yesterday; });
-    const site = DATA.workSites.find(s=>s.id===siteId);
-    DATA.workerSiteHistory.push({
-      workerId, siteId,
-      siteName: site?.name || '', contractor: site?.contractor || '',
-      fromDate, toDate: null,
-    });
-    const worker = DATA.users.find(u=>u.id===workerId);
-    if (worker) { worker.siteId = siteId; _saveWorkerSiteHistoryLocal(worker.company); }
+    // סגור רשומות פתוחות ב-API
+    const openEntries = DATA.workerSiteHistory.filter(h => h.workerId === workerId && !h.toDate);
+    for (const h of openEntries) {
+      h.toDate = yesterday;
+      if (h.id) await apiFetch('/worker-site-history', 'PATCH', { id: h.id, to_date: yesterday }).catch(()=>{});
+    }
+    // הוסף רשומה חדשה ב-API
+    try {
+      const rec = await apiFetch('/worker-site-history', 'POST', {
+        worker_id: workerId, site_id: siteId,
+        site_name: site?.name || '', contractor: site?.contractor || '',
+        from_date: fromDate, to_date: null,
+      });
+      DATA.workerSiteHistory.push({ id: rec.id, workerId, siteId, siteName: site?.name||'', contractor: site?.contractor||'', fromDate, toDate: null });
+    } catch(e) {
+      DATA.workerSiteHistory.push({ workerId, siteId, siteName: site?.name||'', contractor: site?.contractor||'', fromDate, toDate: null });
+    }
     await sbAssignWorkerSite(workerId, siteId);
   }
 
-  const site = DATA.workSites.find(s=>s.id===siteId);
   showToast(`✅ ${selectedIds.length} פועלים שויכו ל${site?.name || 'האתר'}`);
   if (currentPage==='ceo-sites') renderWorkSites();
   if (currentPage==='ceo-workers') renderCeoWorkersGrid(false);
@@ -7855,26 +7874,37 @@ async function _confirmAssignWorker(workerId, siteId, dateInputId) {
   const fromDate = dateInputId ? (document.getElementById(dateInputId) ? document.getElementById(dateInputId).value : null) : null;
   if (siteId && !fromDate) { showToast('יש לבחור תאריך התחלה', 'error'); return; }
 
-  // סגור את הרשומה הפעילה הקודמת בהיסטוריה
   const yesterday = fromDate ? (() => {
     const d = new Date(fromDate); d.setDate(d.getDate() - 1);
     return d.toISOString().split('T')[0];
   })() : new Date().toISOString().split('T')[0];
-  DATA.workerSiteHistory
-    .filter(h => h.workerId === workerId && !h.toDate)
-    .forEach(h => { h.toDate = yesterday; });
 
-  // הוסף רשומה חדשה
+  // סגור רשומות פתוחות ב-API
+  const openEntries = DATA.workerSiteHistory.filter(h => h.workerId === workerId && !h.toDate);
+  for (const h of openEntries) {
+    h.toDate = yesterday;
+    if (h.id) await apiFetch('/worker-site-history', 'PATCH', { id: h.id, to_date: yesterday }).catch(()=>{});
+  }
+
+  // הוסף רשומה חדשה ב-API
   if (siteId && fromDate) {
     const site = DATA.workSites.find(s=>s.id===siteId);
-    DATA.workerSiteHistory.push({
-      workerId: workerId, siteId: siteId,
-      siteName: site ? site.name : '', contractor: site ? (site.contractor||'') : '',
-      fromDate: fromDate, toDate: null,
-    });
+    try {
+      const rec = await apiFetch('/worker-site-history', 'POST', {
+        worker_id: workerId, site_id: siteId,
+        site_name: site?.name || '', contractor: site?.contractor || '',
+        from_date: fromDate, to_date: null,
+      });
+      DATA.workerSiteHistory.push({
+        id: rec.id, workerId, siteId,
+        siteName: site?.name || '', contractor: site?.contractor || '',
+        fromDate, toDate: null,
+      });
+    } catch(e) {
+      // fallback local
+      DATA.workerSiteHistory.push({ workerId, siteId, siteName: site?.name||'', contractor: site?.contractor||'', fromDate, toDate: null });
+    }
   }
-  const worker = DATA.users.find(u=>u.id===workerId);
-  if (worker) _saveWorkerSiteHistoryLocal(worker.company);
 
   await sbAssignWorkerSite(workerId, siteId);
   const site = siteId ? DATA.workSites.find(s=>s.id===siteId) : null;
@@ -7911,7 +7941,7 @@ function openWorkerSiteHistory(workerId) {
       ${!history.length ? `<div style="text-align:center;padding:24px;color:var(--text3);font-size:13px;">אין היסטוריית שיוכים</div>` : `
       <div style="display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;">
         ${history.slice().reverse().map((h,i) => `
-          <div style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;background:${!h.toMonth?'#f0f7ff':'var(--bg3)'};">
+          <div style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;background:${!h.toDate?'#f0f7ff':'var(--bg3)'};">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
               <div style="flex:1;">
                 <div style="font-weight:700;font-size:13px;">📍 ${h.siteName}</div>
@@ -7989,24 +8019,31 @@ async function saveAddHistoryEntry(workerId) {
   if (!site) { showToast('בחר אתר עבודה', 'error'); return; }
   if (!fromDate) { showToast('יש להזין תאריך התחלה', 'error'); return; }
 
-  // סגור את הרשומה הפעילה הקודמת
   const yesterday = (() => {
     const d = new Date(fromDate); d.setDate(d.getDate() - 1);
     return d.toISOString().split('T')[0];
   })();
-  DATA.workerSiteHistory
-    .filter(h => h.workerId === workerId && !h.toDate)
-    .forEach(h => { h.toDate = yesterday; });
 
-  // הוסף רשומה חדשה
-  DATA.workerSiteHistory.push({ workerId, siteId: site.id, siteName: site.name, contractor: site.contractor||'', fromDate, toDate: null });
+  // סגור רשומות פתוחות ב-API
+  const openEntries = DATA.workerSiteHistory.filter(h => h.workerId === workerId && !h.toDate);
+  for (const h of openEntries) {
+    h.toDate = yesterday;
+    if (h.id) await apiFetch('/worker-site-history', 'PATCH', { id: h.id, to_date: yesterday }).catch(()=>{});
+  }
 
-  const worker = DATA.users.find(u=>u.id===workerId);
-  if (worker) _saveWorkerSiteHistoryLocal(worker.company);
+  // הוסף ב-API
+  try {
+    const rec = await apiFetch('/worker-site-history', 'POST', {
+      worker_id: workerId, site_id: site.id,
+      site_name: site.name, contractor: site.contractor||'',
+      from_date: fromDate, to_date: null,
+    });
+    DATA.workerSiteHistory.push({ id: rec.id, workerId, siteId: site.id, siteName: site.name, contractor: site.contractor||'', fromDate, toDate: null });
+  } catch(e) {
+    DATA.workerSiteHistory.push({ workerId, siteId: site.id, siteName: site.name, contractor: site.contractor||'', fromDate, toDate: null });
+  }
 
-  // עדכן siteId של הפועל
   await sbAssignWorkerSite(workerId, site.id);
-
   showToast('✅ תקופה נוספה והפועל שויך לאתר');
   openWorkerSiteHistory(workerId);
   if (currentPage==='ceo-sites') renderWorkSites();
@@ -8035,26 +8072,46 @@ function editHistoryEntry(workerId, idx) {
   `);
 }
 
-function saveEditHistoryEntry(workerId, idx) {
+async function saveEditHistoryEntry(workerId, idx) {
   const allEntries = DATA.workerSiteHistory.filter(h=>h.workerId===workerId);
   const entry = allEntries[idx];
   if (!entry) return;
-  entry.fromDate = document.getElementById('hist-edit-from')?.value || null;
-  entry.fromMonth = null; // נקה שדה ישן
-  const worker = DATA.users.find(u=>u.id===workerId);
-  if (worker) _saveWorkerSiteHistoryLocal(worker.company);
+  const newFromDate = document.getElementById('hist-edit-from')?.value || null;
+  entry.fromDate = newFromDate;
+  entry.fromMonth = null;
+  if (entry.id) {
+    await apiFetch('/worker-site-history', 'PATCH', { id: entry.id, from_date: newFromDate }).catch(()=>{});
+  }
   showToast('✅ התקופה עודכנה');
   openWorkerSiteHistory(workerId);
 }
 
-function deleteHistoryEntry(workerId, idx) {
+async function deleteHistoryEntry(workerId, idx) {
   const allEntries = DATA.workerSiteHistory.filter(h=>h.workerId===workerId);
   const entry = allEntries[idx];
-  if (!entry || !confirm(`למחוק את התקופה ב${entry.siteName}?`)) return;
+  if (!entry) return;
+  showModal(`
+    <div style="padding:22px;max-width:320px;width:100%;text-align:center;">
+      <div style="font-size:32px;margin-bottom:10px;">🗑️</div>
+      <div style="font-size:15px;font-weight:700;margin-bottom:8px;">מחיקת תקופה</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:20px;">למחוק את התקופה ב<strong>${entry.siteName}</strong>?</div>
+      <div style="display:flex;gap:10px;">
+        <button onclick="closeModal()" style="flex:1;background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:10px;font-size:14px;color:#1d1d1f;cursor:pointer;font-family:inherit;">ביטול</button>
+        <button onclick="closeModal();_doDeleteHistoryEntry(${workerId},${idx})" style="flex:1;background:#ff3b30;border:none;border-radius:980px;padding:10px;font-size:14px;color:#fff;cursor:pointer;font-family:inherit;font-weight:600;">🗑️ מחק</button>
+      </div>
+    </div>
+  `);
+}
+
+async function _doDeleteHistoryEntry(workerId, idx) {
+  const allEntries = DATA.workerSiteHistory.filter(h=>h.workerId===workerId);
+  const entry = allEntries[idx];
+  if (!entry) return;
+  if (entry.id) {
+    await apiFetch('/worker-site-history', 'DELETE', { id: entry.id }).catch(()=>{});
+  }
   const globalIdx = DATA.workerSiteHistory.indexOf(entry);
   if (globalIdx !== -1) DATA.workerSiteHistory.splice(globalIdx, 1);
-  const worker = DATA.users.find(u=>u.id===workerId);
-  if (worker) _saveWorkerSiteHistoryLocal(worker.company);
   showToast('🗑️ התקופה נמחקה');
   openWorkerSiteHistory(workerId);
 }
@@ -8125,15 +8182,24 @@ async function _confirmBulkAssign(siteId) {
   if (!fromDate) { showToast('יש לבחור תאריך התחלה', 'error'); return; }
   const site = DATA.workSites.find(s=>s.id===siteId);
   const ids = [..._bulkSelected];
-  for (const id of ids) {
-    await sbAssignWorkerSite(id, siteId);
-    DATA.workerSiteHistory.push({
-      workerId: id, siteId: siteId,
-      siteName: site ? site.name : '', contractor: site ? (site.contractor||'') : '',
-      fromDate: fromDate, toDate: null,
-    });
-    const worker = DATA.users.find(u=>u.id===id);
-    if (worker) _saveWorkerSiteHistoryLocal(worker.company);
+  const yesterday = (() => { const d = new Date(fromDate); d.setDate(d.getDate()-1); return d.toISOString().split('T')[0]; })();
+  for (const workerId of ids) {
+    const openEntries = DATA.workerSiteHistory.filter(h => h.workerId === workerId && !h.toDate);
+    for (const h of openEntries) {
+      h.toDate = yesterday;
+      if (h.id) await apiFetch('/worker-site-history', 'PATCH', { id: h.id, to_date: yesterday }).catch(()=>{});
+    }
+    try {
+      const rec = await apiFetch('/worker-site-history', 'POST', {
+        worker_id: workerId, site_id: siteId,
+        site_name: site?.name||'', contractor: site?.contractor||'',
+        from_date: fromDate, to_date: null,
+      });
+      DATA.workerSiteHistory.push({ id: rec.id, workerId, siteId, siteName: site?.name||'', contractor: site?.contractor||'', fromDate, toDate: null });
+    } catch(e) {
+      DATA.workerSiteHistory.push({ workerId, siteId, siteName: site?.name||'', contractor: site?.contractor||'', fromDate, toDate: null });
+    }
+    await sbAssignWorkerSite(workerId, siteId);
   }
   clearBulkSelection();
   closeModal();
