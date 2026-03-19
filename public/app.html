@@ -2664,10 +2664,12 @@ function login(user) {
 
   buildNav();
   routeToRole();
+  startDataPolling();
 }
 
 function logout() {
   sbDoLogout();
+  stopDataPolling();
   currentUser = null;
   history.replaceState(null, '', window.location.pathname); // נקה hash
   document.getElementById('app').style.display = 'none';
@@ -2675,6 +2677,66 @@ function logout() {
   document.getElementById('loginUser').value = '';
   document.getElementById('loginPass').value = '';
   closeSidebar();
+}
+
+// ── Polling — רענון נתונים אוטומטי כל 30 שניות ──
+let _pollingTimer = null;
+
+function startDataPolling() {
+  stopDataPolling();
+  _pollingTimer = setInterval(refreshLiveData, 30000);
+}
+
+function stopDataPolling() {
+  if (_pollingTimer) { clearInterval(_pollingTimer); _pollingTimer = null; }
+}
+
+async function refreshLiveData() {
+  if (!currentUser) return;
+  try {
+    // רענן users (כולל site_id) והיסטוריית שיוכים
+    const [usersRaw, historyRaw] = await Promise.all([
+      apiFetch('/users').catch(() => null),
+      apiFetch('/worker-site-history').catch(() => null),
+    ]);
+
+    let changed = false;
+
+    if (usersRaw) {
+      // עדכן site_id לכל פועל
+      usersRaw.forEach(raw => {
+        const u = DATA.users.find(u => u.id === raw.id);
+        if (u && u.siteId !== (raw.site_id || null)) {
+          u.siteId = raw.site_id || null;
+          changed = true;
+        }
+      });
+    }
+
+    if (historyRaw) {
+      const newHistory = historyRaw.map(h => ({
+        id:         h.id,
+        workerId:   h.worker_id,
+        siteId:     h.site_id,
+        siteName:   h.site_name  || '',
+        contractor: h.contractor || '',
+        fromDate:   h.from_date  || null,
+        toDate:     h.to_date    || null,
+      }));
+      // בדוק אם יש שינוי לפני render
+      if (JSON.stringify(newHistory) !== JSON.stringify(DATA.workerSiteHistory)) {
+        DATA.workerSiteHistory = newHistory;
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      if (currentPage === 'ceo-sites')    renderWorkSites();
+      if (currentPage === 'ceo-workers')  renderCeoWorkersGrid(false);
+    }
+  } catch(e) {
+    // polling שקט — לא מציג שגיאה
+  }
 }
 
 // ═══════════════════════════════════════════
@@ -7820,6 +7882,10 @@ async function confirmBulkAssignToSite(siteId) {
   const site = DATA.workSites.find(s=>s.id===siteId);
 
   for (const workerId of selectedIds) {
+    // עדכן DATA.users.siteId מיד — לפני ה-render
+    const u = DATA.users.find(u => u.id === workerId);
+    if (u) u.siteId = siteId;
+
     // סגור רשומות פתוחות ב-API
     const openEntries = DATA.workerSiteHistory.filter(h => h.workerId === workerId && !h.toDate);
     for (const h of openEntries) {
@@ -7837,7 +7903,10 @@ async function confirmBulkAssignToSite(siteId) {
     } catch(e) {
       DATA.workerSiteHistory.push({ workerId, siteId, siteName: site?.name||'', contractor: site?.contractor||'', fromDate, toDate: null });
     }
-    await sbAssignWorkerSite(workerId, siteId);
+    // שמור ב-API (site_id בטבלת users)
+    await apiFetch('/users', 'PATCH', { id: workerId, site_id: siteId }).catch(e => {
+      console.error('assign site_id error:', e);
+    });
   }
 
   showToast(`✅ ${selectedIds.length} פועלים שויכו ל${site?.name || 'האתר'}`);
@@ -7906,7 +7975,12 @@ async function _confirmAssignWorker(workerId, siteId, dateInputId) {
     }
   }
 
-  await sbAssignWorkerSite(workerId, siteId);
+  // עדכן DATA.users.siteId מיד לפני render
+  const _assignU = DATA.users.find(u => u.id === workerId);
+  if (_assignU) _assignU.siteId = siteId;
+  // שמור ב-API
+  await apiFetch('/users', 'PATCH', { id: workerId, site_id: siteId }).catch(e => console.error('assign error:', e));
+
   const site = siteId ? DATA.workSites.find(s=>s.id===siteId) : null;
   showToast(site ? ('✅ שויך ל' + site.name) : '✅ שיוך הוסר');
   closeModal();
