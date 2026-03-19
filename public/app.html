@@ -2101,14 +2101,16 @@ async function loadAndInjectData(user) {
   // טען אתרי עבודה מה-API (עם fallback ל-localStorage)
   if (workSitesRaw && workSitesRaw.length > 0) {
     DATA.workSites = workSitesRaw.map(s => ({
-      id:         s.id,
-      companyId:  s.company_id,
-      name:       s.name,
-      contractor: s.contractor || '',
-      address:    s.address    || '',
-      phone:      s.phone      || '',
-      price_type: s.price_type || '',
-      site_price: s.site_price || 0,
+      id:                  s.id,
+      companyId:           s.company_id,
+      name:                s.name,
+      contractor:          s.contractor           || '',
+      address:             s.address              || '',
+      phone:               s.phone                || '',
+      price_type:          s.price_type           || '',
+      site_price:          s.site_price           || 0,
+      contractorPriceType: s.contractor_price_type || '',
+      contractorPrice:     s.contractor_price      || 0,
     }));
   } else {
     try {
@@ -2386,10 +2388,16 @@ async function sbCreateWorkSite(payload) {
   try {
     const raw = await apiFetch('/work-sites', 'POST', payload);
     const mapped = {
-      id: raw.id, companyId: raw.company_id || payload.companyId,
-      name: raw.name, contractor: raw.contractor || '',
-      address: raw.address || '', phone: raw.phone || '',
-      price_type: raw.price_type || '', site_price: raw.site_price || 0,
+      id:                  raw.id,
+      companyId:           raw.company_id           || payload.companyId,
+      name:                raw.name,
+      contractor:          raw.contractor            || '',
+      address:             raw.address               || '',
+      phone:               raw.phone                 || '',
+      price_type:          raw.price_type            || '',
+      site_price:          raw.site_price            || 0,
+      contractorPriceType: raw.contractor_price_type || '',
+      contractorPrice:     raw.contractor_price       || 0,
     };
     DATA.workSites.push(mapped);
     _saveWorkSitesLocal(mapped.companyId);
