@@ -2734,6 +2734,18 @@ async function refreshLiveData() {
       if (currentPage === 'ceo-sites')    renderWorkSites();
       if (currentPage === 'ceo-workers')  renderCeoWorkersGrid(false);
     }
+
+    // רענן יומן בשקט
+    if (currentPage === 'ceo-calendar' || currentPage === 'emp-calendar' || currentPage === 'admin-calendar') {
+      const calRole = calState.role;
+      if (calRole) {
+        const freshEvents = await calLoadFromAPI(calRole);
+        if (JSON.stringify(freshEvents) !== JSON.stringify(calState.events)) {
+          calState.events = freshEvents;
+          renderCalendar(calRole);
+        }
+      }
+    }
   } catch(e) {
     // polling שקט — לא מציג שגיאה
   }
@@ -8593,6 +8605,7 @@ function calStorageKey(role) {
 }
 
 function calLoad(role) {
+  // fallback ל-localStorage בלבד — טעינה ראשונית מה-API דרך calLoadFromAPI
   try {
     const raw = localStorage.getItem(calStorageKey(role));
     return raw ? JSON.parse(raw) : [];
@@ -8600,7 +8613,32 @@ function calLoad(role) {
 }
 
 function calSave(role, events) {
+  // שמור גם localStorage כ-cache מקומי
   localStorage.setItem(calStorageKey(role), JSON.stringify(events));
+}
+
+async function calLoadFromAPI(role) {
+  try {
+    const data = await apiFetch('/calendar-events').catch(() => null);
+    if (!data) return calLoad(role); // fallback
+    // מפה מ-DB format → client format
+    const events = data.map(e => ({
+      id:         e.client_id || ('db_' + e.id),
+      _dbId:      e.id,
+      title:      e.title,
+      date:       e.event_date,
+      time:       e.event_time || '',
+      type:       e.type       || 'general',
+      color:      e.color      || 'blue',
+      status:     e.status     || 'pending',
+      repeat:     e.repeat     || '',
+      note:       e.note       || '',
+      visibility: e.visibility || 'private',
+      sharedWith: e.shared_with || [],
+    }));
+    calSave(role, events); // עדכן cache
+    return events;
+  } catch { return calLoad(role); }
 }
 
 function calGetTaskEvents(role) {
@@ -8622,9 +8660,9 @@ function calGetTaskEvents(role) {
     }));
 }
 
-function renderCalendar(role) {
+async function renderCalendar(role) {
   calState.role = role;
-  calState.events = calLoad(role);
+  calState.events = await calLoadFromAPI(role);
   const rootId = role === 'admin' ? 'cal-admin-root' : 'cal-ceo-root';
   const root = document.getElementById(rootId);
   if (!root) return;
@@ -8989,10 +9027,18 @@ function openCalEventModal(dateStr) {
       visibility,
       sharedWith,
     };
+    // שמור ב-API
+    try {
+      const saved = await apiFetch('/calendar-events', 'POST', {
+        id: ev.id, title: ev.title, date: ev.date, time: ev.time,
+        type: ev.type, color: ev.color, status: ev.status,
+        repeat: ev.repeat, note: ev.note,
+        visibility: ev.visibility, sharedWith: ev.sharedWith,
+      });
+      ev._dbId = saved.id; // שמור id מה-DB
+    } catch(e) { console.error('cal save error:', e); }
     calState.events.push(ev);
     calSave(calState.role, calState.events);
-    // שמור גם עבור עובדים ששותפו
-    if (visibility !== 'private') calShareEvent(ev);
     closeModal();
     renderCalendar(calState.role);
     showToast('✅ האירוע נוסף!');
@@ -9097,15 +9143,29 @@ function openCalEventEdit(eventId) {
       repeat: document.getElementById('cal-ed-repeat').value,
       note:   document.getElementById('cal-ed-note').value.trim(),
     });
+    // עדכן ב-API
+    if (ev._dbId) {
+      apiFetch('/calendar-events', 'PATCH', {
+        id: ev._dbId, title: ev.title, date: ev.date, time: ev.time,
+        type: ev.type, color: ev.color, status: ev.status,
+        repeat: ev.repeat, note: ev.note,
+      }).catch(e => console.error('cal update error:', e));
+    }
     calSave(calState.role, calState.events);
     closeModal();
     renderCalendar(calState.role);
     showToast('✅ האירוע עודכן!');
   };
   document.getElementById('cal-delete-btn').onclick = async () => {
-    // הסר מ-calState (אירועי לוח)
+    const evToDelete = calState.events.find(e => e.id === eventId);
     calState.events = calState.events.filter(e => e.id !== eventId);
     calSave(calState.role, calState.events);
+
+    // מחק מ-API
+    if (evToDelete?._dbId) {
+      apiFetch('/calendar-events', 'DELETE', { id: evToDelete._dbId })
+        .catch(e => console.error('cal delete error:', e));
+    }
 
     // אם האירוע הגיע ממשימה — מחק גם את המשימה עצמה
     if (String(eventId).startsWith('task_')) {
