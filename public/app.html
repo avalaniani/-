@@ -8499,29 +8499,14 @@ function openEmojiPicker(targetInputId) {
 // ═══════════════════════════════════════════════════════════════
 
 function calShareEvent(ev) {
-  // שמור אירוע משותף ב-localStorage עבור עובדים ששותפו
-  const company = currentUser?.company || '';
-  const sharedKey = `wfp_cal_shared_${company}`;
-  try {
-    const existing = JSON.parse(localStorage.getItem(sharedKey) || '[]');
-    const idx = existing.findIndex(e => e.id === ev.id);
-    if (idx >= 0) existing[idx] = ev; else existing.push(ev);
-    localStorage.setItem(sharedKey, JSON.stringify(existing));
-  } catch {}
+  // כעת השיתוף נשמר ב-API — אין צורך ב-localStorage
 }
 
 function calGetSharedEvents() {
-  // עובד/פועל — טען אירועים ששותפו איתו
-  const company = currentUser?.company || '';
-  const sharedKey = `wfp_cal_shared_${company}`;
-  try {
-    const all = JSON.parse(localStorage.getItem(sharedKey) || '[]');
-    return all.filter(ev => {
-      if (ev.visibility === 'all') return true;
-      if (ev.visibility === 'selected') return (ev.sharedWith || []).includes(String(currentUser?.id));
-      return false;
-    }).map(ev => ({ ...ev, fromShared: true }));
-  } catch { return []; }
+  // כעת האירועים המשותפים נטענים מה-API ישירות ל-calState.events
+  return calState.events
+    .filter(ev => ev.visibility && ev.visibility !== 'private')
+    .map(ev => ({ ...ev, fromShared: true }));
 }
 
 function fmtCalDate(dateStr) {
@@ -8998,7 +8983,7 @@ function openCalEventModal(dateStr) {
     };
   }
 
-  document.getElementById('cal-save-btn').onclick = () => {
+  document.getElementById('cal-save-btn').onclick = async () => {
     const title = document.getElementById('cal-ev-title').value.trim();
     if (!title) { showToast('❌ יש להזין כותרת', 'error'); return; }
 
