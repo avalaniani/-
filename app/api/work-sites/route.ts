@@ -52,13 +52,15 @@ export async function PATCH(req: NextRequest) {
   if (!id) return err('Missing id')
 
   const allowed: Record<string, unknown> = {}
-  if (updates.name        !== undefined) allowed.name        = updates.name
-  if (updates.contractor  !== undefined) allowed.contractor  = updates.contractor
-  if (updates.address     !== undefined) allowed.address     = updates.address
-  if (updates.phone       !== undefined) allowed.phone       = updates.phone
-  if (updates.price_type  !== undefined) allowed.price_type  = updates.price_type
-  if (updates.site_price  !== undefined) allowed.site_price  = updates.site_price
-  if (updates.companyId   !== undefined) allowed.company_id  = updates.companyId
+  if (updates.name                 !== undefined) allowed.name                 = updates.name
+  if (updates.contractor           !== undefined) allowed.contractor           = updates.contractor
+  if (updates.address              !== undefined) allowed.address              = updates.address
+  if (updates.phone                !== undefined) allowed.phone                = updates.phone
+  if (updates.price_type           !== undefined) allowed.price_type           = updates.price_type
+  if (updates.site_price           !== undefined) allowed.site_price           = updates.site_price
+  if (updates.contractor_price_type !== undefined) allowed.contractor_price_type = updates.contractor_price_type
+  if (updates.contractor_price     !== undefined) allowed.contractor_price     = updates.contractor_price
+  if (updates.companyId            !== undefined) allowed.company_id           = updates.companyId
 
   const { data, error } = await supabase.from('work_sites')
     .update(allowed).eq('id', id).select('*').single()
