@@ -7240,18 +7240,19 @@ function renderSitesHoursSummary() {
           const workedDays = s._workedDays ? s._workedDays.size : 0;
           const onclickAttr = `openSiteWorkersCostModal('${(contr+'||'+s.siteName).replace(/'/g,"\'")}')`;
           return `
-          <td style="padding:8px 4px;text-align:center;font-weight:700;color:var(--text);cursor:pointer;border-radius:6px;transition:background 0.15s;"
+          <td colspan="4" style="padding:5px 4px;text-align:center;cursor:pointer;"
             onclick="${onclickAttr}" onmouseover="this.style.background='#e8f0fb'" onmouseout="this.style.background=''"
-            title="לחץ לפירוט פועלים">${s.hours.toFixed(1)}</td>
-          <td style="padding:8px 4px;text-align:center;color:#0071e3;font-weight:600;cursor:pointer;border-radius:6px;transition:background 0.15s;"
-            onclick="${onclickAttr}" onmouseover="this.style.background='#e8f0fb'" onmouseout="this.style.background=''"
-            title="לחץ לפירוט פועלים">${s.cost != null ? '₪'+Math.round(s.cost).toLocaleString() : '—'}</td>
-          <td style="padding:8px 4px;text-align:center;color:#6c5ce7;font-weight:600;cursor:pointer;border-radius:6px;transition:background 0.15s;"
-            onclick="${onclickAttr}" onmouseover="this.style.background='#e8f0fb'" onmouseout="this.style.background=''"
-            title="לחץ לפירוט פועלים">${vatAmt != null ? '₪'+vatAmt.toLocaleString() : '—'}</td>
-          <td style="padding:8px 4px;text-align:center;color:#00b894;font-weight:700;cursor:pointer;border-radius:6px;transition:background 0.15s;"
-            onclick="${onclickAttr}" onmouseover="this.style.background='#e8f0fb'" onmouseout="this.style.background=''"
-            title="לחץ לפירוט פועלים">${total != null ? '₪'+total.toLocaleString() : '—'}</td>
+            title="לחץ לפירוט פועלים">
+            <div style="display:inline-flex;align-items:center;gap:7px;background:#f0f5ff;border:1.5px solid #b8cef0;border-radius:980px;padding:4px 14px;font-size:12px;font-weight:600;white-space:nowrap;">
+              <span style="color:var(--text);">${s.hours.toFixed(1)} ש'</span>
+              <span style="color:#d2d2d7;">|</span>
+              <span style="color:#0071e3;">${s.cost != null ? '₪'+Math.round(s.cost).toLocaleString() : '—'}</span>
+              <span style="color:#d2d2d7;">|</span>
+              <span style="color:#6c5ce7;">${vatAmt != null ? '₪'+vatAmt.toLocaleString() : '—'}</span>
+              <span style="color:#d2d2d7;">|</span>
+              <span style="color:#00b894;font-weight:700;">${total != null ? '₪'+total.toLocaleString() : '—'}</span>
+            </div>
+          </td>
           `;
         })()}
       </tr>`;
@@ -7329,7 +7330,11 @@ function openAllSitesCostModal(contrName) {
     html += _buildCostModalHTML(site.name, contrName, priceLbl, priceType, pricePerUnit, vat, rows, true);
   });
 
-  html += `<div style="margin-top:16px;text-align:left;">
+  html += `<div style="display:flex;gap:10px;margin-top:16px;">
+    <button onclick="exportAllCostTablesToExcel('${contrName.replace(/'/g,"\'")}')"
+      style="background:transparent;border:1.5px solid #34c759;border-radius:980px;padding:9px 18px;font-size:13px;color:#34c759;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;"
+      onmouseover="this.style.background='#34c759';this.style.color='#fff'"
+      onmouseout="this.style.background='transparent';this.style.color='#34c759'">📋 העתק הכל לאקסל</button>
     <button onclick="closeModal()" style="background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:9px 20px;font-size:14px;cursor:pointer;font-family:inherit;">סגור</button>
   </div></div>`;
   showModal(html);
@@ -7381,6 +7386,7 @@ function _buildCostModalHTML(siteName, contr, priceLbl, priceType, pricePerUnit,
   const vatAmt     = totalCost != null ? Math.round(totalCost * vat) : null;
   const totalVat   = totalCost != null ? Math.round(totalCost * (1+vat)) : null;
   const qtyCol     = priceType === 'hourly' ? 'שעות' : priceType === 'daily' ? 'ימים' : 'חודש';
+  const tableId    = 'cost-table-' + siteName.replace(/\s/g,'_') + '-' + Date.now();
 
   const rowsHTML = rows.map(r => {
     const qty = priceType === 'hourly' ? r.hours.toFixed(1) : priceType === 'daily' ? r.days : 1;
@@ -7398,7 +7404,13 @@ function _buildCostModalHTML(siteName, contr, priceLbl, priceType, pricePerUnit,
       <div style="font-size:17px;font-weight:800;margin-bottom:2px;">📍 ${siteName}</div>
       <div style="font-size:12px;color:var(--text3);margin-bottom:20px;">קבלן: ${contr}</div>`;
   const suffix = compact ? '' : `
-      <button onclick="closeModal()" style="background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:9px 20px;font-size:14px;cursor:pointer;font-family:inherit;margin-top:16px;">סגור</button>
+      <div style="display:flex;gap:10px;margin-top:16px;">
+        <button onclick="exportCostTableToExcel('${tableId}','${siteName.replace(/'/g,"\'")}')"
+          style="background:transparent;border:1.5px solid #34c759;border-radius:980px;padding:9px 18px;font-size:13px;color:#34c759;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;"
+          onmouseover="this.style.background='#34c759';this.style.color='#fff'"
+          onmouseout="this.style.background='transparent';this.style.color='#34c759'">📋 העתק לאקסל</button>
+        <button onclick="closeModal()" style="background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:9px 20px;font-size:14px;cursor:pointer;font-family:inherit;">סגור</button>
+      </div>
     </div>`;
 
   return `${prefix}
@@ -7407,10 +7419,14 @@ function _buildCostModalHTML(siteName, contr, priceLbl, priceType, pricePerUnit,
         <span style="font-size:16px;">🏗️</span>
         <span style="font-weight:700;font-size:14px;">${siteName}</span>
         ${compact ? `<span style="font-size:11px;color:var(--text3);margin-right:auto;">${priceLbl}${pricePerUnit?': ₪'+pricePerUnit.toLocaleString():''}</span>` : ''}
+        <button onclick="exportCostTableToExcel('${tableId}','${siteName.replace(/'/g,"\'")}')"
+          style="margin-right:auto;background:transparent;border:1.5px solid #34c759;border-radius:980px;padding:3px 12px;font-size:11px;color:#34c759;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;${compact?'':'display:none;'}"
+          onmouseover="this.style.background='#34c759';this.style.color='#fff'"
+          onmouseout="this.style.background='transparent';this.style.color='#34c759'">📋 אקסל</button>
       </div>
-      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <table id="${tableId}" style="width:100%;border-collapse:collapse;font-size:13px;">
         <thead><tr style="color:var(--text3);font-size:11px;font-weight:700;border-bottom:1px solid var(--border);background:var(--bg3);">
-          <th style="padding:7px 10px;text-align:right;">דרכון/ת"ז</th>
+          <th style="padding:7px 10px;text-align:right;">דרכון</th>
           <th style="padding:7px 10px;text-align:right;">שם פועל</th>
           <th style="padding:7px 6px;text-align:center;">${qtyCol}</th>
           <th style="padding:7px 6px;text-align:center;">${priceLbl}</th>
@@ -7436,6 +7452,82 @@ function _buildCostModalHTML(siteName, contr, priceLbl, priceType, pricePerUnit,
         </tfoot>
       </table>
     </div>${suffix}`;
+}
+
+
+function exportCostTableToExcel(tableId, siteName) {
+  const table = document.getElementById(tableId);
+  if (!table) { showToast('❌ טבלה לא נמצאה', 'error'); return; }
+
+  const rows = [];
+  // כותרות
+  const headers = [...table.querySelectorAll('thead th')].map(th => th.textContent.trim());
+  rows.push(headers.join('\t'));
+
+  // שורות נתונים
+  table.querySelectorAll('tbody tr').forEach(tr => {
+    const cells = [...tr.querySelectorAll('td')].map(td => td.textContent.trim().replace(/₪/g,'').replace(/,/g,''));
+    rows.push(cells.join('\t'));
+  });
+
+  // שורות tfoot
+  table.querySelectorAll('tfoot tr').forEach(tr => {
+    const cells = [...tr.querySelectorAll('td')].map(td => td.textContent.trim().replace(/₪/g,'').replace(/,/g,''));
+    rows.push(cells.join('\t'));
+  });
+
+  const text = rows.join('\n');
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('📋 הטבלה הועתקה — הדבק ישירות לאקסל');
+  }).catch(() => {
+    // fallback
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('📋 הטבלה הועתקה — הדבק ישירות לאקסל');
+  });
+}
+
+
+function exportAllCostTablesToExcel(contrName) {
+  const tables = document.querySelectorAll('[id^="cost-table-"]');
+  if (!tables.length) { showToast('❌ לא נמצאו טבלאות', 'error'); return; }
+
+  const rows = [`קבלן: ${contrName}`, ''];
+  tables.forEach(table => {
+    // שם האתר מה-header מעל הטבלה
+    const card = table.closest('div[style*="border-radius:12px"]');
+    const siteTitle = card?.querySelector('span[style*="font-weight:700"]')?.textContent?.trim() || '';
+    if (siteTitle) rows.push(`אתר: ${siteTitle}`);
+
+    const headers = [...table.querySelectorAll('thead th')].map(th => th.textContent.trim());
+    rows.push(headers.join('\t'));
+    table.querySelectorAll('tbody tr').forEach(tr => {
+      const cells = [...tr.querySelectorAll('td')].map(td => td.textContent.trim().replace(/₪/g,'').replace(/,/g,''));
+      rows.push(cells.join('\t'));
+    });
+    table.querySelectorAll('tfoot tr').forEach(tr => {
+      const cells = [...tr.querySelectorAll('td')].map(td => td.textContent.trim().replace(/₪/g,'').replace(/,/g,''));
+      rows.push(cells.join('\t'));
+    });
+    rows.push('');
+  });
+
+  const text = rows.join('\n');
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('📋 כל הטבלאות הועתקו — הדבק ישירות לאקסל');
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('📋 כל הטבלאות הועתקו — הדבק ישירות לאקסל');
+  });
 }
 
 function renderWorkSites() {
