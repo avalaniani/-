@@ -7229,9 +7229,31 @@ function renderSitesHoursSummary() {
         <td style="padding:8px 4px;text-align:center;cursor:pointer;color:var(--text2);" onclick="showSiteWorkersListByKey('${lkSafe}','all','כל הפועלים','#1d1d1f')" onmouseover="this.style.background='#f0f4f8'" onmouseout="this.style.background=''">${s.workers.size}</td>
         <td style="padding:8px 4px;text-align:center;cursor:pointer;color:#2a7a5a;font-weight:600;" onclick="showSiteWorkersListByKey('${lkSafe}','signed','✅ חתומות','#2a7a5a')" onmouseover="this.style.background='#f0fff4'" onmouseout="this.style.background=''">${s.signedHours.toFixed(1)}</td>
         <td style="padding:8px 4px;text-align:center;cursor:pointer;color:${unsigned > 0 ? '#a03030' : 'var(--text3)'};font-weight:600;" onclick="showSiteWorkersListByKey('${lkSafe}','unsigned','⏳ לא חתומות','#a03030')" onmouseover="this.style.background='#fff0f0'" onmouseout="this.style.background=''">${unsigned.toFixed(1)}</td>
-        <td style="padding:8px 4px;text-align:center;font-weight:700;color:var(--text);">${s.hours.toFixed(1)}</td>
-        <td style="padding:8px 4px;text-align:center;color:#0071e3;font-weight:600;">${s.cost != null ? '₪' + Math.round(s.cost).toLocaleString() : '—'}</td>
-        ${s.cost != null ? (() => { const vat = parseFloat(document.getElementById('sites-vat-rate')?.value||18)/100; const vatAmt = Math.round(s.cost * vat); const total = Math.round(s.cost * (1 + vat)); return `<td style="padding:8px 4px;text-align:center;color:#6c5ce7;font-weight:600;">₪${vatAmt.toLocaleString()}</td><td style="padding:8px 4px;text-align:center;color:#00b894;font-weight:700;">₪${total.toLocaleString()}</td>`; })() : '<td style="padding:8px 4px;text-align:center;color:var(--text3);">—</td><td style="padding:8px 4px;text-align:center;color:var(--text3);">—</td>'}
+        ${(() => {
+          const vat = parseFloat(document.getElementById('sites-vat-rate')?.value||18)/100;
+          const vatAmt = s.cost != null ? Math.round(s.cost * vat) : null;
+          const total  = s.cost != null ? Math.round(s.cost * (1 + vat)) : null;
+          const siteWorkers = [...(s.workers||new Set())].map(id => DATA.users.find(u=>u.id===id)).filter(Boolean);
+          const siteObj = allSites.find(st => st.name === s.siteName && st.contractor === contr);
+          const priceType = siteObj ? (siteObj.priceType || siteObj.contractorPriceType || 'hourly') : 'hourly';
+          const price = siteObj ? (siteObj.price || siteObj.contractorPrice || null) : null;
+          const workedDays = s._workedDays ? s._workedDays.size : 0;
+          const onclickAttr = `openSiteWorkersCostModal('${(contr+'||'+s.siteName).replace(/'/g,"\'")}')`;
+          return `
+          <td style="padding:8px 4px;text-align:center;font-weight:700;color:var(--text);cursor:pointer;border-radius:6px;transition:background 0.15s;"
+            onclick="${onclickAttr}" onmouseover="this.style.background='#e8f0fb'" onmouseout="this.style.background=''"
+            title="לחץ לפירוט פועלים">${s.hours.toFixed(1)}</td>
+          <td style="padding:8px 4px;text-align:center;color:#0071e3;font-weight:600;cursor:pointer;border-radius:6px;transition:background 0.15s;"
+            onclick="${onclickAttr}" onmouseover="this.style.background='#e8f0fb'" onmouseout="this.style.background=''"
+            title="לחץ לפירוט פועלים">${s.cost != null ? '₪'+Math.round(s.cost).toLocaleString() : '—'}</td>
+          <td style="padding:8px 4px;text-align:center;color:#6c5ce7;font-weight:600;cursor:pointer;border-radius:6px;transition:background 0.15s;"
+            onclick="${onclickAttr}" onmouseover="this.style.background='#e8f0fb'" onmouseout="this.style.background=''"
+            title="לחץ לפירוט פועלים">${vatAmt != null ? '₪'+vatAmt.toLocaleString() : '—'}</td>
+          <td style="padding:8px 4px;text-align:center;color:#00b894;font-weight:700;cursor:pointer;border-radius:6px;transition:background 0.15s;"
+            onclick="${onclickAttr}" onmouseover="this.style.background='#e8f0fb'" onmouseout="this.style.background=''"
+            title="לחץ לפירוט פועלים">${total != null ? '₪'+total.toLocaleString() : '—'}</td>
+          `;
+        })()}
       </tr>`;
     });
 
@@ -7260,14 +7282,160 @@ function renderSitesHoursSummary() {
       <td style="padding:8px 4px;text-align:center;cursor:pointer;color:#1d1d1f;" onclick="showSiteWorkersListByKey('${contrSafe}|סה&quot;כ','all','כל הפועלים','#1d1d1f')" onmouseover="this.style.background='#e8eef8'" onmouseout="this.style.background=''">${totalWorkersAll}</td>
       <td style="padding:8px 4px;text-align:center;cursor:pointer;color:#2a7a5a;" onclick="showSiteWorkersListByKey('${contrSafe}|סה&quot;כ','signed','✅ חתומות','#2a7a5a')" onmouseover="this.style.background='#dcf5e8'" onmouseout="this.style.background=''">${totalSigned.toFixed(1)}</td>
       <td style="padding:8px 4px;text-align:center;cursor:pointer;color:${totalUnsigned>0?'#a03030':'#86868b'};" onclick="showSiteWorkersListByKey('${contrSafe}|סה&quot;כ','unsigned','⏳ לא חתומות','#a03030')" onmouseover="this.style.background='#fce8e8'" onmouseout="this.style.background=''">${totalUnsigned.toFixed(1)}</td>
-      <td style="padding:8px 4px;text-align:center;color:#1d1d1f;">${totalHours.toFixed(1)}</td>
-      <td style="padding:8px 4px;text-align:center;color:#0071e3;">${hasAnyCost ? '₪'+Math.round(totalCost).toLocaleString() : '—'}</td>
-      <td style="padding:8px 4px;text-align:center;color:#6c5ce7;">${totalVat!=null ? '₪'+totalVat.toLocaleString() : '—'}</td>
-      <td style="padding:8px 4px;text-align:center;color:#00b894;">${totalWithVat!=null ? '₪'+totalWithVat.toLocaleString() : '—'}</td>
+      <td style="padding:8px 4px;text-align:center;color:#1d1d1f;cursor:pointer;" onclick="openAllSitesCostModal('${contrSafe}')" onmouseover="this.style.background='#e8eef8'" onmouseout="this.style.background=''" title="לחץ לפירוט כל האתרים">${totalHours.toFixed(1)}</td>
+      <td style="padding:8px 4px;text-align:center;color:#0071e3;cursor:pointer;" onclick="openAllSitesCostModal('${contrSafe}')" onmouseover="this.style.background='#e8eef8'" onmouseout="this.style.background=''" title="לחץ לפירוט כל האתרים">${hasAnyCost ? '₪'+Math.round(totalCost).toLocaleString() : '—'}</td>
+      <td style="padding:8px 4px;text-align:center;color:#6c5ce7;cursor:pointer;" onclick="openAllSitesCostModal('${contrSafe}')" onmouseover="this.style.background='#e8eef8'" onmouseout="this.style.background=''" title="לחץ לפירוט כל האתרים">${totalVat!=null ? '₪'+totalVat.toLocaleString() : '—'}</td>
+      <td style="padding:8px 4px;text-align:center;color:#00b894;cursor:pointer;" onclick="openAllSitesCostModal('${contrSafe}')" onmouseover="this.style.background='#e8eef8'" onmouseout="this.style.background=''" title="לחץ לפירוט כל האתרים">${totalWithVat!=null ? '₪'+totalWithVat.toLocaleString() : '—'}</td>
     </tr></tbody></table></div></div>`;
   });
 
   wrap.innerHTML = html;
+}
+
+
+// ── פירוט עלות פועלים לאתר ──────────────────────────────────
+function openSiteWorkersCostModal(key) {
+  const [contr, siteName] = key.split('||');
+  const company  = currentUser.company;
+  const allSites = DATA.workSites.filter(s => s.companyId === company);
+  const site     = allSites.find(s => s.contractor === contr && s.name === siteName);
+  const workers  = DATA.users.filter(u => u.company === company && u.role === 'worker');
+  const vat      = parseFloat(document.getElementById('sites-vat-rate')?.value || 18) / 100;
+  const priceType  = site ? (site.priceType || site.contractorPriceType || 'hourly') : 'hourly';
+  const pricePerUnit = site ? (parseFloat(site.price || site.contractorPrice) || null) : null;
+  const priceLbl = priceType === 'hourly' ? 'מחיר/שעה' : priceType === 'daily' ? 'מחיר/יום' : 'מחיר חודשי';
+
+  const rows = _buildSiteWorkerRows(site, workers, vat, priceType, pricePerUnit);
+  showModal(_buildCostModalHTML(siteName, contr, priceLbl, priceType, pricePerUnit, vat, rows, false));
+}
+
+function openAllSitesCostModal(contrName) {
+  const company  = currentUser.company;
+  const allSites = DATA.workSites.filter(s => s.companyId === company && s.contractor === contrName);
+  const workers  = DATA.users.filter(u => u.company === company && u.role === 'worker');
+  const vat      = parseFloat(document.getElementById('sites-vat-rate')?.value || 18) / 100;
+
+  let html = `
+    <div style="padding:22px;max-width:700px;width:100%;max-height:85vh;overflow-y:auto;">
+      <div style="font-size:17px;font-weight:800;margin-bottom:4px;">🏢 ${contrName}</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:20px;">פירוט לפי אתרים</div>`;
+
+  allSites.forEach(site => {
+    const priceType    = site.priceType || site.contractorPriceType || 'hourly';
+    const pricePerUnit = parseFloat(site.price || site.contractorPrice) || null;
+    const priceLbl     = priceType === 'hourly' ? 'מחיר/שעה' : priceType === 'daily' ? 'מחיר/יום' : 'מחיר חודשי';
+    const rows = _buildSiteWorkerRows(site, workers, vat, priceType, pricePerUnit);
+    if (!rows.length) return;
+    html += _buildCostModalHTML(site.name, contrName, priceLbl, priceType, pricePerUnit, vat, rows, true);
+  });
+
+  html += `<div style="margin-top:16px;text-align:left;">
+    <button onclick="closeModal()" style="background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:9px 20px;font-size:14px;cursor:pointer;font-family:inherit;">סגור</button>
+  </div></div>`;
+  showModal(html);
+}
+
+function _buildSiteWorkerRows(site, workers, vat, priceType, pricePerUnit) {
+  if (!site) return [];
+  const rows = [];
+  workers.forEach(w => {
+    const key = w.id + '-' + sitesYear + '-' + sitesMonth;
+    const hours = DATA.workerHours[key] || {};
+    const workerHist = (DATA.workerSiteHistory || []).filter(h => h.workerId === w.id && h.fromDate);
+    const daysInMonth = new Date(sitesYear, sitesMonth + 1, 0).getDate();
+    const monthPad = String(sitesMonth + 1).padStart(2, '0');
+    let workerHours = 0, workerDays = new Set();
+    for (let d = 1; d <= daysInMonth; d++) {
+      const e = hours[d];
+      if (!e) continue;
+      const h = parseFloat(e.hours) || 0;
+      if (h <= 0) continue;
+      const dayStr = sitesYear + '-' + monthPad + '-' + String(d).padStart(2,'0');
+      const dayHist = workerHist
+        .filter(hh => hh.fromDate <= dayStr && (!hh.toDate || hh.toDate >= dayStr))
+        .sort((a,b) => b.fromDate.localeCompare(a.fromDate));
+      const siteHist = dayHist[0];
+      const workerSite = siteHist
+        ? (DATA.workSites||[]).find(s => s.id == siteHist.siteId)
+        : (DATA.workSites||[]).find(s => s.id == w.siteId);
+      if (!workerSite || workerSite.id !== site.id) continue;
+      workerHours += h;
+      workerDays.add(d);
+    }
+    if (workerHours === 0) return;
+    let workerCost = null;
+    if (pricePerUnit) {
+      if (priceType === 'hourly')  workerCost = workerHours * pricePerUnit;
+      else if (priceType === 'daily')   workerCost = workerDays.size * pricePerUnit;
+      else if (priceType === 'monthly') workerCost = pricePerUnit;
+    }
+    rows.push({ worker: w, hours: workerHours, days: workerDays.size, cost: workerCost });
+  });
+  return rows;
+}
+
+function _buildCostModalHTML(siteName, contr, priceLbl, priceType, pricePerUnit, vat, rows, compact) {
+  const totalHours = rows.reduce((s,r) => s+r.hours, 0);
+  const totalDays  = rows.reduce((s,r) => s+r.days, 0);
+  const totalCost  = rows.some(r=>r.cost!=null) ? rows.reduce((s,r) => s+(r.cost||0), 0) : null;
+  const vatAmt     = totalCost != null ? Math.round(totalCost * vat) : null;
+  const totalVat   = totalCost != null ? Math.round(totalCost * (1+vat)) : null;
+  const qtyCol     = priceType === 'hourly' ? 'שעות' : priceType === 'daily' ? 'ימים' : 'חודש';
+
+  const rowsHTML = rows.map(r => {
+    const qty = priceType === 'hourly' ? r.hours.toFixed(1) : priceType === 'daily' ? r.days : 1;
+    return `<tr style="border-bottom:1px solid var(--border);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+      <td style="padding:8px 10px;font-size:12px;color:var(--text2);">${r.worker.idNumber || '—'}</td>
+      <td style="padding:8px 10px;font-weight:600;">${r.worker.name}</td>
+      <td style="padding:8px 6px;text-align:center;font-weight:600;">${qty}</td>
+      <td style="padding:8px 6px;text-align:center;color:#0071e3;">${pricePerUnit ? '₪'+pricePerUnit.toLocaleString() : '—'}</td>
+      <td style="padding:8px 6px;text-align:center;color:#0071e3;font-weight:700;">${r.cost!=null ? '₪'+Math.round(r.cost).toLocaleString() : '—'}</td>
+    </tr>`;
+  }).join('');
+
+  const prefix = compact ? '' : `
+    <div style="padding:22px;max-width:620px;width:100%;max-height:85vh;overflow-y:auto;">
+      <div style="font-size:17px;font-weight:800;margin-bottom:2px;">📍 ${siteName}</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:20px;">קבלן: ${contr}</div>`;
+  const suffix = compact ? '' : `
+      <button onclick="closeModal()" style="background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:9px 20px;font-size:14px;cursor:pointer;font-family:inherit;margin-top:16px;">סגור</button>
+    </div>`;
+
+  return `${prefix}
+    <div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:${compact?'20px':'0'};">
+      <div style="background:linear-gradient(135deg,var(--bg3),var(--bg2));padding:10px 14px;display:flex;gap:10px;align-items:center;">
+        <span style="font-size:16px;">🏗️</span>
+        <span style="font-weight:700;font-size:14px;">${siteName}</span>
+        ${compact ? `<span style="font-size:11px;color:var(--text3);margin-right:auto;">${priceLbl}${pricePerUnit?': ₪'+pricePerUnit.toLocaleString():''}</span>` : ''}
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead><tr style="color:var(--text3);font-size:11px;font-weight:700;border-bottom:1px solid var(--border);background:var(--bg3);">
+          <th style="padding:7px 10px;text-align:right;">דרכון/ת"ז</th>
+          <th style="padding:7px 10px;text-align:right;">שם פועל</th>
+          <th style="padding:7px 6px;text-align:center;">${qtyCol}</th>
+          <th style="padding:7px 6px;text-align:center;">${priceLbl}</th>
+          <th style="padding:7px 6px;text-align:center;">עלות לפועל</th>
+        </tr></thead>
+        <tbody>${rowsHTML}</tbody>
+        <tfoot>
+          <tr style="background:#f0f4f8;font-weight:800;border-top:2px solid #d2d2d7;">
+            <td style="padding:8px 10px;" colspan="2">סה"כ</td>
+            <td style="padding:8px 6px;text-align:center;">${priceType==='hourly'?totalHours.toFixed(1):priceType==='daily'?totalDays:'—'}</td>
+            <td style="padding:8px 6px;text-align:center;">—</td>
+            <td style="padding:8px 6px;text-align:center;color:#0071e3;">${totalCost!=null?'₪'+Math.round(totalCost).toLocaleString():'—'}</td>
+          </tr>
+          ${vatAmt!=null?`
+          <tr style="background:#fafafa;border-top:1px solid var(--border);">
+            <td colspan="4" style="padding:7px 10px;font-size:12px;color:var(--text2);">מע"מ (${Math.round(vat*100)}%)</td>
+            <td style="padding:7px 6px;text-align:center;color:#6c5ce7;font-weight:700;">₪${vatAmt.toLocaleString()}</td>
+          </tr>
+          <tr style="background:#f0fff8;border-top:1px solid #b8e8d0;">
+            <td colspan="4" style="padding:7px 10px;font-weight:700;color:#00b894;">סה"כ כולל מע"מ</td>
+            <td style="padding:7px 6px;text-align:center;color:#00b894;font-weight:800;font-size:15px;">₪${totalVat.toLocaleString()}</td>
+          </tr>`:''}
+        </tfoot>
+      </table>
+    </div>${suffix}`;
 }
 
 function renderWorkSites() {
