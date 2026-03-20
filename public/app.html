@@ -8990,17 +8990,17 @@ function openCalEventModal(dateStr) {
       <label>👥 שיתוף עם עובדי החברה</label>
       <select id="cal-ev-visibility" class="search-input" style="width:100%;" onchange="calToggleEmployeeSelect(this.value)">
         <option value="private">🔒 פרטי — רק אני רואה</option>
-        <option value="all">👥 כולם — כל עובדי החברה</option>
+        <option value="all">👥 כולם — כל עובדי החברה (לא פועלים)</option>
         <option value="selected">✅ נבחרים — עובדים ספציפיים</option>
       </select>
     </div>
     <div id="cal-employee-select" style="display:none;" class="form-group">
       <label>בחר עובדים</label>
       <div id="cal-employees-list" style="display:flex;flex-direction:column;gap:6px;max-height:140px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:8px;">
-        ${(DATA.users||[]).filter(u => u.company === currentUser?.company && ['employee','worker'].includes(u.role)).map(u =>
+        ${(DATA.users||[]).filter(u => u.company === currentUser?.company && u.role === 'employee').map(u =>
           `<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
             <input type="checkbox" value="${u.id}" style="width:16px;height:16px;">
-            ${u.name} <span style="font-size:11px;color:var(--text3);">(${u.role==='employee'?'עובד':'פועל'})</span>
+            ${u.name}
           </label>`).join('')}
       </div>
     </div>` : ''}
