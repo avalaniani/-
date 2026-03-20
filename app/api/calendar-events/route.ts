@@ -8,15 +8,19 @@ export async function GET(req: NextRequest) {
 
   const company = session.company
 
-  if (session.role === 'worker' || session.role === 'employee') {
-    // פועל/עובד — רק אירועים ששותפו איתו
+  if (session.role === 'worker') {
+    // פועל — לא רואה אירועי יומן משותפים
+    return ok([])
+  }
+
+  if (session.role === 'employee') {
+    // עובד — רק אירועים ששותפו איתו ספציפית או עם כולם
     const { data, error } = await supabase.from('calendar_events')
       .select('*')
       .eq('company_id', company)
       .neq('visibility', 'private')
       .order('event_date')
     if (error) return err(error.message, 500)
-    // סנן "selected" — רק אם המשתמש ברשימה
     const filtered = (data || []).filter(ev => {
       if (ev.visibility === 'all') return true
       if (ev.visibility === 'selected') {
