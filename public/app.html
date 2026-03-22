@@ -4958,6 +4958,8 @@ function _downloadXLSX(tsv, filename) {
     ws['!cols'] = colWidths;
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'נתונים');
+    // גיליון מימין לשמאל
+    wb.Workbook = { Views: [{ RTL: true }] };
     XLSX.writeFile(wb, filename);
     showToast('✅ הקובץ הורד בהצלחה');
   }
