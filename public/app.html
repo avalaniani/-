@@ -1164,11 +1164,12 @@
         <!-- תוכן: משימות -->
         <div id="team-panel-tasks">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
-            <div class="tabs" style="margin-bottom:0;flex:1;">
-              <div class="tab active" onclick="filterTasks('all',this)">הכל</div>
-              <div class="tab" onclick="filterTasks('open',this)">פתוחות</div>
-              <div class="tab" onclick="filterTasks('done',this)">הושלמו</div>
-              <div class="tab" onclick="filterTasks('high',this)">דחוף</div>
+<div id="task-filter-ceo" style="position:relative;display:inline-flex;align-items:center;background:rgba(120,120,128,0.12);border-radius:980px;padding:3px;gap:0;margin-bottom:0;flex:1;">
+              <div id="task-filter-ceo-slider" style="position:absolute;top:3px;right:3px;height:calc(100% - 6px);border-radius:980px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.15);transition:all 0.28s cubic-bezier(0.34,1.2,0.64,1);pointer-events:none;z-index:0;"></div>
+              <button onclick="filterTasks('all',this,'task-filter-ceo')" data-filter="all" style="position:relative;z-index:1;padding:6px 16px;border-radius:980px;border:none;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit;background:transparent;color:#1d1d1f;transition:color 0.2s;white-space:nowrap;">הכל</button>
+              <button onclick="filterTasks('open',this,'task-filter-ceo')" data-filter="open" style="position:relative;z-index:1;padding:6px 16px;border-radius:980px;border:none;cursor:pointer;font-size:13px;font-weight:500;font-family:inherit;background:transparent;color:#86868b;transition:color 0.2s;white-space:nowrap;">פתוחות</button>
+              <button onclick="filterTasks('done',this,'task-filter-ceo')" data-filter="done" style="position:relative;z-index:1;padding:6px 16px;border-radius:980px;border:none;cursor:pointer;font-size:13px;font-weight:500;font-family:inherit;background:transparent;color:#86868b;transition:color 0.2s;white-space:nowrap;">הושלמו</button>
+              <button onclick="filterTasks('high',this,'task-filter-ceo')" data-filter="high" style="position:relative;z-index:1;padding:6px 16px;border-radius:980px;border:none;cursor:pointer;font-size:13px;font-weight:500;font-family:inherit;background:transparent;color:#86868b;transition:color 0.2s;white-space:nowrap;">דחוף</button>
             </div>
             <select id="ceo-task-employee-filter" onchange="renderCeoTasks()" style="border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px;background:var(--bg3);color:var(--text);cursor:pointer;font-family:inherit;">
               <option value="">👥 כל העובדים</option>
@@ -1519,12 +1520,12 @@
           <div class="card-title" style="font-size:18px;">📋 המשימות שלי</div>
           <button class="btn btn-primary btn-sm" onclick="openAddTask('emp')">+ הוסף משימה</button>
         </div>
-        <div class="tabs">
-          <div class="tab active" onclick="filterEmpTasks('all',this)">הכל</div>
-          <div class="tab" onclick="filterEmpTasks('open',this)">פתוחות</div>
-          <div class="tab" onclick="filterEmpTasks('done',this)">הושלמו</div>
-          <div class="tab" onclick="filterEmpTasks('high',this)">דחוף</div>
-          <div class="tab" onclick="filterEmpTasks('mine',this)">שיצרתי</div>
+        <div id="task-filter-emp" style="position:relative;display:inline-flex;align-items:center;background:rgba(120,120,128,0.12);border-radius:980px;padding:3px;gap:0;margin-bottom:16px;">
+          <div id="task-filter-emp-slider" style="position:absolute;top:3px;right:3px;height:calc(100% - 6px);border-radius:980px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.15);transition:all 0.28s cubic-bezier(0.34,1.2,0.64,1);pointer-events:none;z-index:0;"></div>
+          <button onclick="filterTasks('all',this,'task-filter-emp')" data-filter="all" style="position:relative;z-index:1;padding:6px 16px;border-radius:980px;border:none;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit;background:transparent;color:#1d1d1f;transition:color 0.2s;white-space:nowrap;">הכל</button>
+          <button onclick="filterTasks('open',this,'task-filter-emp')" data-filter="open" style="position:relative;z-index:1;padding:6px 16px;border-radius:980px;border:none;cursor:pointer;font-size:13px;font-weight:500;font-family:inherit;background:transparent;color:#86868b;transition:color 0.2s;white-space:nowrap;">פתוחות</button>
+          <button onclick="filterTasks('done',this,'task-filter-emp')" data-filter="done" style="position:relative;z-index:1;padding:6px 16px;border-radius:980px;border:none;cursor:pointer;font-size:13px;font-weight:500;font-family:inherit;background:transparent;color:#86868b;transition:color 0.2s;white-space:nowrap;">הושלמו</button>
+          <button onclick="filterTasks('high',this,'task-filter-emp')" data-filter="high" style="position:relative;z-index:1;padding:6px 16px;border-radius:980px;border:none;cursor:pointer;font-size:13px;font-weight:500;font-family:inherit;background:transparent;color:#86868b;transition:color 0.2s;white-space:nowrap;">דחוף</button>
         </div>
         <div class="tasks-grid" id="emp-tasks-grid"></div>
       </div>
@@ -5042,6 +5043,7 @@ function fallbackCopy(text) {
 }
 
 function renderCeoTasks() {
+  _initTaskFilterSlider('task-filter-ceo');
   const grid = document.getElementById('ceo-tasks-grid');
   let tasks = DATA.tasks.filter(t => t.company === currentUser.company);
 
@@ -5096,6 +5098,7 @@ function renderEmpDashboard() {
 }
 
 function renderEmpTasks() {
+  _initTaskFilterSlider('task-filter-emp');
   const grid = document.getElementById('emp-tasks-grid');
   let tasks = DATA.tasks.filter(t => t.assignedTo === currentUser.id);
   if (taskFilter === 'open') tasks = tasks.filter(t => t.status === 'open');
@@ -6061,15 +6064,53 @@ function renderTaskCards(grid, tasks, mode) {
   grid.innerHTML = tasks.map(t => taskCardHTML(t, mode)).join('');
 }
 
-function filterTasks(f, el) {
+function filterTasks(f, el, trackId) {
   taskFilter = f;
-  document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
+  // עדכן סגנון כפתורים + הזז סליידר
+  const track = trackId ? document.getElementById(trackId) : el?.closest('[id^="task-filter"]');
+  if (track) {
+    const slider = document.getElementById(track.id + '-slider');
+    const btns = [...track.querySelectorAll('button[data-filter]')];
+    btns.forEach(b => {
+      const active = b.dataset.filter === f;
+      b.style.color = active ? '#1d1d1f' : '#86868b';
+      b.style.fontWeight = active ? '700' : '500';
+    });
+    if (slider) {
+      const activeBtn = btns.find(b => b.dataset.filter === f);
+      if (activeBtn) {
+        // חשב right מימין לשמאל
+        const trackRect = track.getBoundingClientRect();
+        const btnRect = activeBtn.getBoundingClientRect();
+        const rightOffset = trackRect.right - btnRect.right + 3;
+        slider.style.width = activeBtn.offsetWidth + 'px';
+        slider.style.right = rightOffset + 'px';
+      }
+    }
+  }
   if (currentPage === 'ceo-employees') renderCeoTasks();
   else if (currentPage === 'emp-tasks') renderEmpTasks();
 }
 
-function filterEmpTasks(f, el) { filterTasks(f, el); }
+function filterEmpTasks(f, el) { filterTasks(f, el, 'task-filter-emp'); }
+
+
+function _initTaskFilterSlider(trackId) {
+  setTimeout(() => {
+    const track = document.getElementById(trackId);
+    if (!track) return;
+    const slider = document.getElementById(trackId + '-slider');
+    const activeBtn = track.querySelector('button[data-filter][style*="font-weight: 700"], button[data-filter][style*="font-weight:700"]');
+    if (slider && activeBtn) {
+      const trackRect = track.getBoundingClientRect();
+      const btnRect = activeBtn.getBoundingClientRect();
+      slider.style.transition = 'none';
+      slider.style.width = activeBtn.offsetWidth + 'px';
+      slider.style.right = (trackRect.right - btnRect.right + 3) + 'px';
+      setTimeout(() => { slider.style.transition = ''; }, 50);
+    }
+  }, 30);
+}
 
 function openTaskDetail(taskId) {
   const t = DATA.tasks.find(x => x.id === taskId);
