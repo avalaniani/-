@@ -1759,9 +1759,20 @@
           <option value="idpassport" selected>🪪 ת"ז / דרכון</option>
         </select>
         <input type="text" id="fs-grid-search-input" placeholder="חיפוש..." oninput="renderCeoWorkersGrid(true)" style="border:1.5px solid var(--border);border-radius:980px;padding:7px 14px;font-size:13px;background:white;color:var(--text);width:130px;font-family:inherit;outline:none;" onfocus="this.style.borderColor='#0071e3'" onblur="this.style.borderColor='var(--border)'">
-        <select id="fs-grid-filter-contractor" onchange="_refreshContractorFilter('fs-grid-filter-contractor','fs-grid-filter-site',()=>renderCeoWorkersGrid(true))" style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:7px 14px;font-size:13px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;appearance:none;-webkit-appearance:none;max-width:160px;overflow:hidden;text-overflow:ellipsis;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">
+        <select id="fs-grid-filter-contractor" style="display:none;" onchange="_refreshContractorFilter('fs-grid-filter-contractor','fs-grid-filter-site',()=>renderCeoWorkersGrid(true))">
           <option value="">🏢 כל הקבלנים</option>
         </select>
+        <div style="position:relative;display:inline-block;">
+          <button id="fs-grid-filter-contractor-btn" onclick="toggleGridStatusDropdown('fs-grid-filter-contractor-dd')"
+            style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:7px 14px;font-size:13px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;display:flex;align-items:center;gap:6px;max-width:160px;"
+            onmouseover="this.style.background='#0071e3';this.style.color='#fff'"
+            onmouseout="this.style.background='transparent';this.style.color='#0071e3'">
+            <span id="fs-grid-filter-contractor-label" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px;">🏢 כל הקבלנים</span><span style="font-size:10px;flex-shrink:0;">▾</span>
+          </button>
+          <div id="fs-grid-filter-contractor-dd" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:#fff;border:none;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,0.14);z-index:10100;min-width:180px;max-width:280px;">
+            <div id="fs-grid-contractor-options"></div>
+          </div>
+        </div>
         <select id="fs-grid-filter-site" style="display:none;" onchange="renderCeoWorkersGrid(true)">
           <option value="">🏗️ כל האתרים</option>
         </select>
@@ -4032,11 +4043,14 @@ function _populateSiteFilters() {
     const siteEl  = document.getElementById(site);
     if (!contrEl || !siteEl) return;
 
-    // מלא קבלנים — רק אם עוד לא מולאו (כדי לא לדרוס בחירה קיימת)
-    if (contrEl.options.length <= 1) {
-      contrEl.innerHTML = '<option value="">🏢 כל הקבלנים</option>' +
-        contractors.map(c=>`<option value="${c}">${c}</option>`).join('') +
-        '<option value="__none__">— ללא קבלן</option>';
+    // מלא קבלנים — תמיד מרענן כדי לשקף שמות חדשים/משתנים
+    const prevContr = contrEl.value;
+    contrEl.innerHTML = '<option value="">🏢 כל הקבלנים</option>' +
+      contractors.map(c=>`<option value="${c}">${c}</option>`).join('') +
+      '<option value="__none__">— ללא קבלן</option>';
+    // שחזר בחירה קיימת אם עדיין רלוונטית
+    if (prevContr && [...contrEl.options].some(o => o.value === prevContr)) {
+      contrEl.value = prevContr;
     }
 
     // סנן אתרים לפי הקבלן הנבחר כרגע
@@ -4463,14 +4477,19 @@ function _populateCustomGridDropdowns() {
 
   // contractors
   const contrOpts = document.getElementById('grid-contractor-options');
-  if (contrOpts && contrSel) {
+  const fsContrOpts = document.getElementById('fs-grid-contractor-options');
+  const ITEM_CONTR = 'padding:10px 14px;cursor:pointer;font-size:13px;color:#1d1d1f;white-space:normal;word-break:break-word;max-width:260px;';
+  if (contrSel) {
     let html = '';
+    let fsHtml = '';
     Array.from(contrSel.options).forEach(opt => {
       const val = opt.value;
       const text = opt.text;
-      html += `<div onclick="setGridContractor('${val.replace(/'/g,"\'")}','${text.replace(/'/g,"\'")}');toggleGridStatusDropdown('grid-filter-contractor-dd')" style="${ITEM}" onmouseover="this.style.background='#f5f5f7'" onmouseout="this.style.background=''">${text}</div>`;
+      html   += `<div onclick="setGridContractor('${val.replace(/'/g,"\'")}','${text.replace(/'/g,"\'")}');toggleGridStatusDropdown('grid-filter-contractor-dd')" style="${ITEM_CONTR}" onmouseover="this.style.background='#f5f5f7'" onmouseout="this.style.background=''">${text}</div>`;
+      fsHtml += `<div onclick="setGridContractor('${val.replace(/'/g,"\'")}','${text.replace(/'/g,"\'")}',true);toggleGridStatusDropdown('fs-grid-filter-contractor-dd')" style="${ITEM_CONTR}" onmouseover="this.style.background='#f5f5f7'" onmouseout="this.style.background=''">${text}</div>`;
     });
-    contrOpts.innerHTML = html;
+    if (contrOpts) contrOpts.innerHTML = html;
+    if (fsContrOpts) fsContrOpts.innerHTML = fsHtml;
   }
 
   // sites
@@ -4488,16 +4507,23 @@ function _populateCustomGridDropdowns() {
     if (siteOpts) siteOpts.innerHTML = html;
   }
 }
-function setGridContractor(val, label) {
+function setGridContractor(val, label, fullscreen) {
   const sel = document.getElementById('grid-filter-contractor');
   if (sel) sel.value = val;
   const lbl = document.getElementById('grid-filter-contractor-label');
   if (lbl) lbl.textContent = label;
+  // עדכן גם FS
+  const fsSel = document.getElementById('fs-grid-filter-contractor');
+  if (fsSel) fsSel.value = val;
+  const fsLbl = document.getElementById('fs-grid-filter-contractor-label');
+  if (fsLbl) fsLbl.textContent = label;
   // reset site
   const siteSel = document.getElementById('grid-filter-site');
   if (siteSel) siteSel.value = '';
   const siteLbl = document.getElementById('grid-filter-site-label');
   if (siteLbl) siteLbl.textContent = '🏗️ כל האתרים';
+  const fsSiteLbl = document.getElementById('fs-grid-filter-site-label');
+  if (fsSiteLbl) fsSiteLbl.textContent = '🏗️ כל האתרים';
   _populateSiteFilters();
   _populateCustomGridDropdowns();
   renderCeoWorkersGrid(false);
@@ -4562,7 +4588,7 @@ function toggleGridStatusDropdown(id) {
   if (!dd) return;
   const isOpen = dd.style.display !== 'none';
   // סגור את כל ה-dropdowns
-  ['grid-status-dropdown','fs-grid-status-dropdown','grid-filter-contractor-dd','grid-filter-site-dd','fs-grid-filter-site-dd'].forEach(i => {
+  ['grid-status-dropdown','fs-grid-status-dropdown','grid-filter-contractor-dd','grid-filter-site-dd','fs-grid-filter-site-dd','fs-grid-filter-contractor-dd'].forEach(i => {
     const el = document.getElementById(i);
     if (el) el.style.display = 'none';
   });
@@ -4570,8 +4596,8 @@ function toggleGridStatusDropdown(id) {
 }
 // סגור dropdown בלחיצה מחוץ
 document.addEventListener('click', function(e) {
-  const allDDs = ['grid-status-dropdown','fs-grid-status-dropdown','grid-filter-contractor-dd','grid-filter-site-dd','fs-grid-filter-site-dd'];
-  const allBtns = ['grid-status-btn','fs-grid-status-btn','grid-filter-contractor-btn','grid-filter-site-btn','fs-grid-filter-site-btn'];
+  const allDDs = ['grid-status-dropdown','fs-grid-status-dropdown','grid-filter-contractor-dd','grid-filter-site-dd','fs-grid-filter-site-dd','fs-grid-filter-contractor-dd'];
+  const allBtns = ['grid-status-btn','fs-grid-status-btn','grid-filter-contractor-btn','grid-filter-site-btn','fs-grid-filter-site-btn','fs-grid-filter-contractor-btn'];
   const clickedInsideAny = allDDs.concat(allBtns).some(id => {
     const el = document.getElementById(id);
     return el && el.contains(e.target);
@@ -4642,26 +4668,7 @@ function renderCeoWorkersGrid(fullscreen) {
   const sortId          = prefix + 'grid-sort';
 
   _populateSiteFilters();
-  if (!fullscreen) _populateCustomGridDropdowns();
-  else {
-    // עדכן dropdown אתרים גם ב-FS
-    const fsSiteOpts = document.getElementById('fs-grid-site-options');
-    const siteSel = document.getElementById('fs-grid-filter-site');
-    if (fsSiteOpts && siteSel) {
-      fsSiteOpts.innerHTML = '';
-      const ITEM_STYLE = 'padding:10px 14px;cursor:pointer;font-size:13px;color:#1d1d1f;white-space:normal;word-break:break-word;max-width:260px;';
-      Array.from(siteSel.options).forEach(opt => {
-        const div = document.createElement('div');
-        div.style.cssText = ITEM_STYLE;
-        div.textContent = opt.text;
-        div.onmouseover = () => div.style.background = '#f5f5f7';
-        div.onmouseout  = () => div.style.background = '';
-        const v = opt.value, t = opt.text;
-        div.onclick = () => { setGridSite(v, t, true); toggleGridStatusDropdown('fs-grid-filter-site-dd'); };
-        fsSiteOpts.appendChild(div);
-      });
-    }
-  }
+  _populateCustomGridDropdowns();
 
   const searchType = document.getElementById(searchTypeId)?.value || 'name';
   const searchQ = (document.getElementById(searchInputId)?.value || '').trim().toLowerCase();
@@ -7783,6 +7790,8 @@ async function saveEditContractor(oldName) {
   showToast(`✅ הקבלן עודכן ל-${newName}`);
   closeModal();
   renderWorkSites();
+  _populateSiteFilters();
+  _populateCustomGridDropdowns();
 }
 
 async function deleteContractor(contractorName) {
@@ -7837,6 +7846,8 @@ async function saveAddContractor() {
   closeModal();
   renderWorkSites();
   renderSitesHoursSummary();
+  _populateSiteFilters();
+  _populateCustomGridDropdowns();
 }
 
 function openAddSiteModal(prefilledContractor) { openSiteModal(null, prefilledContractor || ''); }
