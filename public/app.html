@@ -1737,28 +1737,12 @@
         </div>
       </div>
       <div style="display:flex;gap:8px;align-items:center;">
-        <button onclick="changeGridMonthFS(-1)"
-          style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:7px 16px;font-size:13px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;display:flex;align-items:center;gap:5px;"
-          onmouseover="this.style.background='#0071e3';this.style.color='#fff'"
-          onmouseout="this.style.background='transparent';this.style.color='#0071e3'">
-          <span style="font-size:10px;">▶</span> חודש קודם
-        </button>
+        <button onclick="changeGridMonthFS(-1)" style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:7px 16px;font-size:13px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">▶ חודש קודם</button>
         <span id="fs-grid-month-label" style="font-size:14px;font-weight:700;min-width:110px;text-align:center;"></span>
-        <button onclick="changeGridMonthFS(1)"
-          style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:7px 16px;font-size:13px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;display:flex;align-items:center;gap:5px;"
-          onmouseover="this.style.background='#0071e3';this.style.color='#fff'"
-          onmouseout="this.style.background='transparent';this.style.color='#0071e3'">
-          חודש הבא <span style="font-size:10px;">◀</span>
-        </button>
-
-        <!-- FS Zoom control hidden -->
+        <button onclick="changeGridMonthFS(1)" style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:7px 16px;font-size:13px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">חודש הבא ◄</button>
         <span id="fs-grid-zoom-label" style="display:none;">13px</span>
         <input type="range" id="fs-grid-zoom-slider" min="7" max="22" step="0.5" value="13" oninput="applyGridZoom(this.value, true)" style="display:none;">
-        <button onclick="closeGridFullscreen()"
-          style="background:transparent;border:1.5px solid #1d1d1f;border-radius:980px;width:34px;height:34px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;margin-right:4px;"
-          onmouseover="this.style.background='#1d1d1f';this.style.color='#fff'"
-          onmouseout="this.style.background='transparent';this.style.color='#1d1d1f'"
-          title="סגור">✕</button>
+        <button onclick="closeGridFullscreen()" style="background:transparent;border:1.5px solid #1d1d1f;border-radius:980px;width:34px;height:34px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;margin-right:4px;" onmouseover="this.style.background='#1d1d1f';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#1d1d1f'" title="סגור">✕</button>
       </div>
     </div>
     <!-- Legend + FS Search -->
@@ -1770,29 +1754,21 @@
       <span style="font-size:11px;display:flex;align-items:center;gap:4px;"><span style="width:14px;height:14px;background:white;border-radius:3px;display:inline-block;border:1px solid var(--border);color:#3366aa;font-weight:700;text-align:center;line-height:14px;font-size:9px;">8</span>שעות עבודה</span>
       <!-- Search in FS -->
       <div style="display:flex;gap:6px;align-items:center;margin-right:auto;flex-wrap:wrap;">
-        <select id="fs-grid-search-type" onchange="renderCeoWorkersGrid(true)"
-          style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:7px 14px;font-size:13px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;appearance:none;-webkit-appearance:none;">
+        <select id="fs-grid-search-type" onchange="renderCeoWorkersGrid(true)" style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:7px 14px;font-size:13px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;appearance:none;-webkit-appearance:none;">
           <option value="name">🔎 שם</option>
           <option value="idpassport" selected>🪪 ת"ז / דרכון</option>
         </select>
-        <input type="text" id="fs-grid-search-input" placeholder="חיפוש..." oninput="renderCeoWorkersGrid(true)"
-          style="border:1.5px solid var(--border);border-radius:980px;padding:7px 14px;font-size:13px;background:white;color:var(--text);width:130px;font-family:inherit;outline:none;transition:border-color 0.15s;"
-          onfocus="this.style.borderColor='#0071e3'" onblur="this.style.borderColor='var(--border)'">
-        <select id="fs-grid-filter-contractor" onchange="_refreshContractorFilter('fs-grid-filter-contractor','fs-grid-filter-site',()=>renderCeoWorkersGrid(true))"
-          style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:7px 14px;font-size:13px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;appearance:none;-webkit-appearance:none;">
+        <input type="text" id="fs-grid-search-input" placeholder="חיפוש..." oninput="renderCeoWorkersGrid(true)" style="border:1.5px solid var(--border);border-radius:980px;padding:7px 14px;font-size:13px;background:white;color:var(--text);width:130px;font-family:inherit;outline:none;" onfocus="this.style.borderColor='#0071e3'" onblur="this.style.borderColor='var(--border)'">
+        <select id="fs-grid-filter-contractor" onchange="_refreshContractorFilter('fs-grid-filter-contractor','fs-grid-filter-site',()=>renderCeoWorkersGrid(true))" style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:7px 14px;font-size:13px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;appearance:none;-webkit-appearance:none;">
           <option value="">🏢 כל הקבלנים</option>
         </select>
-        <select id="fs-grid-filter-site" onchange="renderCeoWorkersGrid(true)"
-          style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:7px 14px;font-size:13px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;appearance:none;-webkit-appearance:none;">
+        <select id="fs-grid-filter-site" onchange="renderCeoWorkersGrid(true)" style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:7px 14px;font-size:13px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;appearance:none;-webkit-appearance:none;">
           <option value="">🏗️ כל האתרים</option>
         </select>
 
         <span id="fs-grid-search-count" style="font-size:11px;color:var(--text2);white-space:nowrap;"></span>
         <div style="position:relative;display:inline-block;">
-          <button id="fs-grid-status-btn" onclick="toggleGridStatusDropdown('fs-grid-status-dropdown')"
-            style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:7px 16px;font-size:13px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;display:flex;align-items:center;gap:6px;"
-            onmouseover="this.style.background='#0071e3';this.style.color='#fff'"
-            onmouseout="this.style.background='transparent';this.style.color='#0071e3'">
+          <button id="fs-grid-status-btn" onclick="toggleGridStatusDropdown('fs-grid-status-dropdown')" style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:7px 16px;font-size:13px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">
             <span id="fs-grid-status-btn-label">📋 כל הפועלים</span><span style="font-size:10px;">▾</span>
           </button>
           <div id="fs-grid-status-dropdown" style="display:none;position:absolute;top:calc(100% + 4px);right:0;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,0.15);z-index:10100;min-width:200px;overflow:hidden;">
@@ -1829,10 +1805,7 @@
             </div>
           </div>
         </div>
-        <button onclick="copyGridToExcelFS()"
-          style="background:transparent;border:1.5px solid #34c759;border-radius:980px;padding:7px 16px;font-size:13px;color:#34c759;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;"
-          onmouseover="this.style.background='#34c759';this.style.color='#fff'"
-          onmouseout="this.style.background='transparent';this.style.color='#34c759'">📋 העתק לאקסל</button>
+        <button onclick="copyGridToExcelFS()" style="background:transparent;border:1.5px solid #34c759;border-radius:980px;padding:7px 16px;font-size:13px;color:#34c759;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.background='#34c759';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#34c759'">📋 העתק לאקסל</button>
       </div>
       <span style="font-size:11px;color:var(--text3);">לחץ ESC או ✕ לסגירה</span>
     </div>
@@ -2098,7 +2071,7 @@ async function loadAndInjectData(user) {
   DATA.tasks     = (tasks     || []).map(mapTask);
   DATA.requests  = (requests  || []).map(mapRequest);
   DATA.workerHours = buildHoursMap(hoursRows);
-  // טען אתרי עבודה מה-API (עם fallback ל-localStorage)
+  // טען אתרי עבודה מה-API
   if (workSitesRaw && workSitesRaw.length > 0) {
     DATA.workSites = workSitesRaw.map(s => ({
       id:                  s.id,
@@ -2119,23 +2092,17 @@ async function loadAndInjectData(user) {
       DATA.workSites = saved ? JSON.parse(saved) : [];
     } catch(e) { DATA.workSites = []; }
   }
-  // טען שיוך פועל-אתר — localStorage כ-fallback למה שלא הגיע מ-API
   try {
     const assignKey = 'workerSites_' + (user.company || 'global');
     const savedAssign = localStorage.getItem(assignKey);
     const assignMap = savedAssign ? JSON.parse(savedAssign) : {};
     DATA.users.forEach(u => { if (u.siteId == null && assignMap[u.id] !== undefined) u.siteId = assignMap[u.id]; });
   } catch(e) {}
-  // טען היסטוריית שיוכים מה-API
   if (historyRaw && historyRaw.length > 0) {
     DATA.workerSiteHistory = historyRaw.map(h => ({
-      id:         h.id,
-      workerId:   h.worker_id,
-      siteId:     h.site_id,
-      siteName:   h.site_name  || '',
-      contractor: h.contractor || '',
-      fromDate:   h.from_date  || null,
-      toDate:     h.to_date    || null,
+      id: h.id, workerId: h.worker_id, siteId: h.site_id,
+      siteName: h.site_name || '', contractor: h.contractor || '',
+      fromDate: h.from_date || null, toDate: h.to_date || null,
     }));
   } else {
     try {
@@ -2388,16 +2355,12 @@ async function sbCreateWorkSite(payload) {
   try {
     const raw = await apiFetch('/work-sites', 'POST', payload);
     const mapped = {
-      id:                  raw.id,
-      companyId:           raw.company_id           || payload.companyId,
-      name:                raw.name,
-      contractor:          raw.contractor            || '',
-      address:             raw.address               || '',
-      phone:               raw.phone                 || '',
-      price_type:          raw.price_type            || '',
-      site_price:          raw.site_price            || 0,
+      id: raw.id, companyId: raw.company_id || payload.companyId,
+      name: raw.name, contractor: raw.contractor || '',
+      address: raw.address || '', phone: raw.phone || '',
+      price_type: raw.price_type || '', site_price: raw.site_price || 0,
       contractorPriceType: raw.contractor_price_type || '',
-      contractorPrice:     raw.contractor_price       || 0,
+      contractorPrice: raw.contractor_price || 0,
     };
     DATA.workSites.push(mapped);
     _saveWorkSitesLocal(mapped.companyId);
@@ -2436,7 +2399,6 @@ async function sbAssignWorkerSite(workerId, siteId) {
     await apiFetch('/users', 'PATCH', { id: workerId, site_id: siteId });
   } catch(e) {
     console.error('sbAssignWorkerSite error:', e);
-    showToast('❌ שגיאה בשמירת שיוך', 'error');
     return { ok: false };
   }
   const u = DATA.users.find(u => u.id === workerId);
@@ -2699,6 +2661,45 @@ function login(user) {
   startDataPolling();
 }
 
+let _pollingTimer = null;
+function startDataPolling() {
+  stopDataPolling();
+  _pollingTimer = setInterval(refreshLiveData, 30000);
+}
+function stopDataPolling() {
+  if (_pollingTimer) { clearInterval(_pollingTimer); _pollingTimer = null; }
+}
+async function refreshLiveData() {
+  if (!currentUser) return;
+  try {
+    const [usersRaw, historyRaw] = await Promise.all([
+      apiFetch('/users').catch(() => null),
+      apiFetch('/worker-site-history').catch(() => null),
+    ]);
+    let changed = false;
+    if (usersRaw) {
+      usersRaw.forEach(raw => {
+        const u = DATA.users.find(u => u.id === raw.id);
+        if (u && u.siteId !== (raw.site_id || null)) { u.siteId = raw.site_id || null; changed = true; }
+      });
+    }
+    if (historyRaw) {
+      const newHistory = historyRaw.map(h => ({
+        id: h.id, workerId: h.worker_id, siteId: h.site_id,
+        siteName: h.site_name || '', contractor: h.contractor || '',
+        fromDate: h.from_date || null, toDate: h.to_date || null,
+      }));
+      if (JSON.stringify(newHistory) !== JSON.stringify(DATA.workerSiteHistory)) {
+        DATA.workerSiteHistory = newHistory; changed = true;
+      }
+    }
+    if (changed) {
+      if (currentPage === 'ceo-sites') renderWorkSites();
+      if (currentPage === 'ceo-workers') renderCeoWorkersGrid(false);
+    }
+  } catch(e) {}
+}
+
 function logout() {
   sbDoLogout();
   stopDataPolling();
@@ -2709,78 +2710,6 @@ function logout() {
   document.getElementById('loginUser').value = '';
   document.getElementById('loginPass').value = '';
   closeSidebar();
-}
-
-// ── Polling — רענון נתונים אוטומטי כל 30 שניות ──
-let _pollingTimer = null;
-
-function startDataPolling() {
-  stopDataPolling();
-  _pollingTimer = setInterval(refreshLiveData, 30000);
-}
-
-function stopDataPolling() {
-  if (_pollingTimer) { clearInterval(_pollingTimer); _pollingTimer = null; }
-}
-
-async function refreshLiveData() {
-  if (!currentUser) return;
-  try {
-    // רענן users (כולל site_id) והיסטוריית שיוכים
-    const [usersRaw, historyRaw] = await Promise.all([
-      apiFetch('/users').catch(() => null),
-      apiFetch('/worker-site-history').catch(() => null),
-    ]);
-
-    let changed = false;
-
-    if (usersRaw) {
-      // עדכן site_id לכל פועל
-      usersRaw.forEach(raw => {
-        const u = DATA.users.find(u => u.id === raw.id);
-        if (u && u.siteId !== (raw.site_id || null)) {
-          u.siteId = raw.site_id || null;
-          changed = true;
-        }
-      });
-    }
-
-    if (historyRaw) {
-      const newHistory = historyRaw.map(h => ({
-        id:         h.id,
-        workerId:   h.worker_id,
-        siteId:     h.site_id,
-        siteName:   h.site_name  || '',
-        contractor: h.contractor || '',
-        fromDate:   h.from_date  || null,
-        toDate:     h.to_date    || null,
-      }));
-      // בדוק אם יש שינוי לפני render
-      if (JSON.stringify(newHistory) !== JSON.stringify(DATA.workerSiteHistory)) {
-        DATA.workerSiteHistory = newHistory;
-        changed = true;
-      }
-    }
-
-    if (changed) {
-      if (currentPage === 'ceo-sites')    renderWorkSites();
-      if (currentPage === 'ceo-workers')  renderCeoWorkersGrid(false);
-    }
-
-    // רענן יומן בשקט
-    if (currentPage === 'ceo-calendar' || currentPage === 'emp-calendar' || currentPage === 'admin-calendar') {
-      const calRole = calState.role;
-      if (calRole) {
-        const freshEvents = await calLoadFromAPI(calRole);
-        if (JSON.stringify(freshEvents) !== JSON.stringify(calState.events)) {
-          calState.events = freshEvents;
-          renderCalendar(calRole);
-        }
-      }
-    }
-  } catch(e) {
-    // polling שקט — לא מציג שגיאה
-  }
 }
 
 // ═══════════════════════════════════════════
@@ -7224,7 +7153,7 @@ function renderSitesHoursSummary() {
       window._siteWorkerLists[listKey + '|unsigned']  = [...unsignedSet].map(id=>DATA.users.find(u=>u.id===id)?.name).filter(Boolean);
       const lkSafe = (contr + '|' + s.siteName).replace(/'/g, "\'");
 
-      html += `<tr style="border-bottom:1px solid var(--border);">
+      html += `<tr style="border-bottom:1px solid var(--border);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
         <td style="padding:8px 8px;font-weight:600;color:var(--text);">🏗️ ${s.siteName}</td>
         <td style="padding:8px 4px;text-align:center;cursor:pointer;color:var(--text2);" onclick="showSiteWorkersListByKey('${lkSafe}','all','כל הפועלים','#1d1d1f')" onmouseover="this.style.background='#f0f4f8'" onmouseout="this.style.background=''">${s.workers.size}</td>
         <td style="padding:8px 4px;text-align:center;cursor:pointer;color:#2a7a5a;font-weight:600;" onclick="showSiteWorkersListByKey('${lkSafe}','signed','✅ חתומות','#2a7a5a')" onmouseover="this.style.background='#f0fff4'" onmouseout="this.style.background=''">${s.signedHours.toFixed(1)}</td>
@@ -7233,35 +7162,32 @@ function renderSitesHoursSummary() {
           const vat = parseFloat(document.getElementById('sites-vat-rate')?.value||18)/100;
           const vatAmt = s.cost != null ? Math.round(s.cost * vat) : null;
           const total  = s.cost != null ? Math.round(s.cost * (1 + vat)) : null;
-          const siteWorkers = [...(s.workers||new Set())].map(id => DATA.users.find(u=>u.id===id)).filter(Boolean);
           const siteObj = allSites.find(st => st.name === s.siteName && st.contractor === contr);
-          const priceType = siteObj ? (siteObj.priceType || siteObj.contractorPriceType || 'hourly') : 'hourly';
-          const price = siteObj ? (siteObj.price || siteObj.contractorPrice || null) : null;
-          const workedDays = s._workedDays ? s._workedDays.size : 0;
-          const onclickAttr = `openSiteWorkersCostModal('${(contr+'||'+s.siteName).replace(/'/g,"\'")}')`;
-          const onclickAttr = `openSiteWorkersCostModal('${(contr+'||'+s.siteName).replace(/'/g,"\'")}')"`;
-          return `
-          <td style="padding:8px 4px;text-align:center;font-weight:700;color:var(--text);cursor:pointer;" class="cost-cell"
-            onclick="${onclickAttr}"
-            onmouseenter="this.closest(&apos;tr&apos;).querySelectorAll(&apos;.cost-cell&apos;).forEach(function(c){c.style.background=&apos;#e8f0fb&apos;})"
-            onmouseleave="this.closest(&apos;tr&apos;).querySelectorAll(&apos;.cost-cell&apos;).forEach(function(c){c.style.background=&apos;&apos;})"
-            title="לחץ לפירוט פועלים">${s.hours.toFixed(1)}</td>
-          <td style="padding:8px 4px;text-align:center;color:#0071e3;font-weight:600;cursor:pointer;" class="cost-cell"
-            onclick="${onclickAttr}"
-            onmouseenter="this.closest(&apos;tr&apos;).querySelectorAll(&apos;.cost-cell&apos;).forEach(function(c){c.style.background=&apos;#e8f0fb&apos;})"
-            onmouseleave="this.closest(&apos;tr&apos;).querySelectorAll(&apos;.cost-cell&apos;).forEach(function(c){c.style.background=&apos;&apos;})"
-            title="לחץ לפירוט פועלים">${s.cost != null ? '₪'+Math.round(s.cost).toLocaleString() : '—'}</td>
-          <td style="padding:8px 4px;text-align:center;color:#6c5ce7;font-weight:600;cursor:pointer;" class="cost-cell"
-            onclick="${onclickAttr}"
-            onmouseenter="this.closest(&apos;tr&apos;).querySelectorAll(&apos;.cost-cell&apos;).forEach(function(c){c.style.background=&apos;#e8f0fb&apos;})"
-            onmouseleave="this.closest(&apos;tr&apos;).querySelectorAll(&apos;.cost-cell&apos;).forEach(function(c){c.style.background=&apos;&apos;})"
-            title="לחץ לפירוט פועלים">${vatAmt != null ? '₪'+vatAmt.toLocaleString() : '—'}</td>
-          <td style="padding:8px 4px;text-align:center;color:#00b894;font-weight:700;cursor:pointer;" class="cost-cell"
-            onclick="${onclickAttr}"
-            onmouseenter="this.closest(&apos;tr&apos;).querySelectorAll(&apos;.cost-cell&apos;).forEach(function(c){c.style.background=&apos;#e8f0fb&apos;})"
-            onmouseleave="this.closest(&apos;tr&apos;).querySelectorAll(&apos;.cost-cell&apos;).forEach(function(c){c.style.background=&apos;&apos;})"
-            title="לחץ לפירוט פועלים">${total != null ? '₪'+total.toLocaleString() : '—'}</td>
-          `;
+          const _key = encodeURIComponent(contr + '||' + s.siteName);
+          const _click = `openSiteWorkersCostModal(decodeURIComponent('${_key}'))`;
+          const _hl = `this.closest('tr').querySelectorAll('.ccell').forEach(function(x){x.style.background='#e8f0fb'})`;
+          const _hl0 = `this.closest('tr').querySelectorAll('.ccell').forEach(function(x){x.style.background=''})`;
+          return \`
+          <td class="ccell" style="padding:8px 4px;text-align:center;font-weight:700;color:var(--text);cursor:pointer;"
+            onclick="\${_click}" onmouseenter="\${_hl}" onmouseleave="\${_hl0}">\${s.hours.toFixed(1)}</td>
+          <td class="ccell" style="padding:8px 4px;text-align:center;color:#0071e3;font-weight:600;cursor:pointer;"
+            onclick="\${_click}" onmouseenter="\${_hl}" onmouseleave="\${_hl0}">\${s.cost != null ? '₪'+Math.round(s.cost).toLocaleString() : '—'}</td>
+          <td class="ccell" style="padding:8px 4px;text-align:center;color:#6c5ce7;font-weight:600;cursor:pointer;"
+            onclick="\${_click}" onmouseenter="\${_hl}" onmouseleave="\${_hl0}">\${vatAmt != null ? '₪'+vatAmt.toLocaleString() : '—'}</td>
+          <td class="ccell" style="padding:8px 4px;text-align:center;color:#00b894;font-weight:700;cursor:pointer;"
+            onclick="\${_click}" onmouseenter="\${_hl}" onmouseleave="\${_hl0}">\${total != null ? '₪'+total.toLocaleString() : '—'}</td>
+          \`;
+        })()}
+      </tr>`;
+    });
+
+    // שמור רשימת כל פועלי הקבלן לשורת סה"כ
+    if (!window._siteWorkerLists) window._siteWorkerLists = {};
+    const allContrWorkers = [...new Set(Object.values(sites).flatMap(v=>[...v.workers]))];
+    window._siteWorkerLists[contr + '|סה"כ|all']      = allContrWorkers.map(id=>DATA.users.find(u=>u.id===id)?.name).filter(Boolean);
+    const allContrSigned   = [...new Set(Object.keys(window._siteWorkerLists).filter(k=>k.startsWith(contr+'|')&&k.endsWith('|signed')).flatMap(k=>window._siteWorkerLists[k]))];
+    const allContrUnsigned = [...new Set(Object.keys(window._siteWorkerLists).filter(k=>k.startsWith(contr+'|')&&k.endsWith('|unsigned')).flatMap(k=>window._siteWorkerLists[k]))];
+    window._siteWorkerLists[contr + '|סה"כ|signed']   = allContrSigned;
     window._siteWorkerLists[contr + '|סה"כ|unsigned']  = allContrUnsigned;
     const contrSafe = contr.replace(/'/g, "\'");
 
@@ -7275,35 +7201,50 @@ function renderSitesHoursSummary() {
     const totalWithVat  = hasAnyCost ? Math.round(totalCost * (1+vat)) : null;
     const totalWorkersAll = new Set(Object.values(sites).flatMap(v=>[...v.workers])).size;
 
-    html += `<tr style="background:#f0f4f8;border-top:2px solid #d2d2d7;font-weight:800;font-size:14px;"
     html += `<tr style="background:#f0f4f8;border-top:2px solid #d2d2d7;font-weight:800;font-size:14px;">
+      <td style="padding:8px 8px;color:#1d1d1f;">סה"כ</td>
       <td style="padding:8px 4px;text-align:center;cursor:pointer;color:#1d1d1f;" onclick="showSiteWorkersListByKey('${contrSafe}|סה&quot;כ','all','כל הפועלים','#1d1d1f')" onmouseover="this.style.background='#e8eef8'" onmouseout="this.style.background=''">${totalWorkersAll}</td>
       <td style="padding:8px 4px;text-align:center;cursor:pointer;color:#2a7a5a;" onclick="showSiteWorkersListByKey('${contrSafe}|סה&quot;כ','signed','✅ חתומות','#2a7a5a')" onmouseover="this.style.background='#dcf5e8'" onmouseout="this.style.background=''">${totalSigned.toFixed(1)}</td>
       <td style="padding:8px 4px;text-align:center;cursor:pointer;color:${totalUnsigned>0?'#a03030':'#86868b'};" onclick="showSiteWorkersListByKey('${contrSafe}|סה&quot;כ','unsigned','⏳ לא חתומות','#a03030')" onmouseover="this.style.background='#fce8e8'" onmouseout="this.style.background=''">${totalUnsigned.toFixed(1)}</td>
-      <td class="total-cost-cell" style="padding:8px 4px;text-align:center;color:#1d1d1f;cursor:pointer;" onclick="openAllSitesCostModal(&apos;${contrSafe}&apos;)" onmouseenter="this.closest(&apos;tr&apos;).querySelectorAll(&apos;.total-cost-cell&apos;).forEach(function(c){c.style.background=&apos;#dce8f8&apos;})" onmouseleave="this.closest(&apos;tr&apos;).querySelectorAll(&apos;.total-cost-cell&apos;).forEach(function(c){c.style.background=&apos;&apos;})" title="לחץ לפירוט כל האתרים">${totalHours.toFixed(1)}</td>
-      <td class="total-cost-cell" style="padding:8px 4px;text-align:center;color:#0071e3;cursor:pointer;" onclick="openAllSitesCostModal(&apos;${contrSafe}&apos;)" onmouseenter="this.closest(&apos;tr&apos;).querySelectorAll(&apos;.total-cost-cell&apos;).forEach(function(c){c.style.background=&apos;#dce8f8&apos;})" onmouseleave="this.closest(&apos;tr&apos;).querySelectorAll(&apos;.total-cost-cell&apos;).forEach(function(c){c.style.background=&apos;&apos;})" title="לחץ לפירוט כל האתרים">${hasAnyCost ? '₪'+Math.round(totalCost).toLocaleString() : '—'}</td>
-      <td class="total-cost-cell" style="padding:8px 4px;text-align:center;color:#6c5ce7;cursor:pointer;" onclick="openAllSitesCostModal(&apos;${contrSafe}&apos;)" onmouseenter="this.closest(&apos;tr&apos;).querySelectorAll(&apos;.total-cost-cell&apos;).forEach(function(c){c.style.background=&apos;#dce8f8&apos;})" onmouseleave="this.closest(&apos;tr&apos;).querySelectorAll(&apos;.total-cost-cell&apos;).forEach(function(c){c.style.background=&apos;&apos;})" title="לחץ לפירוט כל האתרים">${totalVat!=null ? '₪'+totalVat.toLocaleString() : '—'}</td>
-      <td class="total-cost-cell" style="padding:8px 4px;text-align:center;color:#00b894;cursor:pointer;" onclick="openAllSitesCostModal(&apos;${contrSafe}&apos;)" onmouseenter="this.closest(&apos;tr&apos;).querySelectorAll(&apos;.total-cost-cell&apos;).forEach(function(c){c.style.background=&apos;#dce8f8&apos;})" onmouseleave="this.closest(&apos;tr&apos;).querySelectorAll(&apos;.total-cost-cell&apos;).forEach(function(c){c.style.background=&apos;&apos;})" title="לחץ לפירוט כל האתרים">${totalWithVat!=null ? '₪'+totalWithVat.toLocaleString() : '—'}</td>
+      <td class="tccell" style="padding:8px 4px;text-align:center;color:#1d1d1f;cursor:pointer;"
+        onclick="openAllSitesCostModal('${contrSafe}')"
+        onmouseenter="this.closest('tr').querySelectorAll('.tccell').forEach(function(x){x.style.background='#dce8f8'})"
+        onmouseleave="this.closest('tr').querySelectorAll('.tccell').forEach(function(x){x.style.background=''})"
+        title="לחץ לפירוט כל האתרים">${totalHours.toFixed(1)}</td>
+      <td class="tccell" style="padding:8px 4px;text-align:center;color:#0071e3;cursor:pointer;"
+        onclick="openAllSitesCostModal('${contrSafe}')"
+        onmouseenter="this.closest('tr').querySelectorAll('.tccell').forEach(function(x){x.style.background='#dce8f8'})"
+        onmouseleave="this.closest('tr').querySelectorAll('.tccell').forEach(function(x){x.style.background=''})"
+        title="לחץ לפירוט כל האתרים">${hasAnyCost ? '₪'+Math.round(totalCost).toLocaleString() : '—'}</td>
+      <td class="tccell" style="padding:8px 4px;text-align:center;color:#6c5ce7;cursor:pointer;"
+        onclick="openAllSitesCostModal('${contrSafe}')"
+        onmouseenter="this.closest('tr').querySelectorAll('.tccell').forEach(function(x){x.style.background='#dce8f8'})"
+        onmouseleave="this.closest('tr').querySelectorAll('.tccell').forEach(function(x){x.style.background=''})"
+        title="לחץ לפירוט כל האתרים">${totalVat!=null ? '₪'+totalVat.toLocaleString() : '—'}</td>
+      <td class="tccell" style="padding:8px 4px;text-align:center;color:#00b894;cursor:pointer;"
+        onclick="openAllSitesCostModal('${contrSafe}')"
+        onmouseenter="this.closest('tr').querySelectorAll('.tccell').forEach(function(x){x.style.background='#dce8f8'})"
+        onmouseleave="this.closest('tr').querySelectorAll('.tccell').forEach(function(x){x.style.background=''})"
+        title="לחץ לפירוט כל האתרים">${totalWithVat!=null ? '₪'+totalWithVat.toLocaleString() : '—'}</td>
     </tr></tbody></table></div></div>`;
   });
-
 
   wrap.innerHTML = html;
 }
 
 
-// ── פירוט עלות פועלים לאתר ──────────────────────────────────
 function openSiteWorkersCostModal(key) {
-  const [contr, siteName] = key.split('||');
+  const sep = key.indexOf('||');
+  const contr    = key.substring(0, sep);
+  const siteName = key.substring(sep + 2);
   const company  = currentUser.company;
   const allSites = DATA.workSites.filter(s => s.companyId === company);
   const site     = allSites.find(s => s.contractor === contr && s.name === siteName);
   const workers  = DATA.users.filter(u => u.company === company && u.role === 'worker');
   const vat      = parseFloat(document.getElementById('sites-vat-rate')?.value || 18) / 100;
-  const priceType  = site ? (site.priceType || site.contractorPriceType || 'hourly') : 'hourly';
+  const priceType    = site ? (site.priceType || site.contractorPriceType || 'hourly') : 'hourly';
   const pricePerUnit = site ? (parseFloat(site.price || site.contractorPrice) || null) : null;
-  const priceLbl = priceType === 'hourly' ? 'מחיר/שעה' : priceType === 'daily' ? 'מחיר/יום' : 'מחיר חודשי';
-
+  const priceLbl     = priceType === 'hourly' ? 'מחיר/שעה' : priceType === 'daily' ? 'מחיר/יום' : 'מחיר חודשי';
   const rows = _buildSiteWorkerRows(site, workers, vat, priceType, pricePerUnit);
   showModal(_buildCostModalHTML(siteName, contr, priceLbl, priceType, pricePerUnit, vat, rows, false));
 }
@@ -7313,12 +7254,9 @@ function openAllSitesCostModal(contrName) {
   const allSites = DATA.workSites.filter(s => s.companyId === company && s.contractor === contrName);
   const workers  = DATA.users.filter(u => u.company === company && u.role === 'worker');
   const vat      = parseFloat(document.getElementById('sites-vat-rate')?.value || 18) / 100;
-
-  let html = `
-    <div style="padding:22px;max-width:700px;width:100%;max-height:85vh;overflow-y:auto;">
-      <div style="font-size:17px;font-weight:800;margin-bottom:4px;">🏢 ${contrName}</div>
-      <div style="font-size:12px;color:var(--text3);margin-bottom:20px;">פירוט לפי אתרים</div>`;
-
+  let html = `<div style="padding:22px;max-width:700px;width:100%;max-height:85vh;overflow-y:auto;">
+    <div style="font-size:17px;font-weight:800;margin-bottom:4px;">🏢 ${contrName}</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:20px;">פירוט לפי אתרים</div>`;
   allSites.forEach(site => {
     const priceType    = site.priceType || site.contractorPriceType || 'hourly';
     const pricePerUnit = parseFloat(site.price || site.contractorPrice) || null;
@@ -7327,14 +7265,11 @@ function openAllSitesCostModal(contrName) {
     if (!rows.length) return;
     html += _buildCostModalHTML(site.name, contrName, priceLbl, priceType, pricePerUnit, vat, rows, true);
   });
-
   html += `<div style="display:flex;gap:10px;margin-top:16px;">
-    <button onclick="exportAllCostTablesToExcel('${contrName.replace(/'/g,"\'")}')"
-      style="background:transparent;border:1.5px solid #34c759;border-radius:980px;padding:9px 18px;font-size:13px;color:#34c759;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;"
-      onmouseover="this.style.background='#34c759';this.style.color='#fff'"
-      onmouseout="this.style.background='transparent';this.style.color='#34c759'">📋 העתק הכל לאקסל</button>
+    <button onclick="exportAllCostTablesToExcel('${contrName.replace(/'/g,"\'")}')
+" style="background:transparent;border:1.5px solid #34c759;border-radius:980px;padding:9px 18px;font-size:13px;color:#34c759;cursor:pointer;font-family:inherit;font-weight:500;" onmouseover="this.style.background='#34c759';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#34c759'">📋 העתק הכל לאקסל</button>
     <button onclick="closeModal()" style="background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:9px 20px;font-size:14px;cursor:pointer;font-family:inherit;">סגור</button>
-  </div></div>`;
+  </div></div>\`;
   showModal(html);
 }
 
@@ -7349,27 +7284,20 @@ function _buildSiteWorkerRows(site, workers, vat, priceType, pricePerUnit) {
     const monthPad = String(sitesMonth + 1).padStart(2, '0');
     let workerHours = 0, workerDays = new Set();
     for (let d = 1; d <= daysInMonth; d++) {
-      const e = hours[d];
-      if (!e) continue;
-      const h = parseFloat(e.hours) || 0;
-      if (h <= 0) continue;
+      const e = hours[d]; if (!e) continue;
+      const h = parseFloat(e.hours) || 0; if (h <= 0) continue;
       const dayStr = sitesYear + '-' + monthPad + '-' + String(d).padStart(2,'0');
-      const dayHist = workerHist
-        .filter(hh => hh.fromDate <= dayStr && (!hh.toDate || hh.toDate >= dayStr))
-        .sort((a,b) => b.fromDate.localeCompare(a.fromDate));
+      const dayHist = workerHist.filter(hh => hh.fromDate <= dayStr && (!hh.toDate || hh.toDate >= dayStr)).sort((a,b) => b.fromDate.localeCompare(a.fromDate));
       const siteHist = dayHist[0];
-      const workerSite = siteHist
-        ? (DATA.workSites||[]).find(s => s.id == siteHist.siteId)
-        : (DATA.workSites||[]).find(s => s.id == w.siteId);
+      const workerSite = siteHist ? (DATA.workSites||[]).find(s => s.id == siteHist.siteId) : (DATA.workSites||[]).find(s => s.id == w.siteId);
       if (!workerSite || workerSite.id !== site.id) continue;
-      workerHours += h;
-      workerDays.add(d);
+      workerHours += h; workerDays.add(d);
     }
     if (workerHours === 0) return;
     let workerCost = null;
     if (pricePerUnit) {
-      if (priceType === 'hourly')  workerCost = workerHours * pricePerUnit;
-      else if (priceType === 'daily')   workerCost = workerDays.size * pricePerUnit;
+      if (priceType === 'hourly') workerCost = workerHours * pricePerUnit;
+      else if (priceType === 'daily') workerCost = workerDays.size * pricePerUnit;
       else if (priceType === 'monthly') workerCost = pricePerUnit;
     }
     rows.push({ worker: w, hours: workerHours, days: workerDays.size, cost: workerCost });
@@ -7384,8 +7312,7 @@ function _buildCostModalHTML(siteName, contr, priceLbl, priceType, pricePerUnit,
   const vatAmt     = totalCost != null ? Math.round(totalCost * vat) : null;
   const totalVat   = totalCost != null ? Math.round(totalCost * (1+vat)) : null;
   const qtyCol     = priceType === 'hourly' ? 'שעות' : priceType === 'daily' ? 'ימים' : 'חודש';
-  const tableId    = 'cost-table-' + siteName.replace(/\s/g,'_') + '-' + Date.now();
-
+  const tableId    = 'ct-' + siteName.replace(/[^a-z0-9]/gi,'_') + '_' + Math.random().toString(36).slice(2,6);
   const rowsHTML = rows.map(r => {
     const qty = priceType === 'hourly' ? r.hours.toFixed(1) : priceType === 'daily' ? r.days : 1;
     return `<tr style="border-bottom:1px solid var(--border);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
@@ -7396,122 +7323,97 @@ function _buildCostModalHTML(siteName, contr, priceLbl, priceType, pricePerUnit,
       <td style="padding:8px 6px;text-align:center;color:#0071e3;font-weight:700;">${r.cost!=null ? '₪'+Math.round(r.cost).toLocaleString() : '—'}</td>
     </tr>`;
   }).join('');
-
-  const prefix = compact ? '' : `
-    <div style="padding:22px;max-width:620px;width:100%;max-height:85vh;overflow-y:auto;">
-      <div style="font-size:17px;font-weight:800;margin-bottom:2px;">📍 ${siteName}</div>
-      <div style="font-size:12px;color:var(--text3);margin-bottom:20px;">קבלן: ${contr}</div>`;
-  const suffix = compact ? '' : `
-      <div style="display:flex;gap:10px;margin-top:16px;">
-        <button onclick="exportCostTableToExcel('${tableId}','${siteName.replace(/'/g,"\'")}')"
-          style="background:transparent;border:1.5px solid #34c759;border-radius:980px;padding:9px 18px;font-size:13px;color:#34c759;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;"
-          onmouseover="this.style.background='#34c759';this.style.color='#fff'"
-          onmouseout="this.style.background='transparent';this.style.color='#34c759'">📋 העתק לאקסל</button>
-        <button onclick="closeModal()" style="background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:9px 20px;font-size:14px;cursor:pointer;font-family:inherit;">סגור</button>
-      </div>
-    </div>`;
-
+  const prefix = compact ? '' : `<div style="padding:22px;max-width:620px;width:100%;max-height:85vh;overflow-y:auto;">
+    <div style="font-size:17px;font-weight:800;margin-bottom:2px;">📍 ${siteName}</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:20px;">קבלן: ${contr}</div>`;
+  const suffix = compact ? '' : `<div style="display:flex;gap:10px;margin-top:16px;">
+    <button onclick="exportCostTableToExcel('${tableId}','${siteName.replace(/'/g,"\'")}')
+" style="background:transparent;border:1.5px solid #34c759;border-radius:980px;padding:9px 18px;font-size:13px;color:#34c759;cursor:pointer;font-family:inherit;font-weight:500;" onmouseover="this.style.background='#34c759';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#34c759'">📋 העתק לאקסל</button>
+    <button onclick="closeModal()" style="background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:9px 20px;font-size:14px;cursor:pointer;font-family:inherit;">סגור</button>
+  </div></div>`;
+  const exportBtnCompact = compact ? `<button onclick="exportCostTableToExcel('${tableId}','${siteName.replace(/'/g,"\'")}')
+" style="margin-right:auto;background:transparent;border:1.5px solid #34c759;border-radius:980px;padding:3px 12px;font-size:11px;color:#34c759;cursor:pointer;font-family:inherit;" onmouseover="this.style.background='#34c759';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#34c759'">📋 אקסל</button>` : '';
   return `${prefix}
-    <div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:${compact?'20px':'0'};">
-      <div style="background:linear-gradient(135deg,var(--bg3),var(--bg2));padding:10px 14px;display:flex;gap:10px;align-items:center;">
-        <span style="font-size:16px;">🏗️</span>
-        <span style="font-weight:700;font-size:14px;">${siteName}</span>
-        ${compact ? `<span style="font-size:11px;color:var(--text3);margin-right:auto;">${priceLbl}${pricePerUnit?': ₪'+pricePerUnit.toLocaleString():''}</span>` : ''}
-        <button onclick="exportCostTableToExcel('${tableId}','${siteName.replace(/'/g,"\'")}')"
-          style="margin-right:auto;background:transparent;border:1.5px solid #34c759;border-radius:980px;padding:3px 12px;font-size:11px;color:#34c759;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;${compact?'':'display:none;'}"
-          onmouseover="this.style.background='#34c759';this.style.color='#fff'"
-          onmouseout="this.style.background='transparent';this.style.color='#34c759'">📋 אקסל</button>
-      </div>
-      <table id="${tableId}" style="width:100%;border-collapse:collapse;font-size:13px;">
-        <thead><tr style="color:var(--text3);font-size:11px;font-weight:700;border-bottom:1px solid var(--border);background:var(--bg3);">
-          <th style="padding:7px 10px;text-align:right;">דרכון</th>
-          <th style="padding:7px 10px;text-align:right;">שם פועל</th>
-          <th style="padding:7px 6px;text-align:center;">${qtyCol}</th>
-          <th style="padding:7px 6px;text-align:center;">${priceLbl}</th>
-          <th style="padding:7px 6px;text-align:center;">עלות לפועל</th>
-        </tr></thead>
-        <tbody>${rowsHTML}</tbody>
-        <tfoot>
-          <tr style="background:#f0f4f8;font-weight:800;border-top:2px solid #d2d2d7;">
-            <td style="padding:8px 10px;" colspan="2">סה"כ</td>
-            <td style="padding:8px 6px;text-align:center;">${priceType==='hourly'?totalHours.toFixed(1):priceType==='daily'?totalDays:'—'}</td>
-            <td style="padding:8px 6px;text-align:center;">—</td>
-            <td style="padding:8px 6px;text-align:center;color:#0071e3;">${totalCost!=null?'₪'+Math.round(totalCost).toLocaleString():'—'}</td>
-          </tr>
-          ${vatAmt!=null?`
-          <tr style="background:#fafafa;border-top:1px solid var(--border);">
-            <td colspan="4" style="padding:7px 10px;font-size:12px;color:var(--text2);">מע"מ (${Math.round(vat*100)}%)</td>
-            <td style="padding:7px 6px;text-align:center;color:#6c5ce7;font-weight:700;">₪${vatAmt.toLocaleString()}</td>
-          </tr>
-          <tr style="background:#f0fff8;border-top:1px solid #b8e8d0;">
-            <td colspan="4" style="padding:7px 10px;font-weight:700;color:#00b894;">סה"כ כולל מע"מ</td>
-            <td style="padding:7px 6px;text-align:center;color:#00b894;font-weight:800;font-size:15px;">₪${totalVat.toLocaleString()}</td>
-          </tr>`:''}
-        </tfoot>
-      </table>
-    </div>${suffix}`;
+  <div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:${compact?'20px':'0'};">
+    <div style="background:linear-gradient(135deg,var(--bg3),var(--bg2));padding:10px 14px;display:flex;gap:10px;align-items:center;">
+      <span style="font-size:16px;">🏗️</span>
+      <span style="font-weight:700;font-size:14px;">${siteName}</span>
+      ${compact ? `<span style="font-size:11px;color:var(--text3);">${priceLbl}${pricePerUnit?': ₪'+pricePerUnit.toLocaleString():''}</span>` : ''}
+      ${exportBtnCompact}
+    </div>
+    <table id="${tableId}" style="width:100%;border-collapse:collapse;font-size:13px;">
+      <thead><tr style="color:var(--text3);font-size:11px;font-weight:700;border-bottom:1px solid var(--border);background:var(--bg3);">
+        <th style="padding:7px 10px;text-align:right;">דרכון</th>
+        <th style="padding:7px 10px;text-align:right;">שם פועל</th>
+        <th style="padding:7px 6px;text-align:center;">${qtyCol}</th>
+        <th style="padding:7px 6px;text-align:center;">${priceLbl}</th>
+        <th style="padding:7px 6px;text-align:center;">עלות לפועל</th>
+      </tr></thead>
+      <tbody>${rowsHTML}</tbody>
+      <tfoot>
+        <tr style="background:#f0f4f8;font-weight:800;border-top:2px solid #d2d2d7;">
+          <td style="padding:8px 10px;" colspan="2">סה"כ</td>
+          <td style="padding:8px 6px;text-align:center;">${priceType==='hourly'?totalHours.toFixed(1):priceType==='daily'?totalDays:'—'}</td>
+          <td style="padding:8px 6px;text-align:center;">—</td>
+          <td style="padding:8px 6px;text-align:center;color:#0071e3;">${totalCost!=null?'₪'+Math.round(totalCost).toLocaleString():'—'}</td>
+        </tr>
+        ${vatAmt!=null?`
+        <tr style="background:#fafafa;border-top:1px solid var(--border);">
+          <td colspan="4" style="padding:7px 10px;font-size:12px;color:var(--text2);">מע"מ (${Math.round(vat*100)}%)</td>
+          <td style="padding:7px 6px;text-align:center;color:#6c5ce7;font-weight:700;">₪${vatAmt.toLocaleString()}</td>
+        </tr>
+        <tr style="background:#f0fff8;border-top:1px solid #b8e8d0;">
+          <td colspan="4" style="padding:7px 10px;font-weight:700;color:#00b894;">סה"כ כולל מע"מ</td>
+          <td style="padding:7px 6px;text-align:center;color:#00b894;font-weight:800;font-size:15px;">₪${totalVat.toLocaleString()}</td>
+        </tr>`:''}
+      </tfoot>
+    </table>
+  </div>${suffix}`;
 }
 
-
 function _tableToTSV(table) {
-  // בונה TSV מסודר תוך התחשבות ב-colspan
-  const NUM_COLS = 5; // דרכון | שם | כמות | מחיר | עלות
+  const NUM_COLS = 5;
   const rows = [];
-
-  // כותרות
   const headers = [...table.querySelectorAll('thead th')].map(th => th.textContent.trim());
   rows.push(headers.join('\t'));
-
-  // שורות נתונים
   table.querySelectorAll('tbody tr').forEach(tr => {
     const cells = [...tr.querySelectorAll('td')].map(td => td.textContent.trim().replace(/[₪,]/g,'').trim());
     rows.push(cells.join('\t'));
   });
-
-  // שורות tfoot — עם מילוי ריק לפי colspan
   table.querySelectorAll('tfoot tr').forEach(tr => {
     const out = Array(NUM_COLS).fill('');
     let col = 0;
     [...tr.querySelectorAll('td')].forEach(td => {
       const span = parseInt(td.getAttribute('colspan') || '1');
-      const val  = td.textContent.trim().replace(/[₪,]/g,'').trim();
-      out[col] = val;
+      out[col] = td.textContent.trim().replace(/[₪,]/g,'').trim();
       col += span;
     });
     rows.push(out.join('\t'));
   });
-
   return rows.join('\n');
 }
-
 function _copyText(text, msg) {
   navigator.clipboard.writeText(text).then(() => showToast(msg)).catch(() => {
     const ta = document.createElement('textarea');
     ta.value = text; document.body.appendChild(ta); ta.select();
-    document.execCommand('copy'); document.body.removeChild(ta);
-    showToast(msg);
+    document.execCommand('copy'); document.body.removeChild(ta); showToast(msg);
   });
 }
-
 function exportCostTableToExcel(tableId, siteName) {
   const table = document.getElementById(tableId);
-  if (!table) { showToast('❌ טבלה לא נמצאה', 'error'); return; }
-  _copyText(_tableToTSV(table), '📋 הטבלה הועתקה — הדבק ישירות לאקסל');
+  if (!table) { showToast('❌ טבלאה לא נמצאה', 'error'); return; }
+  _copyText(_tableToTSV(table), '📋 הטבלאה הועתקה — הדבק ישירות לאקסל');
 }
-
 function exportAllCostTablesToExcel(contrName) {
-  const tables = document.querySelectorAll('[id^="cost-table-"]');
+  const tables = document.querySelectorAll('[id^="ct-"]');
   if (!tables.length) { showToast('❌ לא נמצאו טבלאות', 'error'); return; }
-
   const blocks = [`קבלן: ${contrName}`, ''];
   tables.forEach(table => {
     const card = table.closest('div[style*="border-radius:12px"]');
     const siteTitle = card?.querySelector('span[style*="font-weight:700"]')?.textContent?.trim() || '';
     if (siteTitle) blocks.push(`אתר: ${siteTitle}`);
-    blocks.push(_tableToTSV(table));
-    blocks.push('');
+    blocks.push(_tableToTSV(table)); blocks.push('');
   });
-
   _copyText(blocks.join('\n'), '📋 כל הטבלאות הועתקו — הדבק ישירות לאקסל');
 }
 
@@ -7551,8 +7453,8 @@ function renderWorkSites() {
           </div>
         </div>
         <div style="display:flex;gap:8px;flex-shrink:0;">
-          <button onclick="openEditContractorModal('${contractor.replace(/'/g,"\'")}')" style="background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:5px 14px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:500;color:#1d1d1f;transition:all 0.15s;white-space:nowrap;" onmouseover="this.style.background='#1d1d1f';this.style.color='#fff';this.style.borderColor='#1d1d1f'" onmouseout="this.style.background='transparent';this.style.color='#1d1d1f';this.style.borderColor='#d2d2d7'">✏️ ערוך קבלן</button>
-          <button onclick="deleteContractor('${contractor.replace(/'/g,"\'")}')" style="background:transparent;border:1.5px solid #ff3b30;border-radius:980px;padding:5px 14px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:500;color:#ff3b30;transition:all 0.15s;white-space:nowrap;" onmouseover="this.style.background='#ff3b30';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#ff3b30'">🗑️ מחק קבלן</button>
+        <button onclick="openEditContractorModal('${contractor.replace(/'/g,"\'")}')" style="background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:5px 14px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:500;color:#1d1d1f;transition:all 0.15s;white-space:nowrap;" onmouseover="this.style.background='#1d1d1f';this.style.color='#fff';this.style.borderColor='#1d1d1f'" onmouseout="this.style.background='transparent';this.style.color='#1d1d1f';this.style.borderColor='#d2d2d7'">✏️ ערוך קבלן</button>
+        <button onclick="deleteContractor('${contractor.replace(/''/ ,''\\'')}')" style="background:transparent;border:1.5px solid #ff3b30;border-radius:980px;padding:5px 14px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:500;color:#ff3b30;transition:all 0.15s;white-space:nowrap;" onmouseover="this.style.background='#ff3b30';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#ff3b30'">🗑️ מחק קבלן</button>
         </div>
       </div>
       ${cSites.map(site => {
@@ -7743,38 +7645,21 @@ async function saveEditContractor(oldName) {
   renderWorkSites();
 }
 
-function deleteContractor(contractorName) {
+async function deleteContractor(contractorName) {
   const company = currentUser.company;
   const sitesToDelete = DATA.workSites.filter(s => s.companyId === company && s.contractor === contractorName);
-  const totalWorkers = DATA.users.filter(u => u.company === company && u.role === 'worker' && sitesToDelete.some(s => s.id === u.siteId)).length;
-  const workerLine = totalWorkers ? `<div style="background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:8px 12px;font-size:12px;color:#b45309;margin-bottom:16px;">⚠️ ${totalWorkers} פועל${totalWorkers !== 1 ? 'ים' : ''} ישוחרר${totalWorkers !== 1 ? 'ו' : ''} מהאתרים</div>` : '';
-  showModal(`
-    <div style="padding:22px;max-width:340px;width:100%;text-align:center;">
-      <div style="font-size:36px;margin-bottom:10px;">🗑️</div>
-      <div style="font-size:15px;font-weight:700;margin-bottom:8px;">מחיקת קבלן</div>
-      <div style="font-size:13px;color:var(--text2);margin-bottom:16px;">
-        האם למחוק את הקבלן <strong>"${contractorName}"</strong> ואת כל ${sitesToDelete.length} אתריו?<br>
-        <span style="font-size:12px;color:var(--text3);">פעולה זו אינה ניתנת לביטול.</span>
-      </div>
-      ${workerLine}
-      <div style="display:flex;gap:10px;">
-        <button onclick="closeModal()" style="flex:1;background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:10px;font-size:14px;color:#1d1d1f;cursor:pointer;font-family:inherit;">ביטול</button>
-        <button onclick="closeModal();_doDeleteContractor('${contractorName.replace(/'/g, "\'")}')" style="flex:1;background:#ff3b30;border:none;border-radius:980px;padding:10px;font-size:14px;color:#fff;cursor:pointer;font-family:inherit;font-weight:600;">🗑️ כן, מחק</button>
-      </div>
-    </div>
-  `);
-}
+  if (!confirm(`למחוק את הקבלן "${contractorName}" ואת ${sitesToDelete.length} אתריו?`)) return;
 
-async function _doDeleteContractor(contractorName) {
-  const company = currentUser.company;
-  const sitesToDelete = DATA.workSites.filter(s => s.companyId === company && s.contractor === contractorName);
   for (const site of sitesToDelete) {
+    // הסר שיוך פועלים מהאתר
     const workers = DATA.users.filter(u => u.company === company && u.role === 'worker' && u.siteId === site.id);
     for (const w of workers) await sbAssignWorkerSite(w.id, null);
     await sbDeleteWorkSite(site.id);
     DATA.workSites = DATA.workSites.filter(s => s.id !== site.id);
   }
+
   showToast(`🗑️ הקבלן ו-${sitesToDelete.length} אתרים נמחקו`);
+  closeModal();
   renderWorkSites();
 }
 
@@ -7805,10 +7690,9 @@ async function saveAddContractor() {
   if (DATA.workSites.some(s => s.companyId === company && s.contractor === name)) {
     showToast('קבלן בשם זה כבר קיים', 'error'); return;
   }
-  // הוסף אתר ראשון עם שם הקבלן
+  // הוסף אתר ריא עם שם הקבלן (placeholder)
   const payload = { name: `אתר ראשון של ${name}`, contractor: name, companyId: company, company_id: company, address: '', phone: '' };
-  const res = await sbCreateWorkSite(payload);
-  // sbCreateWorkSite כבר מוסיף ל-DATA.workSites — אין push נוסף
+  await sbCreateWorkSite(payload);
   showToast(`✅ הקבלן "${name}" נוסף`);
   closeModal();
   renderWorkSites();
@@ -7908,7 +7792,6 @@ async function saveSite(siteId) {
     showToast('✅ האתר עודכן');
   } else {
     await sbCreateWorkSite({ ...payload, price_type: priceType, site_price: price });
-    // sbCreateWorkSite כבר מוסיף ל-DATA.workSites — אין push נוסף
     showToast('✅ האתר נוסף');
   }
   closeModal();
@@ -7918,62 +7801,12 @@ async function saveSite(siteId) {
 async function deleteSite(siteId) {
   const site = DATA.workSites.find(s=>s.id===siteId);
   if (!site) return;
-  const company = currentUser.company;
-  const contractorSites = DATA.workSites.filter(s => s.companyId === company && s.contractor === site.contractor);
   const workers = DATA.users.filter(u=>u.siteId===siteId);
-  const workerLine = workers.length ? `<div style="background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:8px 12px;font-size:12px;color:#b45309;margin-bottom:16px;">⚠️ ${workers.length} פועל${workers.length !== 1 ? 'ים' : ''} ישוחרר${workers.length !== 1 ? 'ו' : ''} מהאתר</div>` : '';
-
-  if (contractorSites.length === 1 && site.contractor) {
-    // האתר האחרון של הקבלן — הצע שתי אפשרויות
-    showModal(`
-      <div style="padding:22px;max-width:340px;width:100%;text-align:center;">
-        <div style="font-size:36px;margin-bottom:10px;">⚠️</div>
-        <div style="font-size:15px;font-weight:700;margin-bottom:8px;">האתר האחרון של הקבלן</div>
-        <div style="font-size:13px;color:var(--text2);margin-bottom:16px;">
-          <strong>"${site.name}"</strong> הוא האתר האחרון של קבלן <strong>${site.contractor}</strong>.<br>
-          <span style="font-size:12px;color:var(--text3);">פעולה זו אינה ניתנת לביטול.</span>
-        </div>
-        ${workerLine}
-        <div style="display:flex;flex-direction:column;gap:8px;">
-          <button onclick="closeModal();_doDeleteSite(${siteId})"
-            style="background:transparent;border:1.5px solid #ff3b30;border-radius:980px;padding:10px;font-size:13px;color:#ff3b30;cursor:pointer;font-family:inherit;font-weight:600;">
-            🗑️ מחק רק את האתר (שמור קבלן)
-          </button>
-          <button onclick="closeModal();_doDeleteContractor('${site.contractor.replace(/'/g, "\'")}')"
-            style="background:#ff3b30;border:none;border-radius:980px;padding:10px;font-size:13px;color:#fff;cursor:pointer;font-family:inherit;font-weight:600;">
-            🗑️ מחק גם את הקבלן
-          </button>
-          <button onclick="closeModal()"
-            style="background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:10px;font-size:13px;color:#1d1d1f;cursor:pointer;font-family:inherit;">
-            ביטול
-          </button>
-        </div>
-      </div>
-    `);
-  } else {
-    // אתר רגיל — מודל אישור
-    showModal(`
-      <div style="padding:22px;max-width:340px;width:100%;text-align:center;">
-        <div style="font-size:36px;margin-bottom:10px;">🗑️</div>
-        <div style="font-size:15px;font-weight:700;margin-bottom:8px;">מחיקת אתר</div>
-        <div style="font-size:13px;color:var(--text2);margin-bottom:16px;">
-          האם למחוק את האתר <strong>"${site.name}"</strong>?<br>
-          <span style="font-size:12px;color:var(--text3);">פעולה זו אינה ניתנת לביטול.</span>
-        </div>
-        ${workerLine}
-        <div style="display:flex;gap:10px;">
-          <button onclick="closeModal()" style="flex:1;background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:10px;font-size:14px;color:#1d1d1f;cursor:pointer;font-family:inherit;">ביטול</button>
-          <button onclick="closeModal();_doDeleteSite(${siteId})" style="flex:1;background:#ff3b30;border:none;border-radius:980px;padding:10px;font-size:14px;color:#fff;cursor:pointer;font-family:inherit;font-weight:600;">🗑️ כן, מחק</button>
-        </div>
-      </div>
-    `);
-  }
-}
-
-async function _doDeleteSite(siteId) {
-  const site = DATA.workSites.find(s=>s.id===siteId);
-  if (!site) return;
-  const workers = DATA.users.filter(u=>u.siteId===siteId);
+  const msg = workers.length
+    ? `מחיקת "${site.name}" תסיר שיוך מ-${workers.length} פועלים. להמשיך?`
+    : `למחוק את "${site.name}"?`;
+  if (!confirm(msg)) return;
+  // הסר שיוך מפועלים
   for (const w of workers) await sbAssignWorkerSite(w.id, null);
   await sbDeleteWorkSite(siteId);
   showToast('🗑️ האתר נמחק');
@@ -8033,174 +7866,33 @@ function openAssignToSiteFromList(siteId) {
   const unassigned = DATA.users.filter(u => u.company===company && u.role==='worker' && u.siteId!==siteId);
   if (!unassigned.length) { showToast('כל הפועלים כבר משויכים לאתר זה'); return; }
 
-  const today = new Date().toISOString().split('T')[0];
-
+  const workersListId = 'assign-site-workers-list-' + siteId;
   showModal(`
-    <div style="padding:24px;max-width:400px;width:100%;">
-      <div style="font-size:17px;font-weight:800;margin-bottom:4px;">הוסף פועלים ל: 📍 ${site?.name}</div>
-      <div style="font-size:12px;color:var(--text3);margin-bottom:14px;">ניתן לבחור מספר פועלים בבת אחת</div>
-
-      <input type="text" id="assign-site-search" placeholder="🔍 חיפוש פועל..."
-        oninput="filterAssignSiteWorkers()"
+    <div style="padding:24px;max-width:380px;width:100%;">
+      <div style="font-size:17px;font-weight:800;margin-bottom:12px;">הוסף פועל ל: 📍 ${site?.name}</div>
+      <input type="text" id="assign-site-search" placeholder="🔍 חיפוש פועל..." oninput="filterAssignSiteWorkers('${workersListId}')"
         style="width:100%;border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:14px;font-family:inherit;background:var(--bg3);color:var(--text);outline:none;box-sizing:border-box;margin-bottom:10px;">
-
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding:0 2px;">
-        <span style="font-size:12px;color:var(--text2);font-weight:600;" id="assign-selected-count">0 נבחרו</span>
-        <button onclick="toggleSelectAllSiteWorkers()" id="assign-select-all-btn"
-          style="background:none;border:none;font-size:12px;color:var(--accent);cursor:pointer;font-family:inherit;font-weight:600;padding:0;">
-          בחר הכל
-        </button>
-      </div>
-
-      <div id="assign-site-workers-list" style="display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto;margin-bottom:14px;">
+      <div id="${workersListId}" style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;margin-bottom:16px;">
         ${unassigned.map(w=>`
-          <label data-name="${w.name}" data-id="${w.id}"
-            style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;border:1.5px solid var(--border);background:white;transition:all 0.15s;"
-            onclick="toggleSiteWorkerSelect(this)">
-            <span id="assign-chk-${w.id}" style="width:20px;height:20px;border-radius:6px;border:2px solid var(--border2);background:white;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;font-size:13px;transition:all 0.15s;"></span>
-            <span style="width:30px;height:30px;border-radius:50%;background:${w.avatarColor}33;color:${w.avatarColor};display:inline-flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;">${w.name[0]}</span>
-            <span style="font-weight:600;flex:1;">${w.name}</span>
-            ${w.siteId ? `<span style="font-size:11px;color:var(--text3);">${DATA.workSites.find(s=>s.id===w.siteId)?.name||''}</span>` : ''}
+          <label data-name="${w.name}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;border:1px solid var(--border);background:white;" onclick="closeModal();assignWorkerToSite(${w.id},${siteId});">
+            <span style="width:30px;height:30px;border-radius:50%;background:${w.avatarColor}33;color:${w.avatarColor};display:inline-flex;align-items:center;justify-content:center;font-weight:700;">${w.name[0]}</span>
+            <span style="font-weight:600;">${w.name}</span>
+            ${w.siteId ? `<span style="font-size:11px;color:var(--text3);margin-right:auto;">${DATA.workSites.find(s=>s.id===w.siteId)?.name||''}</span>` : ''}
           </label>`).join('')}
       </div>
-
-      <div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:14px;">
-        <label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px;">📅 תאריך כניסה לאתר</label>
-        <input type="date" id="assign-bulk-date" value="${today}"
-          style="width:100%;border:2px solid var(--accent);border-radius:10px;padding:9px 12px;font-size:14px;font-family:inherit;background:white;direction:ltr;outline:none;box-sizing:border-box;">
-      </div>
-
-      <div style="display:flex;gap:10px;">
-        <button id="assign-bulk-confirm-btn" onclick="confirmBulkAssignToSite(${siteId})"
-          style="flex:1;background:#0071e3;border:none;border-radius:980px;padding:11px;font-size:14px;color:#fff;cursor:pointer;font-family:inherit;font-weight:600;opacity:0.4;pointer-events:none;transition:all 0.15s;">
-          ✅ שייך פועלים
-        </button>
-        <button onclick="closeModal()"
-          style="background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:11px 18px;font-size:14px;color:#1d1d1f;cursor:pointer;font-family:inherit;">
-          ביטול
-        </button>
-      </div>
+      <button class="btn btn-outline" style="width:100%;" onclick="closeModal()">סגור</button>
     </div>
   `);
   setTimeout(() => document.getElementById('assign-site-search')?.focus(), 80);
 }
 
-function toggleSiteWorkerSelect(label) {
-  const chk = label.querySelector('[id^="assign-chk-"]');
-  const selected = chk.dataset.selected === '1';
-  if (selected) {
-    chk.dataset.selected = '0';
-    chk.textContent = '';
-    chk.style.background = 'white';
-    chk.style.borderColor = 'var(--border2)';
-    label.style.borderColor = 'var(--border)';
-    label.style.background = 'white';
-  } else {
-    chk.dataset.selected = '1';
-    chk.textContent = '✓';
-    chk.style.background = 'var(--accent)';
-    chk.style.borderColor = 'var(--accent)';
-    chk.style.color = 'white';
-    label.style.borderColor = 'var(--accent)';
-    label.style.background = 'var(--accent3)';
-  }
-  _updateAssignBulkState();
-}
-
-function toggleSelectAllSiteWorkers() {
-  const list = document.getElementById('assign-site-workers-list');
-  if (!list) return;
-  const labels = [...list.querySelectorAll('label[data-name]:not([style*="display: none"])')];
-  const allSelected = labels.every(l => l.querySelector('[id^="assign-chk-"]')?.dataset.selected === '1');
-  labels.forEach(label => {
-    const chk = label.querySelector('[id^="assign-chk-"]');
-    if (!chk) return;
-    if (allSelected) {
-      chk.dataset.selected = '0'; chk.textContent = '';
-      chk.style.background = 'white'; chk.style.borderColor = 'var(--border2)'; chk.style.color = '';
-      label.style.borderColor = 'var(--border)'; label.style.background = 'white';
-    } else {
-      chk.dataset.selected = '1'; chk.textContent = '✓';
-      chk.style.background = 'var(--accent)'; chk.style.borderColor = 'var(--accent)'; chk.style.color = 'white';
-      label.style.borderColor = 'var(--accent)'; label.style.background = 'var(--accent3)';
-    }
-  });
-  _updateAssignBulkState();
-}
-
-function _updateAssignBulkState() {
-  const list = document.getElementById('assign-site-workers-list');
-  const btn = document.getElementById('assign-bulk-confirm-btn');
-  const countEl = document.getElementById('assign-selected-count');
-  const allBtn = document.getElementById('assign-select-all-btn');
-  if (!list) return;
-  const count = list.querySelectorAll('[id^="assign-chk-"][data-selected="1"]').length;
-  const total = list.querySelectorAll('label[data-name]:not([style*="display: none"])').length;
-  if (countEl) countEl.textContent = count + ' נבחרו';
-  if (btn) { btn.style.opacity = count > 0 ? '1' : '0.4'; btn.style.pointerEvents = count > 0 ? 'auto' : 'none'; }
-  if (allBtn) allBtn.textContent = (count === total && total > 0) ? 'בטל הכל' : 'בחר הכל';
-}
-
-function filterAssignSiteWorkers() {
+function filterAssignSiteWorkers(listId) {
   const q = (document.getElementById('assign-site-search')?.value || '').toLowerCase();
-  const list = document.getElementById('assign-site-workers-list');
+  const list = document.getElementById(listId);
   if (!list) return;
   list.querySelectorAll('label[data-name]').forEach(el => {
     el.style.display = el.dataset.name.toLowerCase().includes(q) ? '' : 'none';
   });
-  _updateAssignBulkState();
-}
-
-async function confirmBulkAssignToSite(siteId) {
-  const list = document.getElementById('assign-site-workers-list');
-  const dateInput = document.getElementById('assign-bulk-date');
-  if (!list || !dateInput) return;
-  const fromDate = dateInput.value;
-  if (!fromDate) { showToast('יש לבחור תאריך התחלה', 'error'); return; }
-
-  const selectedIds = [...list.querySelectorAll('[id^="assign-chk-"][data-selected="1"]')]
-    .map(chk => parseInt(chk.id.replace('assign-chk-', '')));
-  if (!selectedIds.length) return;
-
-  const yesterday = (() => {
-    const d = new Date(fromDate); d.setDate(d.getDate() - 1);
-    return d.toISOString().split('T')[0];
-  })();
-
-  closeModal();
-  const site = DATA.workSites.find(s=>s.id===siteId);
-
-  for (const workerId of selectedIds) {
-    // עדכן DATA.users.siteId מיד — לפני ה-render
-    const u = DATA.users.find(u => u.id === workerId);
-    if (u) u.siteId = siteId;
-
-    // סגור רשומות פתוחות ב-API
-    const openEntries = DATA.workerSiteHistory.filter(h => h.workerId === workerId && !h.toDate);
-    for (const h of openEntries) {
-      h.toDate = yesterday;
-      if (h.id) await apiFetch('/worker-site-history', 'PATCH', { id: h.id, to_date: yesterday }).catch(()=>{});
-    }
-    // הוסף רשומה חדשה ב-API
-    try {
-      const rec = await apiFetch('/worker-site-history', 'POST', {
-        worker_id: workerId, site_id: siteId,
-        site_name: site?.name || '', contractor: site?.contractor || '',
-        from_date: fromDate, to_date: null,
-      });
-      DATA.workerSiteHistory.push({ id: rec.id, workerId, siteId, siteName: site?.name||'', contractor: site?.contractor||'', fromDate, toDate: null });
-    } catch(e) {
-      DATA.workerSiteHistory.push({ workerId, siteId, siteName: site?.name||'', contractor: site?.contractor||'', fromDate, toDate: null });
-    }
-    // שמור ב-API (site_id בטבלת users)
-    await apiFetch('/users', 'PATCH', { id: workerId, site_id: siteId }).catch(e => {
-      console.error('assign site_id error:', e);
-    });
-  }
-
-  showToast(`✅ ${selectedIds.length} פועלים שויכו ל${site?.name || 'האתר'}`);
-  if (currentPage==='ceo-sites') renderWorkSites();
-  if (currentPage==='ceo-workers') renderCeoWorkersGrid(false);
 }
 
 function assignWorkerToSite(workerId, siteId) {
@@ -8232,44 +7924,30 @@ async function _confirmAssignWorker(workerId, siteId, dateInputId) {
   const fromDate = dateInputId ? (document.getElementById(dateInputId) ? document.getElementById(dateInputId).value : null) : null;
   if (siteId && !fromDate) { showToast('יש לבחור תאריך התחלה', 'error'); return; }
 
+  // סגור את הרשומה הפעילה הקודמת בהיסטוריה
   const yesterday = fromDate ? (() => {
     const d = new Date(fromDate); d.setDate(d.getDate() - 1);
     return d.toISOString().split('T')[0];
   })() : new Date().toISOString().split('T')[0];
+  DATA.workerSiteHistory
+    .filter(h => h.workerId === workerId && !h.toDate)
+    .forEach(h => { h.toDate = yesterday; });
 
-  // סגור רשומות פתוחות ב-API
-  const openEntries = DATA.workerSiteHistory.filter(h => h.workerId === workerId && !h.toDate);
-  for (const h of openEntries) {
-    h.toDate = yesterday;
-    if (h.id) await apiFetch('/worker-site-history', 'PATCH', { id: h.id, to_date: yesterday }).catch(()=>{});
-  }
-
-  // הוסף רשומה חדשה ב-API
+  // הוסף רשומה חדשה
   if (siteId && fromDate) {
     const site = DATA.workSites.find(s=>s.id===siteId);
-    try {
-      const rec = await apiFetch('/worker-site-history', 'POST', {
-        worker_id: workerId, site_id: siteId,
-        site_name: site?.name || '', contractor: site?.contractor || '',
-        from_date: fromDate, to_date: null,
-      });
-      DATA.workerSiteHistory.push({
-        id: rec.id, workerId, siteId,
-        siteName: site?.name || '', contractor: site?.contractor || '',
-        fromDate, toDate: null,
-      });
-    } catch(e) {
-      // fallback local
-      DATA.workerSiteHistory.push({ workerId, siteId, siteName: site?.name||'', contractor: site?.contractor||'', fromDate, toDate: null });
-    }
+    DATA.workerSiteHistory.push({
+      workerId: workerId, siteId: siteId,
+      siteName: site ? site.name : '', contractor: site ? (site.contractor||'') : '',
+      fromDate: fromDate, toDate: null,
+    });
   }
+  const worker = DATA.users.find(u=>u.id===workerId);
+  if (worker) _saveWorkerSiteHistoryLocal(worker.company);
 
-  // עדכן DATA.users.siteId מיד לפני render
   const _assignU = DATA.users.find(u => u.id === workerId);
   if (_assignU) _assignU.siteId = siteId;
-  // שמור ב-API
   await apiFetch('/users', 'PATCH', { id: workerId, site_id: siteId }).catch(e => console.error('assign error:', e));
-
   const site = siteId ? DATA.workSites.find(s=>s.id===siteId) : null;
   showToast(site ? ('✅ שויך ל' + site.name) : '✅ שיוך הוסר');
   closeModal();
@@ -8304,7 +7982,7 @@ function openWorkerSiteHistory(workerId) {
       ${!history.length ? `<div style="text-align:center;padding:24px;color:var(--text3);font-size:13px;">אין היסטוריית שיוכים</div>` : `
       <div style="display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;">
         ${history.slice().reverse().map((h,i) => `
-          <div style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;background:${!h.toDate?'#f0f7ff':'var(--bg3)'};">
+          <div style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;background:${!h.toMonth?'#f0f7ff':'var(--bg3)'};">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
               <div style="flex:1;">
                 <div style="font-weight:700;font-size:13px;">📍 ${h.siteName}</div>
@@ -8382,31 +8060,24 @@ async function saveAddHistoryEntry(workerId) {
   if (!site) { showToast('בחר אתר עבודה', 'error'); return; }
   if (!fromDate) { showToast('יש להזין תאריך התחלה', 'error'); return; }
 
+  // סגור את הרשומה הפעילה הקודמת
   const yesterday = (() => {
     const d = new Date(fromDate); d.setDate(d.getDate() - 1);
     return d.toISOString().split('T')[0];
   })();
+  DATA.workerSiteHistory
+    .filter(h => h.workerId === workerId && !h.toDate)
+    .forEach(h => { h.toDate = yesterday; });
 
-  // סגור רשומות פתוחות ב-API
-  const openEntries = DATA.workerSiteHistory.filter(h => h.workerId === workerId && !h.toDate);
-  for (const h of openEntries) {
-    h.toDate = yesterday;
-    if (h.id) await apiFetch('/worker-site-history', 'PATCH', { id: h.id, to_date: yesterday }).catch(()=>{});
-  }
+  // הוסף רשומה חדשה
+  DATA.workerSiteHistory.push({ workerId, siteId: site.id, siteName: site.name, contractor: site.contractor||'', fromDate, toDate: null });
 
-  // הוסף ב-API
-  try {
-    const rec = await apiFetch('/worker-site-history', 'POST', {
-      worker_id: workerId, site_id: site.id,
-      site_name: site.name, contractor: site.contractor||'',
-      from_date: fromDate, to_date: null,
-    });
-    DATA.workerSiteHistory.push({ id: rec.id, workerId, siteId: site.id, siteName: site.name, contractor: site.contractor||'', fromDate, toDate: null });
-  } catch(e) {
-    DATA.workerSiteHistory.push({ workerId, siteId: site.id, siteName: site.name, contractor: site.contractor||'', fromDate, toDate: null });
-  }
+  const worker = DATA.users.find(u=>u.id===workerId);
+  if (worker) _saveWorkerSiteHistoryLocal(worker.company);
 
+  // עדכן siteId של הפועל
   await sbAssignWorkerSite(workerId, site.id);
+
   showToast('✅ תקופה נוספה והפועל שויך לאתר');
   openWorkerSiteHistory(workerId);
   if (currentPage==='ceo-sites') renderWorkSites();
@@ -8435,46 +8106,26 @@ function editHistoryEntry(workerId, idx) {
   `);
 }
 
-async function saveEditHistoryEntry(workerId, idx) {
+function saveEditHistoryEntry(workerId, idx) {
   const allEntries = DATA.workerSiteHistory.filter(h=>h.workerId===workerId);
   const entry = allEntries[idx];
   if (!entry) return;
-  const newFromDate = document.getElementById('hist-edit-from')?.value || null;
-  entry.fromDate = newFromDate;
-  entry.fromMonth = null;
-  if (entry.id) {
-    await apiFetch('/worker-site-history', 'PATCH', { id: entry.id, from_date: newFromDate }).catch(()=>{});
-  }
+  entry.fromDate = document.getElementById('hist-edit-from')?.value || null;
+  entry.fromMonth = null; // נקה שדה ישן
+  const worker = DATA.users.find(u=>u.id===workerId);
+  if (worker) _saveWorkerSiteHistoryLocal(worker.company);
   showToast('✅ התקופה עודכנה');
   openWorkerSiteHistory(workerId);
 }
 
-async function deleteHistoryEntry(workerId, idx) {
+function deleteHistoryEntry(workerId, idx) {
   const allEntries = DATA.workerSiteHistory.filter(h=>h.workerId===workerId);
   const entry = allEntries[idx];
-  if (!entry) return;
-  showModal(`
-    <div style="padding:22px;max-width:320px;width:100%;text-align:center;">
-      <div style="font-size:32px;margin-bottom:10px;">🗑️</div>
-      <div style="font-size:15px;font-weight:700;margin-bottom:8px;">מחיקת תקופה</div>
-      <div style="font-size:13px;color:var(--text2);margin-bottom:20px;">למחוק את התקופה ב<strong>${entry.siteName}</strong>?</div>
-      <div style="display:flex;gap:10px;">
-        <button onclick="closeModal()" style="flex:1;background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:10px;font-size:14px;color:#1d1d1f;cursor:pointer;font-family:inherit;">ביטול</button>
-        <button onclick="closeModal();_doDeleteHistoryEntry(${workerId},${idx})" style="flex:1;background:#ff3b30;border:none;border-radius:980px;padding:10px;font-size:14px;color:#fff;cursor:pointer;font-family:inherit;font-weight:600;">🗑️ מחק</button>
-      </div>
-    </div>
-  `);
-}
-
-async function _doDeleteHistoryEntry(workerId, idx) {
-  const allEntries = DATA.workerSiteHistory.filter(h=>h.workerId===workerId);
-  const entry = allEntries[idx];
-  if (!entry) return;
-  if (entry.id) {
-    await apiFetch('/worker-site-history', 'DELETE', { id: entry.id }).catch(()=>{});
-  }
+  if (!entry || !confirm(`למחוק את התקופה ב${entry.siteName}?`)) return;
   const globalIdx = DATA.workerSiteHistory.indexOf(entry);
   if (globalIdx !== -1) DATA.workerSiteHistory.splice(globalIdx, 1);
+  const worker = DATA.users.find(u=>u.id===workerId);
+  if (worker) _saveWorkerSiteHistoryLocal(worker.company);
   showToast('🗑️ התקופה נמחקה');
   openWorkerSiteHistory(workerId);
 }
@@ -8545,24 +8196,15 @@ async function _confirmBulkAssign(siteId) {
   if (!fromDate) { showToast('יש לבחור תאריך התחלה', 'error'); return; }
   const site = DATA.workSites.find(s=>s.id===siteId);
   const ids = [..._bulkSelected];
-  const yesterday = (() => { const d = new Date(fromDate); d.setDate(d.getDate()-1); return d.toISOString().split('T')[0]; })();
-  for (const workerId of ids) {
-    const openEntries = DATA.workerSiteHistory.filter(h => h.workerId === workerId && !h.toDate);
-    for (const h of openEntries) {
-      h.toDate = yesterday;
-      if (h.id) await apiFetch('/worker-site-history', 'PATCH', { id: h.id, to_date: yesterday }).catch(()=>{});
-    }
-    try {
-      const rec = await apiFetch('/worker-site-history', 'POST', {
-        worker_id: workerId, site_id: siteId,
-        site_name: site?.name||'', contractor: site?.contractor||'',
-        from_date: fromDate, to_date: null,
-      });
-      DATA.workerSiteHistory.push({ id: rec.id, workerId, siteId, siteName: site?.name||'', contractor: site?.contractor||'', fromDate, toDate: null });
-    } catch(e) {
-      DATA.workerSiteHistory.push({ workerId, siteId, siteName: site?.name||'', contractor: site?.contractor||'', fromDate, toDate: null });
-    }
-    await sbAssignWorkerSite(workerId, siteId);
+  for (const id of ids) {
+    await sbAssignWorkerSite(id, siteId);
+    DATA.workerSiteHistory.push({
+      workerId: id, siteId: siteId,
+      siteName: site ? site.name : '', contractor: site ? (site.contractor||'') : '',
+      fromDate: fromDate, toDate: null,
+    });
+    const worker = DATA.users.find(u=>u.id===id);
+    if (worker) _saveWorkerSiteHistoryLocal(worker.company);
   }
   clearBulkSelection();
   closeModal();
@@ -8775,15 +8417,9 @@ function openEmojiPicker(targetInputId) {
 // 📅 CALENDAR — יומן מנהל מקצועי
 // ═══════════════════════════════════════════════════════════════
 
-function calShareEvent(ev) {
-  // כעת השיתוף נשמר ב-API — אין צורך ב-localStorage
-}
-
+function calShareEvent(ev) {}
 function calGetSharedEvents() {
-  // כעת האירועים המשותפים נטענים מה-API ישירות ל-calState.events
-  return calState.events
-    .filter(ev => ev.visibility && ev.visibility !== 'private')
-    .map(ev => ({ ...ev, fromShared: true }));
+  return calState.events.filter(ev => ev.visibility && ev.visibility !== 'private').map(ev => ({ ...ev, fromShared: true }));
 }
 
 function fmtCalDate(dateStr) {
@@ -8867,38 +8503,24 @@ function calStorageKey(role) {
 }
 
 function calLoad(role) {
-  // fallback ל-localStorage בלבד — טעינה ראשונית מה-API דרך calLoadFromAPI
-  try {
-    const raw = localStorage.getItem(calStorageKey(role));
-    return raw ? JSON.parse(raw) : [];
-  } catch { return []; }
+  try { const raw = localStorage.getItem(calStorageKey(role)); return raw ? JSON.parse(raw) : []; } catch { return []; }
 }
-
 function calSave(role, events) {
-  // שמור גם localStorage כ-cache מקומי
   localStorage.setItem(calStorageKey(role), JSON.stringify(events));
 }
-
 async function calLoadFromAPI(role) {
   try {
     const data = await apiFetch('/calendar-events').catch(() => null);
-    if (!data) return calLoad(role); // fallback
-    // מפה מ-DB format → client format
+    if (!data) return calLoad(role);
     const events = data.map(e => ({
-      id:         e.client_id || ('db_' + e.id),
-      _dbId:      e.id,
-      title:      e.title,
-      date:       e.event_date,
-      time:       e.event_time || '',
-      type:       e.type       || 'general',
-      color:      e.color      || 'blue',
-      status:     e.status     || 'pending',
-      repeat:     e.repeat     || '',
-      note:       e.note       || '',
-      visibility: e.visibility || 'private',
+      id: e.client_id || ('db_' + e.id), _dbId: e.id,
+      title: e.title, date: e.event_date, time: e.event_time || '',
+      type: e.type || 'general', color: e.color || 'blue',
+      status: e.status || 'pending', repeat: e.repeat || '',
+      note: e.note || '', visibility: e.visibility || 'private',
       sharedWith: e.shared_with || [],
     }));
-    calSave(role, events); // עדכן cache
+    calSave(role, events);
     return events;
   } catch { return calLoad(role); }
 }
@@ -9289,7 +8911,6 @@ function openCalEventModal(dateStr) {
       visibility,
       sharedWith,
     };
-    // שמור ב-API
     try {
       const saved = await apiFetch('/calendar-events', 'POST', {
         id: ev.id, title: ev.title, date: ev.date, time: ev.time,
@@ -9297,8 +8918,8 @@ function openCalEventModal(dateStr) {
         repeat: ev.repeat, note: ev.note,
         visibility: ev.visibility, sharedWith: ev.sharedWith,
       });
-      ev._dbId = saved.id; // שמור id מה-DB
-    } catch(e) { console.error('cal save error:', e); }
+      ev._dbId = saved.id;
+    } catch(e) { console.error('cal save:', e); }
     calState.events.push(ev);
     calSave(calState.role, calState.events);
     closeModal();
@@ -9396,8 +9017,7 @@ function openCalEventEdit(eventId) {
     const evDateEd = parseFmtDate(rawDateEd) || rawDateEd;
     if (!evDateEd) { showToast('❌ תאריך לא תקין', 'error'); return; }
     Object.assign(ev, {
-      title,
-      date:   evDateEd,
+      title, date: evDateEd,
       time:   document.getElementById('cal-ed-time').value,
       type:   document.getElementById('cal-ed-type').value,
       color:  document.getElementById('cal-ed-color').value,
@@ -9405,14 +9025,7 @@ function openCalEventEdit(eventId) {
       repeat: document.getElementById('cal-ed-repeat').value,
       note:   document.getElementById('cal-ed-note').value.trim(),
     });
-    // עדכן ב-API
-    if (ev._dbId) {
-      apiFetch('/calendar-events', 'PATCH', {
-        id: ev._dbId, title: ev.title, date: ev.date, time: ev.time,
-        type: ev.type, color: ev.color, status: ev.status,
-        repeat: ev.repeat, note: ev.note,
-      }).catch(e => console.error('cal update error:', e));
-    }
+    if (ev._dbId) apiFetch('/calendar-events', 'PATCH', { id: ev._dbId, title: ev.title, date: ev.date, time: ev.time, type: ev.type, color: ev.color, status: ev.status, repeat: ev.repeat, note: ev.note }).catch(()=>{});
     calSave(calState.role, calState.events);
     closeModal();
     renderCalendar(calState.role);
@@ -9422,13 +9035,7 @@ function openCalEventEdit(eventId) {
     const evToDelete = calState.events.find(e => e.id === eventId);
     calState.events = calState.events.filter(e => e.id !== eventId);
     calSave(calState.role, calState.events);
-
-    // מחק מ-API
-    if (evToDelete?._dbId) {
-      apiFetch('/calendar-events', 'DELETE', { id: evToDelete._dbId })
-        .catch(e => console.error('cal delete error:', e));
-    }
-
+    if (evToDelete?._dbId) apiFetch('/calendar-events', 'DELETE', { id: evToDelete._dbId }).catch(()=>{});
     // אם האירוע הגיע ממשימה — מחק גם את המשימה עצמה
     if (String(eventId).startsWith('task_')) {
       const taskId = parseInt(eventId.replace('task_', ''));
