@@ -7226,8 +7226,8 @@ function renderSitesHoursSummary() {
 
       const _rowId = 'sr-' + Math.random().toString(36).slice(2,8);
       html += `<tr id="${_rowId}" style="border-bottom:1px solid var(--border);cursor:default;"
-        onmouseenter="this.querySelectorAll('.cost-cell').forEach(c=>c.style.background='#e8f0fb');this.querySelectorAll('td:not(.cost-cell)').forEach(c=>c.style.background='var(--bg3)')"
-        onmouseleave="this.querySelectorAll('td').forEach(c=>c.style.background='')">
+        onmouseenter="this.querySelectorAll('.cost-cell').forEach(c=>c.style.background='#e8f0fb')"
+        onmouseleave="this.querySelectorAll('.cost-cell').forEach(c=>c.style.background='')">
         <td style="padding:8px 8px;font-weight:600;color:var(--text);">🏗️ ${s.siteName}</td>
         <td style="padding:8px 4px;text-align:center;cursor:pointer;color:var(--text2);" onclick="showSiteWorkersListByKey('${lkSafe}','all','כל הפועלים','#1d1d1f')" onmouseover="this.style.background='#f0f4f8'" onmouseout="this.style.background=''">${s.workers.size}</td>
         <td style="padding:8px 4px;text-align:center;cursor:pointer;color:#2a7a5a;font-weight:600;" onclick="showSiteWorkersListByKey('${lkSafe}','signed','✅ חתומות','#2a7a5a')" onmouseover="this.style.background='#f0fff4'" onmouseout="this.style.background=''">${s.signedHours.toFixed(1)}</td>
