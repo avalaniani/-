@@ -7165,7 +7165,7 @@ function renderSitesHoursSummary() {
           const siteObj = allSites.find(st => st.name === s.siteName && st.contractor === contr);
           const _key = encodeURIComponent(contr + '||' + s.siteName);
           const _click = `openSiteWorkersCostModal(decodeURIComponent('${_key}'))`;
-          const _hl = `this.closest('tr').querySelectorAll('.ccell').forEach(function(x){x.style.background='#e8f0fb'})`;
+          const _hl = `this.closest('tr').querySelectorAll('.ccell').forEach(function(x){x.style.background='#7aaee0'})`;
           const _hl0 = `this.closest('tr').querySelectorAll('.ccell').forEach(function(x){x.style.background=''})`;
           return `
           <td class="ccell" style="padding:8px 4px;text-align:center;font-weight:700;color:var(--text);cursor:pointer;"
@@ -7208,22 +7208,22 @@ function renderSitesHoursSummary() {
       <td style="padding:8px 4px;text-align:center;cursor:pointer;color:${totalUnsigned>0?'#a03030':'#86868b'};" onclick="showSiteWorkersListByKey('${contrSafe}|סה&quot;כ','unsigned','⏳ לא חתומות','#a03030')" onmouseover="this.style.background='#f5a8a8'" onmouseout="this.style.background=''">${totalUnsigned.toFixed(1)}</td>
       <td class="tccell" style="padding:8px 4px;text-align:center;color:#1d1d1f;cursor:pointer;"
         onclick="openAllSitesCostModal('${contrSafe}')"
-        onmouseenter="this.closest('tr').querySelectorAll('.tccell').forEach(function(x){x.style.background='#dce8f8'})"
+        onmouseenter="this.closest('tr').querySelectorAll('.tccell').forEach(function(x){x.style.background='#7aaee0'})"
         onmouseleave="this.closest('tr').querySelectorAll('.tccell').forEach(function(x){x.style.background=''})"
         title="לחץ לפירוט כל האתרים">${totalHours.toFixed(1)}</td>
       <td class="tccell" style="padding:8px 4px;text-align:center;color:#0071e3;cursor:pointer;"
         onclick="openAllSitesCostModal('${contrSafe}')"
-        onmouseenter="this.closest('tr').querySelectorAll('.tccell').forEach(function(x){x.style.background='#dce8f8'})"
+        onmouseenter="this.closest('tr').querySelectorAll('.tccell').forEach(function(x){x.style.background='#7aaee0'})"
         onmouseleave="this.closest('tr').querySelectorAll('.tccell').forEach(function(x){x.style.background=''})"
         title="לחץ לפירוט כל האתרים">${hasAnyCost ? '₪'+Math.round(totalCost).toLocaleString() : '—'}</td>
       <td class="tccell" style="padding:8px 4px;text-align:center;color:#6c5ce7;cursor:pointer;"
         onclick="openAllSitesCostModal('${contrSafe}')"
-        onmouseenter="this.closest('tr').querySelectorAll('.tccell').forEach(function(x){x.style.background='#dce8f8'})"
+        onmouseenter="this.closest('tr').querySelectorAll('.tccell').forEach(function(x){x.style.background='#7aaee0'})"
         onmouseleave="this.closest('tr').querySelectorAll('.tccell').forEach(function(x){x.style.background=''})"
         title="לחץ לפירוט כל האתרים">${totalVat!=null ? '₪'+totalVat.toLocaleString() : '—'}</td>
       <td class="tccell" style="padding:8px 4px;text-align:center;color:#00b894;cursor:pointer;"
         onclick="openAllSitesCostModal('${contrSafe}')"
-        onmouseenter="this.closest('tr').querySelectorAll('.tccell').forEach(function(x){x.style.background='#dce8f8'})"
+        onmouseenter="this.closest('tr').querySelectorAll('.tccell').forEach(function(x){x.style.background='#7aaee0'})"
         onmouseleave="this.closest('tr').querySelectorAll('.tccell').forEach(function(x){x.style.background=''})"
         title="לחץ לפירוט כל האתרים">${totalWithVat!=null ? '₪'+totalWithVat.toLocaleString() : '—'}</td>
     </tr></tbody></table></div></div>`;
