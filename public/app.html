@@ -4886,10 +4886,10 @@ function _copyGridToExcelImpl(fullscreen) {
   const showId = searchType === 'idpassport';
 
   const rows = [];
-  rows.push([`לוח שעות - ${monthNames[gridMonth]} ${gridYear} - ${company ? company.name : ''}`]);
-  rows.push([]);
 
-  const headerRow = [showId ? 'ת"ז / דרכון' : 'שם פועל'];
+
+
+  const headerRow = [showId ? 'דרכון' : 'שם פועל'];
   for (let d = 1; d <= daysInMonth; d++) headerRow.push(`${d}.${m}`);
   headerRow.push('סה"כ');
   rows.push(headerRow);
