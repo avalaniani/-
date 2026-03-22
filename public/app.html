@@ -4492,41 +4492,50 @@ function _populateCustomGridDropdowns() {
     if (fsContrOpts) fsContrOpts.innerHTML = fsHtml;
   }
 
-  // sites
-  const siteOpts = document.getElementById('grid-site-options');
+  // sites — רגיל מ-grid-filter-site, FS מ-fs-grid-filter-site (מסונן לפי קבלן)
+  const siteOpts   = document.getElementById('grid-site-options');
   const fsSiteOpts = document.getElementById('fs-grid-site-options');
-  if (siteSel) {
+  const fsSiteSel  = document.getElementById('fs-grid-filter-site');
+  const ITEM_STYLE = 'padding:10px 14px;cursor:pointer;font-size:13px;color:#1d1d1f;white-space:normal;word-break:break-word;max-width:260px;';
+  if (siteSel && siteOpts) {
     let html = '';
     Array.from(siteSel.options).forEach(opt => {
-      const val = opt.value;
-      const text = opt.text;
-      const ITEM_STYLE = 'padding:10px 14px;cursor:pointer;font-size:13px;color:#1d1d1f;white-space:normal;word-break:break-word;max-width:260px;';
-      if (siteOpts) html += `<div onclick="setGridSite('${val.replace(/'/g,"\'")}','${text.replace(/'/g,"\'")}');toggleGridStatusDropdown('grid-filter-site-dd')" style="${ITEM_STYLE}" onmouseover="this.style.background='#f5f5f7'" onmouseout="this.style.background=''">` + text + '</div>';
-      if (fsSiteOpts) fsSiteOpts.innerHTML = (fsSiteOpts.innerHTML||'') + `<div onclick="setGridSite('${val.replace(/'/g,"\'")}','${text.replace(/'/g,"\'")}',true);toggleGridStatusDropdown('fs-grid-filter-site-dd')" style="${ITEM_STYLE}" onmouseover="this.style.background='#f5f5f7'" onmouseout="this.style.background=''">` + text + '</div>';
+      html += `<div onclick="setGridSite('${opt.value.replace(/'/g,"\\'")}','${opt.text.replace(/'/g,"\\'")}');toggleGridStatusDropdown('grid-filter-site-dd')" style="${ITEM_STYLE}" onmouseover="this.style.background='#f5f5f7'" onmouseout="this.style.background=''">${opt.text}</div>`;
     });
-    if (siteOpts) siteOpts.innerHTML = html;
+    siteOpts.innerHTML = html;
+  }
+  if (fsSiteSel && fsSiteOpts) {
+    let fsHtml = '';
+    Array.from(fsSiteSel.options).forEach(opt => {
+      fsHtml += `<div onclick="setGridSite('${opt.value.replace(/'/g,"\\'")}','${opt.text.replace(/'/g,"\\'")}',true);toggleGridStatusDropdown('fs-grid-filter-site-dd')" style="${ITEM_STYLE}" onmouseover="this.style.background='#f5f5f7'" onmouseout="this.style.background=''">${opt.text}</div>`;
+    });
+    fsSiteOpts.innerHTML = fsHtml;
   }
 }
 function setGridContractor(val, label, fullscreen) {
+  // עדכן שני ה-selects (רגיל + FS) — הם מסונכרנים
   const sel = document.getElementById('grid-filter-contractor');
   if (sel) sel.value = val;
   const lbl = document.getElementById('grid-filter-contractor-label');
   if (lbl) lbl.textContent = label;
-  // עדכן גם FS
   const fsSel = document.getElementById('fs-grid-filter-contractor');
   if (fsSel) fsSel.value = val;
   const fsLbl = document.getElementById('fs-grid-filter-contractor-label');
   if (fsLbl) fsLbl.textContent = label;
-  // reset site
+  // אפס אתר נבחר בשני המסכים
   const siteSel = document.getElementById('grid-filter-site');
   if (siteSel) siteSel.value = '';
+  const fsSiteSel = document.getElementById('fs-grid-filter-site');
+  if (fsSiteSel) fsSiteSel.value = '';
   const siteLbl = document.getElementById('grid-filter-site-label');
   if (siteLbl) siteLbl.textContent = '🏗️ כל האתרים';
   const fsSiteLbl = document.getElementById('fs-grid-filter-site-label');
   if (fsSiteLbl) fsSiteLbl.textContent = '🏗️ כל האתרים';
+  // רענן רשימות (כולל סינון אתרים לפי קבלן)
   _populateSiteFilters();
   _populateCustomGridDropdowns();
-  renderCeoWorkersGrid(false);
+  // רנדר לפי המסך הנכון
+  renderCeoWorkersGrid(!!fullscreen);
 }
 
 function setGridSite(val, label, fullscreen) {
