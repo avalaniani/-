@@ -2440,7 +2440,7 @@ function sbSaveNote(content, noteType) {
     const uid = currentUser?.id || 'anon';
     await apiFetch('/notes', 'POST', { content, note_type: 'user_' + uid })
       .catch(e => console.error('שגיאת שמירת הערות:', e));
-  }, 1000);
+  }, 50);
 }
 
 // END OF SUPABASE BRIDGE
