@@ -1754,11 +1754,14 @@
       <span style="font-size:11px;display:flex;align-items:center;gap:4px;"><span style="width:14px;height:14px;background:white;border-radius:3px;display:inline-block;border:1px solid var(--border);color:#3366aa;font-weight:700;text-align:center;line-height:14px;font-size:9px;">8</span>שעות עבודה</span>
       <!-- Search in FS -->
       <div style="display:flex;gap:6px;align-items:center;margin-right:auto;flex-wrap:wrap;">
-        <select id="fs-grid-search-type" onchange="renderCeoWorkersGrid(true)" style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:7px 14px;font-size:13px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;appearance:none;-webkit-appearance:none;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">
-          <option value="name">🔎 שם</option>
-          <option value="idpassport" selected>🪪 ת"ז / דרכון</option>
-        </select>
-        <input type="text" id="fs-grid-search-input" placeholder="חיפוש..." oninput="renderCeoWorkersGrid(true)" style="border:1.5px solid var(--border);border-radius:980px;padding:7px 14px;font-size:13px;background:white;color:var(--text);width:130px;font-family:inherit;outline:none;" onfocus="this.style.borderColor='#0071e3'" onblur="this.style.borderColor='var(--border)'">
+        <select id="fs-grid-search-type" style="display:none;"><option value="name">שם</option><option value="idpassport" selected>ת"ז</option></select>
+        <div style="position:relative;display:inline-flex;align-items:center;border:1.5px solid #d2d2d7;border-radius:980px;background:#fff;overflow:hidden;min-width:220px;">
+          <input type="text" id="fs-grid-search-input" placeholder="הקלד לחיפוש..." oninput="renderCeoWorkersGrid(true)"
+            style="flex:1;border:none;padding:7px 14px;font-size:13px;background:transparent;color:#1d1d1f;font-family:inherit;outline:none;min-width:0;">
+          <button id="fs-grid-search-type-toggle" onclick="cycleGridSearchType(true)" title="החלף סוג חיפוש"
+            style="background:transparent;border:none;border-right:1.5px solid #e5e5ea;padding:0 10px;height:100%;cursor:pointer;font-size:14px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s;white-space:nowrap;"
+            onmouseover="this.querySelector('span').style.borderColor='#0071e3'" onmouseout="this.querySelector('span').style.borderColor='#d2d2d7'"><span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border:1.5px solid #d2d2d7;border-radius:50%;font-size:13px;transition:border-color 0.15s;">🪪</span></button>
+        </div>
         <select id="fs-grid-filter-contractor" style="display:none;" onchange="_refreshContractorFilter('fs-grid-filter-contractor','fs-grid-filter-site',()=>renderCeoWorkersGrid(true))">
           <option value="">🏢 כל הקבלנים</option>
         </select>
@@ -4447,10 +4450,11 @@ function changeGridMonth(delta) {
 let _gridStatusFilter = 'all';
 let _gridUntilDay = null; // יום לסינון "חתמו עד יום X"
 
-function cycleGridSearchType() {
-  const sel = document.getElementById('grid-search-type');
-  const btn = document.getElementById('grid-search-type-toggle');
-  const input = document.getElementById('grid-search-input');
+function cycleGridSearchType(fullscreen) {
+  const prefix = fullscreen ? 'fs-' : '';
+  const sel   = document.getElementById(prefix + 'grid-search-type');
+  const btn   = document.getElementById(prefix + 'grid-search-type-toggle');
+  const input = document.getElementById(prefix + 'grid-search-input');
   if (!sel || !btn) return;
   const isName = sel.value === 'name';
   sel.value = isName ? 'idpassport' : 'name';
@@ -4458,7 +4462,7 @@ function cycleGridSearchType() {
   if (span) span.textContent = isName ? '🪪' : '👤';
   btn.title = isName ? 'מחפש לפי ת"ז/דרכון — לחץ להחלפה' : 'מחפש לפי שם — לחץ להחלפה';
   input.placeholder = isName ? 'הכנס ת"ז או דרכון...' : 'הקלד שם...';
-  renderCeoWorkersGrid(false);
+  renderCeoWorkersGrid(!!fullscreen);
 }
 
 function setGridSearchType(val, label) {
