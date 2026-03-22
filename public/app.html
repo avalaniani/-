@@ -4868,8 +4868,6 @@ function _copyGridToExcelImpl(fullscreen) {
   const company = DATA.companies.find(c => c.id === currentUser.company);
   const daysInMonth = new Date(gridYear, gridMonth + 1, 0).getDate();
   const m = gridMonth + 1;
-
-  // Apply same search filter as the current view
   const searchTypeId = (fullscreen ? 'fs-' : '') + 'grid-search-type';
   const searchInputId = (fullscreen ? 'fs-' : '') + 'grid-search-input';
   const searchType = document.getElementById(searchTypeId)?.value || 'name';
@@ -4882,61 +4880,108 @@ function _copyGridToExcelImpl(fullscreen) {
       return true;
     });
   }
-
   const showId = searchType === 'idpassport';
+  const fname = `שעות_${monthNames[gridMonth]}_${gridYear}${company ? '_' + company.name : ''}.xlsx`;
 
-  const rows = [];
+  function doExport() {
+    const XS = (typeof XLSXStyle !== 'undefined') ? XLSXStyle : XLSX;
+    const mk = (v, s) => ({ v, s, t: typeof v === 'number' ? 'n' : 's' });
+    // ── סגנונות ──
+    const HEADER  = { font:{bold:true,color:{rgb:'FFFFFF'},sz:11}, fill:{fgColor:{rgb:'1D1D1F'}}, alignment:{horizontal:'center',vertical:'center',readingOrder:2} };
+    const NAME    = { font:{bold:true,sz:11}, fill:{fgColor:{rgb:'F5F5F7'}}, alignment:{horizontal:'right',vertical:'center',readingOrder:2} };
+    const SIGNED  = { font:{color:{rgb:'1A6B3A'},sz:10,bold:true}, fill:{fgColor:{rgb:'C8F0D8'}}, alignment:{horizontal:'center',vertical:'center'} };
+    const UNSIGNED= { font:{color:{rgb:'8B1A1A'},sz:10,bold:true}, fill:{fgColor:{rgb:'FFD0D0'}}, alignment:{horizontal:'center',vertical:'center'} };
+    const EMPTY   = { font:{sz:10}, fill:{fgColor:{rgb:'FFFFFF'}}, alignment:{horizontal:'center',vertical:'center'} };
+    const WEEKEND = { font:{color:{rgb:'AAAAAA'},sz:10}, fill:{fgColor:{rgb:'F0F0F0'}}, alignment:{horizontal:'center',vertical:'center'} };
+    const TOT     = { font:{bold:true,sz:11}, fill:{fgColor:{rgb:'E8F0FB'}}, alignment:{horizontal:'center',vertical:'center'} };
+    const TOT_NM  = { font:{bold:true,sz:11}, fill:{fgColor:{rgb:'D0DCF0'}}, alignment:{horizontal:'right',vertical:'center',readingOrder:2} };
 
+    const ws = {};
+    // כותרות
+    ws[XS.utils.encode_cell({r:0,c:0})] = mk(showId ? 'דרכון' : 'שם פועל', HEADER);
+    for (let d = 1; d <= daysInMonth; d++)
+      ws[XS.utils.encode_cell({r:0,c:d})] = mk(`${d}.${m}`, HEADER);
+    ws[XS.utils.encode_cell({r:0,c:daysInMonth+1})] = mk('סה"כ', HEADER);
 
+    const dayTotals = new Array(daysInMonth+2).fill(0);
+    workers.forEach((w, wi) => {
+      const r = wi + 1;
+      const key = `${w.id}-${gridYear}-${gridMonth}`;
+      const hours = DATA.workerHours[key] || {};
+      const signedInfo = company && company.signed[key];
+      const signedDays = new Set(
+        signedInfo?.type === 'full' ? Array.from({length:daysInMonth},(_,i)=>i+1) :
+        signedInfo?.type === 'partial' ? (signedInfo.days||[]).map(Number) : []
+      );
+      ws[XS.utils.encode_cell({r,c:0})] = mk(showId ? (w.idNumber||'—') : w.name, NAME);
+      let tot = 0;
+      for (let d = 1; d <= daysInMonth; d++) {
+        const entry = hours[d];
+        const h = entry ? (entry.start && entry.end ? calcHoursFromTime(entry.start,entry.end) : (parseFloat(entry.hours)||0)) : 0;
+        tot += h; dayTotals[d] += h;
+        const dow = new Date(gridYear, gridMonth, d).getDay();
+        const isWE = dow === 5 || dow === 6;
+        let sty, val;
+        if (h > 0) { sty = signedDays.has(d) ? SIGNED : UNSIGNED; val = h; }
+        else        { sty = isWE ? WEEKEND : EMPTY; val = ''; }
+        ws[XS.utils.encode_cell({r,c:d})] = { v:val, s:sty, t:val===''?'s':'n' };
+      }
+      tot = Math.round(tot*100)/100;
+      dayTotals[daysInMonth+1] += tot;
+      ws[XS.utils.encode_cell({r,c:daysInMonth+1})] = mk(tot||'', TOT);
+    });
 
-  const headerRow = [showId ? 'דרכון' : 'שם פועל'];
-  for (let d = 1; d <= daysInMonth; d++) headerRow.push(`${d}.${m}`);
-  headerRow.push('סה"כ');
-  rows.push(headerRow);
-
-  const dayTotals = new Array(daysInMonth + 1).fill(0);
-  workers.forEach(w => {
-    const key = `${w.id}-${gridYear}-${gridMonth}`;
-    const hours = DATA.workerHours[key] || {};
-    let workerTotal = 0;
-    const workerRow = [showId ? (w.idNumber || '—') : w.name];
+    // שורת סה"כ
+    const tr = workers.length + 1;
+    ws[XS.utils.encode_cell({r:tr,c:0})] = mk('סה"כ יומי', TOT_NM);
+    let grand = 0;
     for (let d = 1; d <= daysInMonth; d++) {
-      const entry = hours[d];
-      const h = entry ? (entry.start && entry.end ? calcHoursFromTime(entry.start, entry.end) : (parseFloat(entry.hours) || 0)) : 0;
-      workerTotal += h;
-      dayTotals[d] += h;
-      workerRow.push(h > 0 ? h : '');
+      const v = Math.round(dayTotals[d]*100)/100;
+      grand += v;
+      ws[XS.utils.encode_cell({r:tr,c:d})] = mk(v||'', TOT);
     }
-    workerRow.push(workerTotal > 0 ? workerTotal : '');
-    rows.push(workerRow);
-  });
+    ws[XS.utils.encode_cell({r:tr,c:daysInMonth+1})] = mk(Math.round(grand*100)/100||'', TOT);
 
-  const totalsRow = ['סה"כ יומי'];
-  let grandTotal = 0;
-  for (let d = 1; d <= daysInMonth; d++) {
-    grandTotal += dayTotals[d];
-    totalsRow.push(dayTotals[d] > 0 ? dayTotals[d] : '');
+    ws['!ref'] = XS.utils.encode_range({s:{r:0,c:0}, e:{r:tr,c:daysInMonth+1}});
+    const cols = [{wch:22}];
+    for (let d=0;d<daysInMonth;d++) cols.push({wch:5.5});
+    cols.push({wch:8});
+    ws['!cols'] = cols;
+    ws['!rows'] = Array(tr+1).fill({hpt:20});
+
+    const wb = XS.utils.book_new();
+    XS.utils.book_append_sheet(wb, ws, 'נתונים');
+    wb.Workbook = { Views:[{RTL:true}] };
+    XS.writeFile(wb, fname);
+    showToast('✅ הקובץ הורד בהצלחה');
   }
-  totalsRow.push(grandTotal > 0 ? grandTotal : '');
-  rows.push([]);
-  rows.push(totalsRow);
 
-  rows.push([]);
-  rows.push(['סטטוס חתימה:']);
-  workers.forEach(w => {
-    const key = `${w.id}-${gridYear}-${gridMonth}`;
-    const signedInfo = company && company.signed[key];
-    let status = 'לא חתום';
-    if (signedInfo && signedInfo.type === 'full') status = `חתום - כל החודש (${signedInfo.date})`;
-    else if (signedInfo && signedInfo.type === 'partial') status = `חתום חלקית - תאריכים: ${signedInfo.days.join(', ')} (${signedInfo.date})`;
-    rows.push([showId ? (w.idNumber || w.name) : w.name, status]);
-  });
+  const loadAndRun = (cb) => {
+    if (typeof XLSXStyle !== 'undefined' || typeof XLSX !== 'undefined') { cb(); return; }
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx-js-style.min.js';
+    s.onload = cb;
+    s.onerror = () => {
+      const s2 = document.createElement('script');
+      s2.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+      s2.onload = cb; document.head.appendChild(s2);
+    };
+    document.head.appendChild(s);
+  };
 
-  const tsv = rows.map(row => row.join('\t')).join('\n');
-  const monthNames2 = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
-  const fname = `שעות_${monthNames2[gridMonth]}_${gridYear}${company ? '_' + company.name : ''}.tsv`;
-  _downloadCSV(tsv, fname);
-  showToast('✅ הקובץ מוריד...', 'success');
+  if (typeof XLSXStyle !== 'undefined') { doExport(); }
+  else {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx-js-style.min.js';
+    s.onload = doExport;
+    s.onerror = () => {
+      if (typeof XLSX !== 'undefined') { doExport(); return; }
+      const s2 = document.createElement('script');
+      s2.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+      s2.onload = doExport; document.head.appendChild(s2);
+    };
+    document.head.appendChild(s);
+  }
 }
 
 
