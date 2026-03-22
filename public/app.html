@@ -6512,14 +6512,26 @@ async function addSubtask(taskId) {
   const input = document.getElementById('new-subtask-input');
   const title = input?.value.trim();
   if (!t || !title) return;
+  // נקה שדה מיד
+  if (input) input.value = '';
+  // הוסף מיד ל-DATA עם id זמני
+  if (!t.subtasks) t.subtasks = [];
+  const tempId = 'tmp_' + Date.now();
+  t.subtasks.push({ id: tempId, taskId, title, done: false });
+  _reRenderSubtaskList(taskId);
   if (HAS_SUPABASE) {
     const res = await sbCreateSubtask(taskId, title);
-    if (!res.ok) { showToast('❌ שגיאה בהוספת תת-משימה', 'error'); return; }
-  } else {
-    if (!t.subtasks) t.subtasks = [];
-    t.subtasks.push({ id: nextSubtaskId++, title, done: false });
+    if (!res.ok) {
+      // rollback
+      t.subtasks = t.subtasks.filter(s => s.id !== tempId);
+      _reRenderSubtaskList(taskId);
+      showToast('❌ שגיאה בהוספת תת-משימה', 'error');
+    } else {
+      // החלף id זמני ב-id אמיתי
+      const s = t.subtasks.find(x => x.id === tempId);
+      if (s && res.data) s.id = res.data.id;
+    }
   }
-  openTaskDetail(taskId);
 }
 
 async function toggleSubtask(taskId, subtaskId) {
@@ -6540,12 +6552,19 @@ async function toggleSubtask(taskId, subtaskId) {
 
 async function deleteSubtask(taskId, subtaskId) {
   const t = DATA.tasks.find(x => x.id === taskId);
+  if (!t) return;
+  // הסר מיד מ-DATA
+  const removed = t.subtasks?.find(s => s.id === subtaskId);
+  if (t.subtasks) t.subtasks = t.subtasks.filter(s => s.id !== subtaskId);
+  _reRenderSubtaskList(taskId);
   if (HAS_SUPABASE) {
-    await sbDeleteSubtask(taskId, subtaskId);
-  } else {
-    if (t?.subtasks) t.subtasks = t.subtasks.filter(s => s.id !== subtaskId);
+    sbDeleteSubtask(taskId, subtaskId).catch(() => {
+      // rollback
+      if (removed) { if (!t.subtasks) t.subtasks = []; t.subtasks.push(removed); }
+      _reRenderSubtaskList(taskId);
+      showToast('❌ שגיאה במחיקת תת-משימה', 'error');
+    });
   }
-  openTaskDetail(taskId);
 }
 
 function editTask(taskId) {
@@ -6633,6 +6652,11 @@ function _reRenderSubtaskList(taskId) {
   if (cardBar) cardBar.style.width = pct + '%';
   const cardCount = document.getElementById('task-card-count-' + taskId);
   if (cardCount) cardCount.textContent = doneCount + '/' + total;
+  // אם אין עוד תתי-משימות — הסר פס מהכרטיס
+  if (total === 0) {
+    const cardMini = cardBar?.closest('div[style*="80px"]')?.parentElement;
+    if (cardMini) cardMini.style.display = 'none';
+  }
   // עדכן כל שורה ישירות
   t.subtasks.forEach(s => {
     const row = document.getElementById('sub-row-' + s.id);
@@ -6693,15 +6717,39 @@ async function toggleTaskStatus(taskId) {
   }
 }
 
-async function deleteTask(taskId) {
+function deleteTask(taskId) {
+  const t = DATA.tasks.find(x => x.id === taskId);
+  if (!t) return;
+  const hasSubs = t.subtasks && t.subtasks.length > 0;
+  const subLine = hasSubs
+    ? `<div style="background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:8px 12px;font-size:12px;color:#b45309;margin-bottom:16px;">⚠️ המשימה מכילה ${t.subtasks.length} תת-משימ${t.subtasks.length === 1 ? 'ה' : 'ות'} שתימחקנה גם כן</div>`
+    : '';
+  showModal(`
+    <div style="padding:22px;max-width:340px;width:100%;text-align:center;">
+      <div style="font-size:36px;margin-bottom:10px;">🗑️</div>
+      <div style="font-size:15px;font-weight:700;margin-bottom:8px;">מחיקת משימה</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:16px;">
+        האם למחוק את המשימה <strong>"${t.title}"</strong>?<br>
+        <span style="font-size:12px;color:var(--text3);">פעולה זו אינה ניתנת לביטול.</span>
+      </div>
+      ${subLine}
+      <div style="display:flex;gap:10px;">
+        <button onclick="closeModal()" style="flex:1;background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:10px;font-size:14px;color:#1d1d1f;cursor:pointer;font-family:inherit;">ביטול</button>
+        <button onclick="closeModal();_doDeleteTask(${taskId})" style="flex:1;background:#ff3b30;border:none;border-radius:980px;padding:10px;font-size:14px;color:#fff;cursor:pointer;font-family:inherit;font-weight:600;">🗑️ מחק</button>
+      </div>
+    </div>
+  `);
+}
+
+async function _doDeleteTask(taskId) {
   if (HAS_SUPABASE) {
     const res = await sbDeleteTask(taskId);
     if (!res.ok) { showToast('❌ שגיאה במחיקה', 'error'); return; }
   } else {
     DATA.tasks.splice(DATA.tasks.findIndex(t => t.id === taskId), 1);
   }
-  closeModal();
   renderPage(currentPage);
+  showToast('🗑️ המשימה נמחקה');
 }
 
 // ── ADD TASK MODAL ──
