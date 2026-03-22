@@ -1273,7 +1273,7 @@
               </div>
               <span style="margin-right:auto;"></span>
               <button onclick="openGridFullscreen()" title="מסך מלא" style="background:transparent;border:1.5px solid #1d1d1f;border-radius:980px;padding:9px 18px;font-size:13px;cursor:pointer;color:#1d1d1f;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.background='#1d1d1f';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#1d1d1f'">⛶ מסך מלא</button>
-              <button onclick="copyGridToExcel()" style="background:transparent;border:1.5px solid #34c759;border-radius:980px;padding:9px 18px;font-size:13px;color:#34c759;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.background='#34c759';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#34c759'">📋 העתק לאקסל</button>
+              <button onclick="copyGridToExcel()" style="background:transparent;border:1.5px solid #34c759;border-radius:980px;padding:9px 18px;font-size:13px;color:#34c759;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.background='#34c759';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#34c759'">📋 הורד לאקסל</button>
               <span id="grid-search-count" style="font-size:12px;color:#86868b;"></span>
             </div>
 
@@ -1830,7 +1830,7 @@
             </div>
           </div>
         </div>
-        <button onclick="copyGridToExcelFS()" style="background:transparent;border:1.5px solid #34c759;border-radius:980px;padding:7px 16px;font-size:13px;color:#34c759;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.background='#34c759';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#34c759'">📋 העתק לאקסל</button>
+        <button onclick="copyGridToExcelFS()" style="background:transparent;border:1.5px solid #34c759;border-radius:980px;padding:7px 16px;font-size:13px;color:#34c759;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.background='#34c759';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#34c759'">📋 הורד לאקסל</button>
       </div>
       <span style="font-size:11px;color:var(--text3);">לחץ ESC או ✕ לסגירה</span>
     </div>
@@ -4933,11 +4933,25 @@ function _copyGridToExcelImpl(fullscreen) {
   });
 
   const tsv = rows.map(row => row.join('\t')).join('\n');
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(tsv).then(() => showToast('✅ הועתק! פתח אקסל ולחץ Ctrl+V להדבקה', 'success')).catch(() => fallbackCopy(tsv));
-  } else {
-    fallbackCopy(tsv);
-  }
+  const monthNames2 = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+  const fname = `שעות_${monthNames2[gridMonth]}_${gridYear}${company ? '_' + company.name : ''}.tsv`;
+  _downloadCSV(tsv, fname);
+  showToast('✅ הקובץ מוריד...', 'success');
+}
+
+
+function _downloadCSV(text, filename) {
+  // BOM לתמיכה בעברית באקסל
+  const bom = '\uFEFF';
+  const blob = new Blob([bom + text], { type: 'text/tab-separated-values;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 function fallbackCopy(text) {
@@ -4950,7 +4964,7 @@ function fallbackCopy(text) {
   ta.select();
   try {
     document.execCommand('copy');
-    showToast('✅ הועתק! פתח אקסל ולחץ Ctrl+V להדבקה', 'success');
+    showToast('✅ הקובץ מוריד...', 'success');
   } catch {
     showToast('❌ לא ניתן להעתיק, נסה שנית', 'error');
   }
@@ -5824,21 +5838,8 @@ function copyBulkTable() {
   });
   const tsv = header + '\n' + allRows.join('\n');
 
-  const fallback = () => {
-    const ta = document.createElement('textarea');
-    ta.value = tsv; ta.style.position='fixed'; ta.style.opacity='0';
-    document.body.appendChild(ta); ta.select();
-    document.execCommand('copy'); document.body.removeChild(ta);
-    showToast('📋 הטבלה הועתקה! פתח אקסל ולחץ Ctrl+V');
-  };
-
-  if (navigator.clipboard?.writeText) {
-    navigator.clipboard.writeText(tsv)
-      .then(() => showToast('📋 הטבלה הועתקה! פתח אקסל ולחץ Ctrl+V'))
-      .catch(fallback);
-  } else {
-    fallback();
-  }
+  _downloadCSV(tsv, 'ייבוא_פועלים.tsv');
+  showToast('✅ הקובץ מוריד...');
 }
 
 function clearBulkTable() {
@@ -7322,7 +7323,7 @@ function openAllSitesCostModal(contrName) {
     html += _buildCostModalHTML(site.name, contrName, priceLbl, priceType, pricePerUnit, vat, rows, true);
   });
   html += `<div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;">
-    <button onclick="exportAllCostTablesToExcel('${contrName.replace(/'/g, "\'")}')" style="background:transparent;border:1.5px solid #34c759;border-radius:980px;padding:9px 18px;font-size:13px;color:#34c759;cursor:pointer;font-family:inherit;font-weight:500;" onmouseover="this.style.background='#34c759';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#34c759'">📋 העתק הכל לאקסל</button>
+    <button onclick="exportAllCostTablesToExcel('${contrName.replace(/'/g, "\'")}')" style="background:transparent;border:1.5px solid #34c759;border-radius:980px;padding:9px 18px;font-size:13px;color:#34c759;cursor:pointer;font-family:inherit;font-weight:500;" onmouseover="this.style.background='#34c759';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#34c759'">📋 הורד הכל לאקסל</button>
     <button onclick="exportAllCostTablesToPDF('${contrName.replace(/'/g, "\'")}')" style="background:transparent;border:1.5px solid #e74c3c;border-radius:980px;padding:9px 18px;font-size:13px;color:#e74c3c;cursor:pointer;font-family:inherit;font-weight:500;" onmouseover="this.style.background='#e74c3c';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#e74c3c'">📄 הורד PDF</button>
     <button onclick="closeModal()" style="background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:9px 20px;font-size:14px;cursor:pointer;font-family:inherit;">סגור</button>
   </div></div>`;
@@ -7383,12 +7384,12 @@ function _buildCostModalHTML(siteName, contr, priceLbl, priceType, pricePerUnit,
     <div style="font-size:17px;font-weight:800;margin-bottom:2px;">📍 ${siteName}</div>
     <div style="font-size:12px;color:var(--text3);margin-bottom:20px;">קבלן: ${contr}</div>`;
   const suffix = compact ? '' : `<div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;">
-    <button onclick="exportCostTableToExcel('${tableId}','${siteName.replace(/'/g,"\'")}')" style="background:transparent;border:1.5px solid #34c759;border-radius:980px;padding:9px 18px;font-size:13px;color:#34c759;cursor:pointer;font-family:inherit;font-weight:500;" onmouseover="this.style.background='#34c759';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#34c759'">📋 העתק לאקסל</button>
+    <button onclick="exportCostTableToExcel('${tableId}','${siteName.replace(/'/g,"\'")}')" style="background:transparent;border:1.5px solid #34c759;border-radius:980px;padding:9px 18px;font-size:13px;color:#34c759;cursor:pointer;font-family:inherit;font-weight:500;" onmouseover="this.style.background='#34c759';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#34c759'">📋 הורד לאקסל</button>
     <button onclick="exportCostTableToPDF('${tableId}','${siteName.replace(/'/g,"\'")}','${contr.replace(/'/g,"\'")}')" style="background:transparent;border:1.5px solid #e74c3c;border-radius:980px;padding:9px 18px;font-size:13px;color:#e74c3c;cursor:pointer;font-family:inherit;font-weight:500;" onmouseover="this.style.background='#e74c3c';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#e74c3c'">📄 הורד PDF</button>
     <button onclick="closeModal()" style="background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:9px 20px;font-size:14px;cursor:pointer;font-family:inherit;">סגור</button>
   </div></div>`;
   const exportBtnCompact = compact ? `<div style="margin-right:auto;display:flex;gap:6px;">
-    <button onclick="exportCostTableToExcel('${tableId}','${siteName.replace(/'/g,"\'")}')" style="background:transparent;border:1.5px solid #34c759;border-radius:980px;padding:3px 12px;font-size:11px;color:#34c759;cursor:pointer;font-family:inherit;" onmouseover="this.style.background='#34c759';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#34c759'">📋 אקסל</button>
+    <button onclick="exportCostTableToExcel('${tableId}','${siteName.replace(/'/g,"\'")}')" style="background:transparent;border:1.5px solid #34c759;border-radius:980px;padding:3px 12px;font-size:11px;color:#34c759;cursor:pointer;font-family:inherit;" onmouseover="this.style.background='#34c759';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#34c759'">📋 הורד אקסל</button>
     <button onclick="exportCostTableToPDF('${tableId}','${siteName.replace(/'/g,"\'")}','${contr.replace(/'/g,"\'")}')" style="background:transparent;border:1.5px solid #e74c3c;border-radius:980px;padding:3px 12px;font-size:11px;color:#e74c3c;cursor:pointer;font-family:inherit;" onmouseover="this.style.background='#e74c3c';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#e74c3c'">📄 PDF</button>
   </div>` : '';
   return `${prefix}
@@ -7450,17 +7451,15 @@ function _tableToTSV(table) {
   });
   return rows.join('\n');
 }
-function _copyText(text, msg) {
-  navigator.clipboard.writeText(text).then(() => showToast(msg)).catch(() => {
-    const ta = document.createElement('textarea');
-    ta.value = text; document.body.appendChild(ta); ta.select();
-    document.execCommand('copy'); document.body.removeChild(ta); showToast(msg);
-  });
+function _copyText(text, filename) {
+  _downloadCSV(text, (filename || 'export') + '.tsv');
+  showToast('✅ הקובץ מוריד...');
 }
 function exportCostTableToExcel(tableId, siteName) {
   const table = document.getElementById(tableId);
-  if (!table) { showToast('❌ טבלאה לא נמצאה', 'error'); return; }
-  _copyText(_tableToTSV(table), '📋 הטבלאה הועתקה — הדבק ישירות לאקסל');
+  if (!table) { showToast('❌ טבלה לא נמצאה', 'error'); return; }
+  _downloadCSV(_tableToTSV(table), `עלויות_${siteName || 'אתר'}.tsv`);
+  showToast('✅ הקובץ מוריד...');
 }
 function exportAllCostTablesToExcel(contrName) {
   const tables = document.querySelectorAll('[id^="ct-"]');
@@ -7472,7 +7471,8 @@ function exportAllCostTablesToExcel(contrName) {
     if (siteTitle) blocks.push(`אתר: ${siteTitle}`);
     blocks.push(_tableToTSV(table)); blocks.push('');
   });
-  _copyText(blocks.join('\n'), '📋 כל הטבלאות הועתקו — הדבק ישירות לאקסל');
+  _downloadCSV(blocks.join('\n'), `עלויות_${contrName || 'קבלן'}.tsv`);
+  showToast('✅ הקובץ מוריד...');
 }
 
 
