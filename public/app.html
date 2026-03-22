@@ -1147,11 +1147,11 @@
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
           <div style="display:flex;background:var(--bg3);border-radius:12px;padding:4px;gap:2px;">
             <button id="team-tab-tasks" onclick="switchTeamTab('tasks')"
-              style="padding:8px 22px;border-radius:9px;border:none;cursor:pointer;font-size:14px;font-weight:600;font-family:inherit;transition:all 0.2s;background:var(--accent);color:white;box-shadow:0 2px 8px rgba(0,0,0,0.12);">
+              style="padding:8px 22px;border-radius:9px;border:none;cursor:pointer;font-size:14px;font-weight:700;font-family:inherit;transition:all 0.2s;background:#1d1d1f;color:#ffffff;box-shadow:0 2px 10px rgba(0,0,0,0.25);letter-spacing:0.2px;">
               📋 משימות
             </button>
             <button id="team-tab-employees" onclick="switchTeamTab('employees')"
-              style="padding:8px 22px;border-radius:9px;border:none;cursor:pointer;font-size:14px;font-weight:600;font-family:inherit;transition:all 0.2s;background:transparent;color:var(--text2);">
+              style="padding:8px 22px;border-radius:9px;border:1.5px solid #d2d2d7;cursor:pointer;font-size:14px;font-weight:600;font-family:inherit;transition:all 0.2s;background:transparent;color:#1d1d1f;">
               💼 עובדים
             </button>
           </div>
@@ -4143,8 +4143,8 @@ function switchTeamTab(tab) {
   const actionEl   = document.getElementById('team-tab-action');
   if (!panelTasks) return;
 
-  const activeStyle  = 'padding:8px 22px;border-radius:9px;border:none;cursor:pointer;font-size:14px;font-weight:600;font-family:inherit;transition:all 0.2s;background:var(--accent);color:white;box-shadow:0 2px 8px rgba(0,0,0,0.12);';
-  const inactiveStyle= 'padding:8px 22px;border-radius:9px;border:none;cursor:pointer;font-size:14px;font-weight:600;font-family:inherit;transition:all 0.2s;background:transparent;color:var(--text2);';
+  const activeStyle  = 'padding:8px 22px;border-radius:9px;border:none;cursor:pointer;font-size:14px;font-weight:700;font-family:inherit;transition:all 0.2s;background:#1d1d1f;color:#ffffff;box-shadow:0 2px 10px rgba(0,0,0,0.25);letter-spacing:0.2px;';
+  const inactiveStyle= 'padding:8px 22px;border-radius:9px;border:1.5px solid #d2d2d7;cursor:pointer;font-size:14px;font-weight:600;font-family:inherit;transition:all 0.2s;background:transparent;color:#1d1d1f;';
 
   if (tab === 'tasks') {
     panelTasks.style.display = '';
