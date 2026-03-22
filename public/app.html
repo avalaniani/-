@@ -6466,8 +6466,8 @@ function openTaskDetail(taskId) {
       <div id="subtask-list">
         ${t.subtasks.map(s => `
         <div id="sub-row-${s.id}" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;background:var(--bg3);margin-bottom:6px;opacity:${s.done ? '0.5' : '1'};">
-          <div onclick="toggleSubtask(${taskId},${s.id})" id="sub-cb-btn-${s.id}" style="width:20px;height:20px;border-radius:50%;border:2px solid ${s.done ? '#4aaa7a' : 'var(--border2)'};background:${s.done ? '#4aaa7a' : 'transparent'};cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s;">${s.done ? '<span style="color:white;font-size:11px;">✓</span>' : ''}</div>
-          <div style="flex:1;font-size:13px;${s.done ? 'text-decoration:line-through;color:var(--text3);' : ''}">${s.title}</div>
+          <div onclick="toggleSubtask(${taskId},${s.id})" class="sub-circle" style="width:20px;height:20px;border-radius:50%;border:2px solid ${s.done ? '#4aaa7a' : 'var(--border2)'};background:${s.done ? '#4aaa7a' : 'transparent'};cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s;">${s.done ? '<span style="color:white;font-size:11px;">✓</span>' : ''}</div>
+          <div class="sub-title" style="flex:1;font-size:13px;${s.done ? 'text-decoration:line-through;color:var(--text3);' : ''}">${s.title}</div>
           <button onclick="deleteSubtask(${taskId},${s.id})" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;padding:2px 4px;border-radius:4px;" title="מחק">✕</button>
         </div>`).join('')}
       </div>
@@ -6618,24 +6618,32 @@ function _refreshTaskCard(taskId) {
 function _reRenderSubtaskList(taskId) {
   const t = DATA.tasks.find(x => x.id === taskId);
   if (!t) return;
+  const doneCount = t.subtasks.filter(s => s.done).length;
+  const total     = t.subtasks.length;
+  const pct       = total ? Math.round(doneCount / total * 100) : 0;
   // עדכן פס התקדמות
-  const done  = t.subtasks.filter(s => s.done).length;
-  const total = t.subtasks.length;
-  const pct   = total ? Math.round(done / total * 100) : 0;
-  const bar   = document.getElementById('subtask-bar-' + taskId);
+  const bar = document.getElementById('subtask-bar-' + taskId);
   if (bar) bar.style.width = pct + '%';
-  // רנדר מחדש את כל הרשימה
-  const list = document.getElementById('subtask-list');
-  if (!list) return;
-  list.innerHTML = t.subtasks.map(s => `
-    <div id="sub-row-${s.id}" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;background:var(--bg3);margin-bottom:6px;opacity:${s.done ? '0.5' : '1'};">
-      <div onclick="toggleSubtask(${taskId},${s.id})" id="sub-cb-btn-${s.id}"
-        style="width:20px;height:20px;border-radius:50%;border:2px solid ${s.done ? '#4aaa7a' : 'var(--border2)'};background:${s.done ? '#4aaa7a' : 'transparent'};cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s;">
-        ${s.done ? '<span style="color:white;font-size:11px;">✓</span>' : ''}
-      </div>
-      <div style="flex:1;font-size:13px;${s.done ? 'text-decoration:line-through;color:var(--text3);' : ''}">${s.title}</div>
-      <button onclick="deleteSubtask(${taskId},${s.id})" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;padding:2px 4px;border-radius:4px;" title="מחק">✕</button>
-    </div>`).join('');
+  // עדכן כותרת (X/Y)
+  const header = document.querySelector('#subtask-header-' + taskId);
+  if (header) header.textContent = '(' + doneCount + '/' + total + ')';
+  // עדכן כל שורה ישירות
+  t.subtasks.forEach(s => {
+    const row = document.getElementById('sub-row-' + s.id);
+    if (!row) return;
+    row.style.opacity = s.done ? '0.5' : '1';
+    const circle = row.querySelector('.sub-circle');
+    if (circle) {
+      circle.style.borderColor = s.done ? '#4aaa7a' : 'var(--border2)';
+      circle.style.background  = s.done ? '#4aaa7a' : 'transparent';
+      circle.innerHTML = s.done ? '<span style="color:white;font-size:11px;">✓</span>' : '';
+    }
+    const txt = row.querySelector('.sub-title');
+    if (txt) {
+      txt.style.textDecoration = s.done ? 'line-through' : 'none';
+      txt.style.color          = s.done ? 'var(--text3)' : 'var(--text)';
+    }
+  });
 }
 
 function _refreshSubtaskUI(taskId) {
