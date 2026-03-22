@@ -7279,17 +7279,20 @@ function renderSitesHoursSummary() {
     const totalWithVat  = hasAnyCost ? Math.round(totalCost * (1+vat)) : null;
     const totalWorkersAll = new Set(Object.values(sites).flatMap(v=>[...v.workers])).size;
 
-    html += `<tr style="background:#f0f4f8;border-top:2px solid #d2d2d7;font-weight:800;font-size:14px;">
+    html += `<tr style="background:#f0f4f8;border-top:2px solid #d2d2d7;font-weight:800;font-size:14px;"
+      onmouseenter="this.querySelectorAll('.total-cost-cell').forEach(c=>c.style.background='#dce8f8')"
+      onmouseleave="this.querySelectorAll('.total-cost-cell').forEach(c=>c.style.background='')">
       <td style="padding:8px 8px;color:#1d1d1f;">סה"כ</td>
       <td style="padding:8px 4px;text-align:center;cursor:pointer;color:#1d1d1f;" onclick="showSiteWorkersListByKey('${contrSafe}|סה&quot;כ','all','כל הפועלים','#1d1d1f')" onmouseover="this.style.background='#e8eef8'" onmouseout="this.style.background=''">${totalWorkersAll}</td>
       <td style="padding:8px 4px;text-align:center;cursor:pointer;color:#2a7a5a;" onclick="showSiteWorkersListByKey('${contrSafe}|סה&quot;כ','signed','✅ חתומות','#2a7a5a')" onmouseover="this.style.background='#dcf5e8'" onmouseout="this.style.background=''">${totalSigned.toFixed(1)}</td>
       <td style="padding:8px 4px;text-align:center;cursor:pointer;color:${totalUnsigned>0?'#a03030':'#86868b'};" onclick="showSiteWorkersListByKey('${contrSafe}|סה&quot;כ','unsigned','⏳ לא חתומות','#a03030')" onmouseover="this.style.background='#fce8e8'" onmouseout="this.style.background=''">${totalUnsigned.toFixed(1)}</td>
-      <td style="padding:8px 4px;text-align:center;color:#1d1d1f;cursor:pointer;" onclick="openAllSitesCostModal('${contrSafe}')" onmouseover="this.style.background='#e8eef8'" onmouseout="this.style.background=''" title="לחץ לפירוט כל האתרים">${totalHours.toFixed(1)}</td>
-      <td style="padding:8px 4px;text-align:center;color:#0071e3;cursor:pointer;" onclick="openAllSitesCostModal('${contrSafe}')" onmouseover="this.style.background='#e8eef8'" onmouseout="this.style.background=''" title="לחץ לפירוט כל האתרים">${hasAnyCost ? '₪'+Math.round(totalCost).toLocaleString() : '—'}</td>
-      <td style="padding:8px 4px;text-align:center;color:#6c5ce7;cursor:pointer;" onclick="openAllSitesCostModal('${contrSafe}')" onmouseover="this.style.background='#e8eef8'" onmouseout="this.style.background=''" title="לחץ לפירוט כל האתרים">${totalVat!=null ? '₪'+totalVat.toLocaleString() : '—'}</td>
-      <td style="padding:8px 4px;text-align:center;color:#00b894;cursor:pointer;" onclick="openAllSitesCostModal('${contrSafe}')" onmouseover="this.style.background='#e8eef8'" onmouseout="this.style.background=''" title="לחץ לפירוט כל האתרים">${totalWithVat!=null ? '₪'+totalWithVat.toLocaleString() : '—'}</td>
+      <td class="total-cost-cell" style="padding:8px 4px;text-align:center;color:#1d1d1f;cursor:pointer;" onclick="openAllSitesCostModal('${contrSafe}')" title="לחץ לפירוט כל האתרים">${totalHours.toFixed(1)}</td>
+      <td class="total-cost-cell" style="padding:8px 4px;text-align:center;color:#0071e3;cursor:pointer;" onclick="openAllSitesCostModal('${contrSafe}')" title="לחץ לפירוט כל האתרים">${hasAnyCost ? '₪'+Math.round(totalCost).toLocaleString() : '—'}</td>
+      <td class="total-cost-cell" style="padding:8px 4px;text-align:center;color:#6c5ce7;cursor:pointer;" onclick="openAllSitesCostModal('${contrSafe}')" title="לחץ לפירוט כל האתרים">${totalVat!=null ? '₪'+totalVat.toLocaleString() : '—'}</td>
+      <td class="total-cost-cell" style="padding:8px 4px;text-align:center;color:#00b894;cursor:pointer;" onclick="openAllSitesCostModal('${contrSafe}')" title="לחץ לפירוט כל האתרים">${totalWithVat!=null ? '₪'+totalWithVat.toLocaleString() : '—'}</td>
     </tr></tbody></table></div></div>`;
   });
+
 
   wrap.innerHTML = html;
 }
