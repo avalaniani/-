@@ -1754,15 +1754,15 @@
       <span style="font-size:11px;display:flex;align-items:center;gap:4px;"><span style="width:14px;height:14px;background:white;border-radius:3px;display:inline-block;border:1px solid var(--border);color:#3366aa;font-weight:700;text-align:center;line-height:14px;font-size:9px;">8</span>שעות עבודה</span>
       <!-- Search in FS -->
       <div style="display:flex;gap:6px;align-items:center;margin-right:auto;flex-wrap:wrap;">
-        <select id="fs-grid-search-type" onchange="renderCeoWorkersGrid(true)" style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:7px 14px;font-size:13px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;appearance:none;-webkit-appearance:none;">
+        <select id="fs-grid-search-type" onchange="renderCeoWorkersGrid(true)" style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:7px 14px;font-size:13px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;appearance:none;-webkit-appearance:none;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">
           <option value="name">🔎 שם</option>
           <option value="idpassport" selected>🪪 ת"ז / דרכון</option>
         </select>
         <input type="text" id="fs-grid-search-input" placeholder="חיפוש..." oninput="renderCeoWorkersGrid(true)" style="border:1.5px solid var(--border);border-radius:980px;padding:7px 14px;font-size:13px;background:white;color:var(--text);width:130px;font-family:inherit;outline:none;" onfocus="this.style.borderColor='#0071e3'" onblur="this.style.borderColor='var(--border)'">
-        <select id="fs-grid-filter-contractor" onchange="_refreshContractorFilter('fs-grid-filter-contractor','fs-grid-filter-site',()=>renderCeoWorkersGrid(true))" style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:7px 14px;font-size:13px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;appearance:none;-webkit-appearance:none;">
+        <select id="fs-grid-filter-contractor" onchange="_refreshContractorFilter('fs-grid-filter-contractor','fs-grid-filter-site',()=>renderCeoWorkersGrid(true))" style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:7px 14px;font-size:13px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;appearance:none;-webkit-appearance:none;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">
           <option value="">🏢 כל הקבלנים</option>
         </select>
-        <select id="fs-grid-filter-site" onchange="renderCeoWorkersGrid(true)" style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:7px 14px;font-size:13px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;appearance:none;-webkit-appearance:none;">
+        <select id="fs-grid-filter-site" onchange="renderCeoWorkersGrid(true)" style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:7px 14px;font-size:13px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;appearance:none;-webkit-appearance:none;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">
           <option value="">🏗️ כל האתרים</option>
         </select>
 
