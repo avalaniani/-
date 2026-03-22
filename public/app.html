@@ -7893,7 +7893,18 @@ async function saveSite(siteId) {
   if (!name || !contractor) { showToast('יש למלא שם אתר וקבלן', 'error'); return; }
 
   const priceType = document.getElementById('site-price-type')?.value || '';
-  const price     = parseFloat(document.getElementById('site-price')?.value) || null;
+  const priceRaw  = document.getElementById('site-price')?.value;
+  const price     = parseFloat(priceRaw) || null;
+
+  // אם נבחרה אופציה ספציפית — חובה להזין מחיר
+  if (priceType && !price) {
+    const priceInput = document.getElementById('site-price');
+    priceInput.style.borderColor = '#ff3b30';
+    priceInput.focus();
+    showToast('יש להזין מחיר לאתר', 'error');
+    setTimeout(() => { priceInput.style.borderColor = '#d2d2d7'; }, 2000);
+    return;
+  }
   const payload = { companyId: currentUser.company, name, contractor, address, phone, priceType, price };
   if (siteId) {
     const site = DATA.workSites.find(s=>s.id===siteId);
