@@ -7125,16 +7125,16 @@ function renderSitesHoursSummary() {
       </div>
       <!-- אתרים -->
       <div style="padding:4px 12px 12px;">
-        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed;">
           <thead><tr style="color:var(--text3);font-size:11px;font-weight:700;border-bottom:1px solid var(--border);">
-            <th style="padding:6px 8px;text-align:right;">אתר עבודה</th>
-            <th style="padding:6px 4px;text-align:center;">פועלים</th>
-            <th style="padding:6px 4px;text-align:center;color:#2a7a5a;">✅ חתומות</th>
-            <th style="padding:6px 4px;text-align:center;color:#a03030;">⏳ לא חתומות</th>
-            <th style="padding:6px 4px;text-align:center;">סה"כ שעות</th>
-            <th style="padding:6px 4px;text-align:center;color:#0071e3;">💰 עלות</th>
-            <th style="padding:6px 4px;text-align:center;color:#6c5ce7;">מע"מ</th>
-            <th style="padding:6px 4px;text-align:center;color:#00b894;">כולל מע"מ</th>
+            <th style="padding:6px 8px;text-align:right;width:30%;">אתר עבודה</th>
+            <th style="padding:6px 4px;text-align:center;width:8%;">פועלים</th>
+            <th style="padding:6px 4px;text-align:center;color:#2a7a5a;width:10%;">✅ חתומות</th>
+            <th style="padding:6px 4px;text-align:center;color:#a03030;width:10%;">⏳ לא חתומות</th>
+            <th style="padding:6px 4px;text-align:center;width:10%;">סה"כ שעות</th>
+            <th style="padding:6px 4px;text-align:center;color:#0071e3;width:11%;">💰 עלות</th>
+            <th style="padding:6px 4px;text-align:center;color:#6c5ce7;width:10%;">מע"מ</th>
+            <th style="padding:6px 4px;text-align:center;color:#00b894;width:11%;">כולל מע"מ</th>
           </tr></thead>
           <tbody>`;
 
@@ -7154,7 +7154,7 @@ function renderSitesHoursSummary() {
       const lkSafe = (contr + '|' + s.siteName).replace(/'/g, "\'");
 
       html += `<tr style="border-bottom:1px solid var(--border);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
-        <td style="padding:8px 8px;font-weight:600;color:var(--text);">🏗️ ${s.siteName}</td>
+        <td style="padding:8px 8px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:0;" title="🏗️ ${s.siteName}">🏗️ ${s.siteName}</td>
         <td style="padding:8px 4px;text-align:center;cursor:pointer;color:#1d1d1f;font-weight:600;" onclick="showSiteWorkersListByKey('${lkSafe}','all','כל הפועלים','#1d1d1f')" onmouseover="this.style.background='#c2d8f0'" onmouseout="this.style.background=''">${s.workers.size}</td>
         <td style="padding:8px 4px;text-align:center;cursor:pointer;color:#2a7a5a;font-weight:600;" onclick="showSiteWorkersListByKey('${lkSafe}','signed','✅ חתומות','#2a7a5a')" onmouseover="this.style.background='#a8e8c4'" onmouseout="this.style.background=''">${s.signedHours.toFixed(1)}</td>
         <td style="padding:8px 4px;text-align:center;cursor:pointer;color:${unsigned > 0 ? '#a03030' : 'var(--text3)'};font-weight:600;" onclick="showSiteWorkersListByKey('${lkSafe}','unsigned','⏳ לא חתומות','#a03030')" onmouseover="this.style.background='#f5a8a8'" onmouseout="this.style.background=''">${unsigned.toFixed(1)}</td>
@@ -7202,7 +7202,7 @@ function renderSitesHoursSummary() {
     const totalWorkersAll = new Set(Object.values(sites).flatMap(v=>[...v.workers])).size;
 
     html += `<tr style="background:#f0f4f8;border-top:2px solid #d2d2d7;font-weight:800;font-size:14px;">
-      <td style="padding:8px 8px;color:#1d1d1f;">סה"כ</td>
+      <td style="padding:8px 8px;color:#1d1d1f;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:0;">סה"כ</td>
       <td style="padding:8px 4px;text-align:center;cursor:pointer;color:#1d1d1f;" onclick="showSiteWorkersListByKey('${contrSafe}|סה&quot;כ','all','כל הפועלים','#1d1d1f')" onmouseover="this.style.background='#c2d8f0'" onmouseout="this.style.background=''">${totalWorkersAll}</td>
       <td style="padding:8px 4px;text-align:center;cursor:pointer;color:#2a7a5a;" onclick="showSiteWorkersListByKey('${contrSafe}|סה&quot;כ','signed','✅ חתומות','#2a7a5a')" onmouseover="this.style.background='#a8e8c4'" onmouseout="this.style.background=''">${totalSigned.toFixed(1)}</td>
       <td style="padding:8px 4px;text-align:center;cursor:pointer;color:${totalUnsigned>0?'#a03030':'#86868b'};" onclick="showSiteWorkersListByKey('${contrSafe}|סה&quot;כ','unsigned','⏳ לא חתומות','#a03030')" onmouseover="this.style.background='#f5a8a8'" onmouseout="this.style.background=''">${totalUnsigned.toFixed(1)}</td>
