@@ -6461,12 +6461,12 @@ function openTaskDetail(taskId) {
       </div>
       ${t.subtasks.length ? `
         <div style="background:var(--bg3);border-radius:8px;height:6px;margin-bottom:12px;overflow:hidden;">
-          <div style="height:100%;border-radius:8px;background:#4aaa7a;width:${pct}%;transition:width 0.4s;"></div>
+          <div id="subtask-bar-${taskId}" style="height:100%;border-radius:8px;background:#4aaa7a;width:${pct}%;transition:width 0.4s;"></div>
         </div>` : ''}
       <div id="subtask-list">
         ${t.subtasks.map(s => `
-        <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;background:var(--bg3);margin-bottom:6px;">
-          <div onclick="toggleSubtask(${taskId},${s.id})" style="width:20px;height:20px;border-radius:50%;border:2px solid ${s.done ? '#4aaa7a' : 'var(--border2)'};background:${s.done ? '#4aaa7a' : 'transparent'};cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s;">${s.done ? '<span style="color:white;font-size:11px;">✓</span>' : ''}</div>
+        <div id="sub-row-${s.id}" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;background:var(--bg3);margin-bottom:6px;opacity:${s.done ? '0.5' : '1'};">
+          <div onclick="toggleSubtask(${taskId},${s.id})" id="sub-cb-btn-${s.id}" style="width:20px;height:20px;border-radius:50%;border:2px solid ${s.done ? '#4aaa7a' : 'var(--border2)'};background:${s.done ? '#4aaa7a' : 'transparent'};cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s;">${s.done ? '<span style="color:white;font-size:11px;">✓</span>' : ''}</div>
           <div style="flex:1;font-size:13px;${s.done ? 'text-decoration:line-through;color:var(--text3);' : ''}">${s.title}</div>
           <button onclick="deleteSubtask(${taskId},${s.id})" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;padding:2px 4px;border-radius:4px;" title="מחק">✕</button>
         </div>`).join('')}
@@ -6526,12 +6526,16 @@ async function toggleSubtask(taskId, subtaskId) {
   const t = DATA.tasks.find(x => x.id === taskId);
   const s = t?.subtasks?.find(x => x.id === subtaskId);
   if (!s) return;
+  // עדכן מיד
+  s.done = !s.done;
+  // עדכן checkbox ופס התקדמות בלי לסגור מודל
+  _refreshSubtaskUI(taskId);
   if (HAS_SUPABASE) {
-    await sbToggleSubtask(taskId, subtaskId, !s.done);
-  } else {
-    s.done = !s.done;
+    sbToggleSubtask(taskId, subtaskId, s.done).catch(() => {
+      s.done = !s.done; // rollback
+      _refreshSubtaskUI(taskId);
+    });
   }
-  openTaskDetail(taskId);
 }
 
 async function deleteSubtask(taskId, subtaskId) {
@@ -6592,16 +6596,63 @@ async function saveEditTask(taskId) {
   showToast('✅ משימה עודכנה!');
 }
 
+
+function _refreshTaskCard(taskId) {
+  const t = DATA.tasks.find(x => x.id === taskId);
+  if (!t) return;
+  const btn = document.querySelector('[onclick*="toggleTaskStatus(' + taskId + ')"]');
+  if (btn) {
+    if (t.status === 'done') {
+      btn.textContent = '↩️ סמן כפתוח';
+      btn.className = 'btn btn-outline btn-sm';
+    } else {
+      btn.textContent = '✅ סמן כהושלם';
+      btn.className = 'btn btn-success btn-sm';
+    }
+  }
+  if (currentPage === 'ceo-employees') renderCeoTasks();
+  else if (currentPage === 'emp-tasks') renderEmpTasks();
+}
+
+function _refreshSubtaskUI(taskId) {
+  const t = DATA.tasks.find(x => x.id === taskId);
+  if (!t || !t.subtasks) return;
+  const done  = t.subtasks.filter(s => s.done).length;
+  const total = t.subtasks.length;
+  const pct   = total ? Math.round(done / total * 100) : 0;
+  const bar   = document.getElementById('subtask-bar-' + taskId);
+  if (bar) bar.style.width = pct + '%';
+  const lbl   = document.getElementById('subtask-lbl-' + taskId);
+  if (lbl) lbl.textContent = done + '/' + total;
+  t.subtasks.forEach(s => {
+    const row = document.getElementById('sub-row-' + s.id);
+    if (row) row.style.opacity = s.done ? '0.5' : '1';
+    const cbBtn = document.getElementById('sub-cb-btn-' + s.id);
+    if (cbBtn) {
+      cbBtn.style.borderColor  = s.done ? '#4aaa7a' : 'var(--border2)';
+      cbBtn.style.background   = s.done ? '#4aaa7a' : 'transparent';
+      cbBtn.innerHTML          = s.done ? '<span style="color:white;font-size:11px;">✓</span>' : '';
+    }
+    const textEl = row?.querySelector('div[style*="flex:1"]');
+    if (textEl) textEl.style.cssText = 'flex:1;font-size:13px;' + (s.done ? 'text-decoration:line-through;color:var(--text3);' : '');
+  });
+}
+
 async function toggleTaskStatus(taskId) {
   const t = DATA.tasks.find(x => x.id === taskId);
   if (!t) return;
   const newStatus = t.status === 'open' ? 'done' : 'open';
+  // עדכן מיד ב-DATA לפני ה-API
+  t.status = newStatus;
+  // עדכן את כרטיס המשימה בלי לסגור את המודל
+  _refreshTaskCard(taskId);
   if (HAS_SUPABASE) {
-    await sbUpdateTask(taskId, { status: newStatus });
-  } else {
-    t.status = newStatus;
+    sbUpdateTask(taskId, { status: newStatus }).catch(e => {
+      // rollback אם נכשל
+      t.status = newStatus === 'done' ? 'open' : 'done';
+      _refreshTaskCard(taskId);
+    });
   }
-  renderPage(currentPage);
 }
 
 async function deleteTask(taskId) {
