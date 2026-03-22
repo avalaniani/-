@@ -915,6 +915,7 @@
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx-js-style.min.js"></script>
 </head>
 <body>
 
@@ -4956,26 +4957,14 @@ function _copyGridToExcelImpl(fullscreen) {
     showToast('✅ הקובץ הורד בהצלחה');
   }
 
-  const loadAndRun = (cb) => {
-    if (typeof XLSXStyle !== 'undefined' || typeof XLSX !== 'undefined') { cb(); return; }
-    const s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx-js-style.min.js';
-    s.onload = cb;
-    s.onerror = () => {
-      const s2 = document.createElement('script');
-      s2.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
-      s2.onload = cb; document.head.appendChild(s2);
-    };
-    document.head.appendChild(s);
-  };
-
-  if (typeof XLSXStyle !== 'undefined') { doExport(); }
-  else {
+  // XLSXStyle נטען מראש ב-head — אם לא זמין, fallback ל-XLSX
+  if (typeof XLSXStyle !== 'undefined' || typeof XLSX !== 'undefined') {
+    doExport();
+  } else {
     const s = document.createElement('script');
     s.src = 'https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx-js-style.min.js';
     s.onload = doExport;
     s.onerror = () => {
-      if (typeof XLSX !== 'undefined') { doExport(); return; }
       const s2 = document.createElement('script');
       s2.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
       s2.onload = doExport; document.head.appendChild(s2);
