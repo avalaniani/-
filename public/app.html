@@ -4571,7 +4571,7 @@ function toggleGridStatusDropdown(id) {
 // סגור dropdown בלחיצה מחוץ
 document.addEventListener('click', function(e) {
   const allDDs = ['grid-status-dropdown','fs-grid-status-dropdown','grid-filter-contractor-dd','grid-filter-site-dd','fs-grid-filter-site-dd'];
-  const allBtns = ['grid-status-btn','fs-grid-status-btn','grid-filter-contractor-btn','grid-filter-site-btn'];
+  const allBtns = ['grid-status-btn','fs-grid-status-btn','grid-filter-contractor-btn','grid-filter-site-btn','fs-grid-filter-site-btn'];
   const clickedInsideAny = allDDs.concat(allBtns).some(id => {
     const el = document.getElementById(id);
     return el && el.contains(e.target);
