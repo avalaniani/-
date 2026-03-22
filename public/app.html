@@ -1146,14 +1146,17 @@
         <!-- טאבים -->
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
           <div style="display:flex;background:var(--bg3);border-radius:12px;padding:4px;gap:2px;">
-            <button id="team-tab-tasks" onclick="switchTeamTab('tasks')"
-              style="padding:8px 22px;border-radius:9px;border:none;cursor:pointer;font-size:14px;font-weight:700;font-family:inherit;transition:all 0.2s;background:#1d1d1f;color:#ffffff;box-shadow:0 2px 10px rgba(0,0,0,0.25);letter-spacing:0.2px;">
-              📋 משימות
-            </button>
-            <button id="team-tab-employees" onclick="switchTeamTab('employees')"
-              style="padding:8px 22px;border-radius:9px;border:1.5px solid #d2d2d7;cursor:pointer;font-size:14px;font-weight:600;font-family:inherit;transition:all 0.2s;background:transparent;color:#1d1d1f;">
-              💼 עובדים
-            </button>
+<div id="team-tab-track" style="position:relative;display:inline-flex;align-items:center;background:rgba(120,120,128,0.12);border-radius:980px;padding:3px;gap:0;">
+              <div id="team-tab-slider" style="position:absolute;top:3px;right:3px;height:calc(100% - 6px);border-radius:980px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.18);transition:all 0.28s cubic-bezier(0.34,1.2,0.64,1);pointer-events:none;z-index:0;"></div>
+              <button id="team-tab-tasks" onclick="switchTeamTab('tasks')"
+                style="position:relative;z-index:1;padding:7px 22px;border-radius:980px;border:none;cursor:pointer;font-size:14px;font-weight:600;font-family:inherit;background:transparent;color:#1d1d1f;transition:color 0.2s;white-space:nowrap;">
+                📋 משימות
+              </button>
+              <button id="team-tab-employees" onclick="switchTeamTab('employees')"
+                style="position:relative;z-index:1;padding:7px 22px;border-radius:980px;border:none;cursor:pointer;font-size:14px;font-weight:600;font-family:inherit;background:transparent;color:#86868b;transition:color 0.2s;white-space:nowrap;">
+                💼 עובדים
+              </button>
+            </div>
           </div>
           <div id="team-tab-action"></div>
         </div>
@@ -4143,20 +4146,32 @@ function switchTeamTab(tab) {
   const actionEl   = document.getElementById('team-tab-action');
   if (!panelTasks) return;
 
-  const activeStyle  = 'padding:8px 22px;border-radius:9px;border:none;cursor:pointer;font-size:14px;font-weight:700;font-family:inherit;transition:all 0.2s;background:#1d1d1f;color:#ffffff;box-shadow:0 2px 10px rgba(0,0,0,0.25);letter-spacing:0.2px;';
-  const inactiveStyle= 'padding:8px 22px;border-radius:9px;border:1.5px solid #d2d2d7;cursor:pointer;font-size:14px;font-weight:600;font-family:inherit;transition:all 0.2s;background:transparent;color:#1d1d1f;';
-
+  // Slider tab — הזז את ה-pill
+  const slider   = document.getElementById('team-tab-slider');
+  const track    = document.getElementById('team-tab-track');
+  const btnT     = document.getElementById('team-tab-tasks');
+  const btnE     = document.getElementById('team-tab-employees');
+  if (slider && track && btnT && btnE) {
+    const isRTL = document.documentElement.dir === 'rtl';
+    if (tab === 'tasks') {
+      slider.style.width  = btnT.offsetWidth + 'px';
+      slider.style.right  = '3px';
+      btnT.style.color = '#1d1d1f'; btnT.style.fontWeight = '700';
+      btnE.style.color = '#86868b'; btnE.style.fontWeight = '500';
+    } else {
+      slider.style.width  = btnE.offsetWidth + 'px';
+      slider.style.right  = (btnT.offsetWidth + 3) + 'px';
+      btnE.style.color = '#1d1d1f'; btnE.style.fontWeight = '700';
+      btnT.style.color = '#86868b'; btnT.style.fontWeight = '500';
+    }
+  }
   if (tab === 'tasks') {
     panelTasks.style.display = '';
     panelEmps.style.display  = 'none';
-    btnTasks.style.cssText   = activeStyle;
-    btnEmps.style.cssText    = inactiveStyle;
     actionEl.innerHTML = '<button class="btn btn-primary btn-sm" onclick="openAddTask(&quot;ceo&quot;)">+ הוסף משימה</button>';
   } else {
     panelTasks.style.display = 'none';
     panelEmps.style.display  = '';
-    btnTasks.style.cssText   = inactiveStyle;
-    btnEmps.style.cssText    = activeStyle;
     actionEl.innerHTML = '';
   }
 }
