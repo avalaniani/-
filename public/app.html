@@ -7224,8 +7224,7 @@ function renderSitesHoursSummary() {
       window._siteWorkerLists[listKey + '|unsigned']  = [...unsignedSet].map(id=>DATA.users.find(u=>u.id===id)?.name).filter(Boolean);
       const lkSafe = (contr + '|' + s.siteName).replace(/'/g, "\'");
 
-      const _rowId = 'sr-' + Math.random().toString(36).slice(2,8);
-      html += `<tr id="${_rowId}" style="border-bottom:1px solid var(--border);">
+      html += `<tr style="border-bottom:1px solid var(--border);">
         <td style="padding:8px 8px;font-weight:600;color:var(--text);">🏗️ ${s.siteName}</td>
         <td style="padding:8px 4px;text-align:center;cursor:pointer;color:var(--text2);" onclick="showSiteWorkersListByKey('${lkSafe}','all','כל הפועלים','#1d1d1f')" onmouseover="this.style.background='#f0f4f8'" onmouseout="this.style.background=''">${s.workers.size}</td>
         <td style="padding:8px 4px;text-align:center;cursor:pointer;color:#2a7a5a;font-weight:600;" onclick="showSiteWorkersListByKey('${lkSafe}','signed','✅ חתומות','#2a7a5a')" onmouseover="this.style.background='#f0fff4'" onmouseout="this.style.background=''">${s.signedHours.toFixed(1)}</td>
@@ -7239,19 +7238,18 @@ function renderSitesHoursSummary() {
           const priceType = siteObj ? (siteObj.priceType || siteObj.contractorPriceType || 'hourly') : 'hourly';
           const price = siteObj ? (siteObj.price || siteObj.contractorPrice || null) : null;
           const workedDays = s._workedDays ? s._workedDays.size : 0;
-          const onclickAttr = `openSiteWorkersCostModal('${(contr+'||'+s.siteName).replace(/'/g,"\'")}')"`;
-          const rowId = 'sr-' + Math.random().toString(36).slice(2);
-          const hlOn  = `document.querySelectorAll('#'+'${rowId}'+' .cost-cell').forEach(c=>c.style.background='#e8f0fb')`;
-          const hlOff = `document.querySelectorAll('#'+'${rowId}'+' .cost-cell').forEach(c=>c.style.background='')`;
+          const onclickAttr = `openSiteWorkersCostModal('${(contr+'||'+s.siteName).replace(/'/g,"\'")}')`;
+          const onHover  = "this.closest('tr').querySelectorAll('.cost-cell').forEach(function(c){c.style.background='#e8f0fb'})";
+          const offHover = "this.closest('tr').querySelectorAll('.cost-cell').forEach(function(c){c.style.background=''})";
           return `
           <td style="padding:8px 4px;text-align:center;font-weight:700;color:var(--text);cursor:pointer;" class="cost-cell"
-            onclick="${onclickAttr}" onmouseenter="${hlOn}" onmouseleave="${hlOff}" title="לחץ לפירוט פועלים">${s.hours.toFixed(1)}</td>
+            onclick="${onclickAttr}" onmouseenter="${onHover}" onmouseleave="${offHover}" title="לחץ לפירוט פועלים">${s.hours.toFixed(1)}</td>
           <td style="padding:8px 4px;text-align:center;color:#0071e3;font-weight:600;cursor:pointer;" class="cost-cell"
-            onclick="${onclickAttr}" onmouseenter="${hlOn}" onmouseleave="${hlOff}" title="לחץ לפירוט פועלים">${s.cost != null ? '₪'+Math.round(s.cost).toLocaleString() : '—'}</td>
+            onclick="${onclickAttr}" onmouseenter="${onHover}" onmouseleave="${offHover}" title="לחץ לפירוט פועלים">${s.cost != null ? '₪'+Math.round(s.cost).toLocaleString() : '—'}</td>
           <td style="padding:8px 4px;text-align:center;color:#6c5ce7;font-weight:600;cursor:pointer;" class="cost-cell"
-            onclick="${onclickAttr}" onmouseenter="${hlOn}" onmouseleave="${hlOff}" title="לחץ לפירוט פועלים">${vatAmt != null ? '₪'+vatAmt.toLocaleString() : '—'}</td>
+            onclick="${onclickAttr}" onmouseenter="${onHover}" onmouseleave="${offHover}" title="לחץ לפירוט פועלים">${vatAmt != null ? '₪'+vatAmt.toLocaleString() : '—'}</td>
           <td style="padding:8px 4px;text-align:center;color:#00b894;font-weight:700;cursor:pointer;" class="cost-cell"
-            onclick="${onclickAttr}" onmouseenter="${hlOn}" onmouseleave="${hlOff}" title="לחץ לפירוט פועלים">${total != null ? '₪'+total.toLocaleString() : '—'}</td>
+            onclick="${onclickAttr}" onmouseenter="${onHover}" onmouseleave="${offHover}" title="לחץ לפירוט פועלים">${total != null ? '₪'+total.toLocaleString() : '—'}</td>
           `;
         })()}
       </tr>`;
