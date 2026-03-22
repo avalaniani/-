@@ -1164,8 +1164,377 @@
         <!-- תוכן: משימות -->
         <div id="team-panel-tasks">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
-<div id="task-filter-ceo" style="position:relative;display:inline-flex;align-items:center;background:rgba(120,120,128,0.12);border-radius:980px;padding:3px;gap:0;margin-bottom:0;flex:1;">
-              <div id="task-filter-ceo-slider" style="position:absolute;top:3px;right:3px;height:calc(100% - 6px);border-radius:980px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.15);transition:all 0.28s cubic-bezier(0.34,1.2,0.64,1);pointer-events:none;z-index:0;"></div>
+<div id="task-filter-ceo" data-active="all" style="display:flex;gap:6px;align-items:center;flex:1;flex-wrap:wrap;">
+              <button onclick="filterTasks('all',this,'task-filter-ceo')" data-filter="all" style="background:#0071e3;border:1.5px solid #0071e3;border-radius:980px;padding:7px 16px;font-size:13px;color:#fff;cursor:pointer;font-family:inherit;font-weight:600;transition:all 0.15s;white-space:nowrap;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="if(this.dataset.filter===document.getElementById('task-filter-ceo').dataset.active){this.style.background='#0071e3';this.style.color='#fff'}else{this.style.background='transparent';this.style.color='#0071e3'}">הכל</button>
+              <button onclick="filterTasks('open',this,'task-filter-ceo')" data-filter="open" style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:7px 16px;font-size:13px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;white-space:nowrap;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="if(this.dataset.filter===document.getElementById('task-filter-ceo').dataset.active){this.style.background='#0071e3';this.style.color='#fff'}else{this.style.background='transparent';this.style.color='#0071e3'}">פתוחות</button>
+              <button onclick="filterTasks('done',this,'task-filter-ceo')" data-filter="done" style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:7px 16px;font-size:13px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;white-space:nowrap;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="if(this.dataset.filter===document.getElementById('task-filter-ceo').dataset.active){this.style.background='#0071e3';this.style.color='#fff'}else{this.style.background='transparent';this.style.color='#0071e3'}">הושלמו</button>
+              <button onclick="filterTasks('high',this,'task-filter-ceo')" data-filter="high" style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:7px 16px;font-size:13px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;white-space:nowrap;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="if(this.dataset.filter===document.getElementById('task-filter-ceo').dataset.active){this.style.background='#0071e3';this.style.color='#fff'}else{this.style.background='transparent';this.style.color='#0071e3'}">דחוף</button>
+            </div>
+              <button onclick="filterTasks('all',this,'task-filter-ceo')" data-filter="all" style="position:relative;z-index:1;padding:6px 16px;border-radius:980px;border:none;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit;background:transparent;color:#1d1d1f;transition:color 0.2s;white-space:nowrap;">הכל</button>
+              <button onclick="filterTasks('open',this,'task-filter-ceo')" data-filter="open" style="position:relative;z-index:1;padding:6px 16px;border-radius:980px;border:none;cursor:pointer;font-size:13px;font-weight:500;font-family:inherit;background:transparent;color:#86868b;transition:color 0.2s;white-space:nowrap;">פתוחות</button>
+              <button onclick="filterTasks('done',this,'task-filter-ceo')" data-filter="done" style="position:relative;z-index:1;padding:6px 16px;border-radius:980px;border:none;cursor:pointer;font-size:13px;font-weight:500;font-family:inherit;background:transparent;color:#86868b;transition:color 0.2s;white-space:nowrap;">הושלמו</button>
+              <button onclick="filterTasks('high',this,'task-filter-ceo')" data-filter="high" style="position:relative;z-index:1;padding:6px 16px;border-radius:980px;border:none;cursor:pointer;font-size:13px;font-weight:500;font-family:inherit;background:transparent;color:#86868b;transition:color 0.2s;white-space:nowrap;">דחוף</button>
+            </div>
+            <select id="ceo-task-employee-filter" onchange="renderCeoTasks()" style="border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px;background:var(--bg3);color:var(--text);cursor:pointer;font-family:inherit;">
+              <option value="">👥 כל העובדים</option>
+            </select>
+          </div>
+          <div class="tasks-grid" id="ceo-tasks-grid"></div>
+        </div>
+
+        <!-- תוכן: עובדים -->
+        <div id="team-panel-employees" style="display:none;">
+          <div id="ceo-employees-cards"></div>
+        </div>
+      </div>
+
+      <!-- CEO Workers -->
+      <div class="page" id="page-ceo-workers" style="background:transparent;min-height:100vh;padding:24px;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',Arial,sans-serif;">
+        <!-- Monthly Grid View -->
+        <div style="background:rgba(255,255,255,0.72);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:20px;box-shadow:0 4px 30px rgba(0,0,0,0.08),0 1px 0 rgba(255,255,255,0.9) inset;border:1px solid rgba(255,255,255,0.6);margin-bottom:24px;overflow:hidden;">
+          <div style="padding:18px 22px 14px;display:flex;align-items:center;flex-wrap:wrap;gap:10px;border-bottom:1px solid rgba(0,0,0,0.06);">
+            <div style="display:flex;align-items:center;gap:8px;cursor:pointer;" onclick="toggleSection('grid-section','grid-toggle-icon')">
+              <span id="grid-toggle-icon" style="font-size:13px;transition:transform 0.2s;display:inline-block;color:#86868b;">▾</span>
+              <span style="font-size:17px;font-weight:700;color:#1d1d1f;letter-spacing:-0.5px;">לוח שעות חודשי</span>
+            </div>
+            <span style="flex:1;"></span>
+            <div style="display:flex;align-items:center;gap:6px;background:rgba(0,0,0,0.06);border-radius:980px;padding:3px 6px;">
+              <button onclick="changeGridMonth(-1)" style="background:transparent;border:none;border-radius:980px;padding:6px 14px;font-size:14px;cursor:pointer;color:#1d1d1f;display:flex;align-items:center;gap:5px;font-family:inherit;font-weight:500;transition:all 0.15s;white-space:nowrap;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#1d1d1f'"><span style='font-size:10px;'>▶</span> חודש קודם</button>
+              <span id="grid-month-label" style="font-size:18px;font-weight:700;min-width:110px;text-align:center;color:#1d1d1f;letter-spacing:-0.3px;padding:0 10px;border-right:1px solid rgba(0,0,0,0.12);border-left:1px solid rgba(0,0,0,0.12);"></span>
+              <button onclick="changeGridMonth(1)" style="background:transparent;border:none;border-radius:980px;padding:6px 14px;font-size:14px;cursor:pointer;color:#1d1d1f;display:flex;align-items:center;gap:5px;font-family:inherit;font-weight:500;transition:all 0.15s;white-space:nowrap;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#1d1d1f'">חודש הבא <span style='font-size:10px;'>◀</span></button>
+            </div>
+            <span style="flex:1;"></span>
+            <span id="grid-zoom-label" style="display:none;">11px</span>
+            <input type="range" id="grid-zoom-slider" min="7" max="18" step="0.5" value="11" oninput="applyGridZoom(this.value, false)" style="display:none;">
+          </div>
+
+          <div id="grid-section" style="padding:16px 22px 24px;">
+            <!-- Status filter dropdown -->
+            <div style="padding-bottom:12px;position:relative;display:inline-block;">
+              <button id="grid-status-btn" onclick="toggleGridStatusDropdown('grid-status-dropdown')" style="background:transparent;border:1.5px solid #1d1d1f;color:#1d1d1f;border-radius:980px;font-size:15px;padding:9px 18px;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.background='#1d1d1f';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#1d1d1f'">
+                <span id="grid-status-btn-label">📋 כל הפועלים</span>
+                <span style="font-size:10px;color:#86868b;">▾</span>
+              </button>
+              <div id="grid-status-dropdown" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:#fff;border:none;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,0.14);z-index:200;min-width:210px;overflow:hidden;">
+                <div id="grid-dd-all" onclick="setGridStatusFilter('all',false);toggleGridStatusDropdown('grid-status-dropdown')" style="padding:10px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#4a6080;" onmouseover="this.style.background='#f4f7fa'" onmouseout="this.style.background=''">
+                  <span>📋 כל הפועלים</span><span id="grid-dd-count-all" style="font-size:11px;font-weight:700;background:#e8edf2;border-radius:20px;padding:1px 8px;"></span>
+                </div>
+                <div id="grid-dd-signed" onclick="setGridStatusFilter('signed',false);toggleGridStatusDropdown('grid-status-dropdown')" style="padding:10px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#2a7a5a;" onmouseover="this.style.background='#f0fff4'" onmouseout="this.style.background=''">
+                  <span>✅ כל הימים חתומים</span><span id="grid-dd-count-signed" style="font-size:11px;font-weight:700;background:#d0f0e0;border-radius:20px;padding:1px 8px;"></span>
+                </div>
+                <div id="grid-dd-filled" onclick="setGridStatusFilter('filled',false);toggleGridStatusDropdown('grid-status-dropdown')" style="padding:10px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#8a6020;" onmouseover="this.style.background='#fff8e6'" onmouseout="this.style.background=''">
+                  <span>⏳ מולאו, לא חתומים</span><span id="grid-dd-count-filled" style="font-size:11px;font-weight:700;background:#fdefc0;border-radius:20px;padding:1px 8px;"></span>
+                </div>
+                <div id="grid-dd-missing" onclick="setGridStatusFilter('missing',false);toggleGridStatusDropdown('grid-status-dropdown')" style="padding:10px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#a03030;" onmouseover="this.style.background='#fff0f0'" onmouseout="this.style.background=''">
+                  <span>❌ לא מולאו</span><span id="grid-dd-count-missing" style="font-size:11px;font-weight:700;background:#f8d8d8;border-radius:20px;padding:1px 8px;"></span>
+                </div>
+                <div style="border-top:1px solid var(--border);margin:4px 0;"></div>
+                <div style="padding:10px 16px;">
+                  <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px;">🗓️ חתמו עד יום:</div>
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <input type="number" id="grid-until-day" min="1" max="31" placeholder="יום" style="width:60px;border:1px solid var(--border);border-radius:8px;padding:5px 8px;font-size:13px;font-family:inherit;background:var(--bg3);color:var(--text);outline:none;text-align:center;" oninput="setGridUntilDay(this.value,false)">
+                    <span style="font-size:12px;color:var(--text2);">בחודש</span>
+                    <button onclick="clearGridUntilDay(false)" style="font-size:11px;color:var(--text3);background:none;border:none;cursor:pointer;padding:0;" title="נקה">✕</button>
+                  </div>
+                  <div style="display:flex;gap:8px;margin-top:8px;">
+                    <div id="grid-dd-signed-until" onclick="setGridStatusFilter('signed-until',false);toggleGridStatusDropdown('grid-status-dropdown')" style="flex:1;padding:7px 10px;cursor:pointer;border-radius:8px;border:1px solid #a8d8b8;background:#f0fff4;text-align:center;font-size:12px;color:#2a7a5a;" onmouseover="this.style.background='#dcf5e8'" onmouseout="this.style.background='#f0fff4'">
+                      <div style="font-weight:700;">✅ חתמו</div>
+                      <div id="grid-dd-count-signed-until" style="font-size:13px;font-weight:800;"></div>
+                    </div>
+                    <div id="grid-dd-missing-until" onclick="setGridStatusFilter('missing-until',false);toggleGridStatusDropdown('grid-status-dropdown')" style="flex:1;padding:7px 10px;cursor:pointer;border-radius:8px;border:1px solid #e0a8a8;background:#fff0f0;text-align:center;font-size:12px;color:#a03030;" onmouseover="this.style.background='#fddede'" onmouseout="this.style.background='#fff0f0'">
+                      <div style="font-weight:700;">❌ לא חתמו</div>
+                      <div id="grid-dd-count-missing-until" style="font-size:13px;font-weight:800;"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Search + filter bar -->
+            <div style="padding:0 0 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+              <!-- Search type custom dropdown -->
+              <div style="position:relative;display:inline-flex;align-items:center;border:1.5px solid #d2d2d7;border-radius:980px;background:#fff;overflow:hidden;min-width:220px;">
+                <input type="text" id="grid-search-input" placeholder="הקלד לחיפוש..." oninput="renderCeoWorkersGrid(false)"
+                  style="flex:1;border:none;padding:9px 14px;font-size:13px;background:transparent;color:#1d1d1f;font-family:inherit;outline:none;min-width:0;">
+                <button id="grid-search-type-toggle" onclick="cycleGridSearchType()" title="החלף סוג חיפוש"
+                  style="background:transparent;border:none;border-right:1.5px solid #e5e5ea;padding:0 10px;height:100%;cursor:pointer;font-size:14px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s;white-space:nowrap;"
+                  onmouseover="this.querySelector('span').style.borderColor='#0071e3'" onmouseout="this.querySelector('span').style.borderColor='#d2d2d7'"><span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border:1.5px solid #d2d2d7;border-radius:50%;font-size:13px;transition:border-color 0.15s;">🪪</span></button>
+                <select id="grid-search-type" style="display:none;"><option value="name">שם</option><option value="idpassport" selected>ת"ז</option></select>
+              </div>
+              <!-- Contractor custom dropdown -->
+              <div style="position:relative;display:inline-block;">
+                <button id="grid-filter-contractor-btn" onclick="toggleGridStatusDropdown('grid-filter-contractor-dd')" style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:9px 18px;font-size:13px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">
+                  <span id="grid-filter-contractor-label">🏢 כל הקבלנים</span><span style="font-size:10px;">▾</span>
+                </button>
+                <div id="grid-filter-contractor-dd" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:#fff;border:none;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,0.14);z-index:300;min-width:180px;overflow:hidden;">
+                  <div id="grid-contractor-options"></div>
+                </div>
+                <select id="grid-filter-contractor" style="display:none;" onchange="_refreshContractorFilter('grid-filter-contractor','grid-filter-site',()=>renderCeoWorkersGrid(false))"><option value="">כל הקבלנים</option></select>
+              </div>
+              <!-- Site custom dropdown -->
+              <div style="position:relative;display:inline-block;">
+                <button id="grid-filter-site-btn" onclick="toggleGridStatusDropdown('grid-filter-site-dd')" style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:9px 18px;font-size:13px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">
+                  <span id="grid-filter-site-label">🏗️ כל האתרים</span><span style="font-size:10px;">▾</span>
+                </button>
+                <div id="grid-filter-site-dd" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:#fff;border:none;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,0.14);z-index:300;min-width:180px;max-width:280px;">
+                  <div id="grid-site-options"></div>
+                </div>
+                <select id="grid-filter-site" style="display:none;" onchange="renderCeoWorkersGrid(false)"><option value="">כל האתרים</option></select>
+              </div>
+              <span style="margin-right:auto;"></span>
+              <button onclick="openGridFullscreen()" title="מסך מלא" style="background:transparent;border:1.5px solid #1d1d1f;border-radius:980px;padding:9px 18px;font-size:13px;cursor:pointer;color:#1d1d1f;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.background='#1d1d1f';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#1d1d1f'">⛶ מסך מלא</button>
+              <button onclick="copyGridToExcel()" style="background:transparent;border:1.5px solid #34c759;border-radius:980px;padding:9px 18px;font-size:13px;color:#34c759;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.background='#34c759';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#34c759'">📋 הורד לאקסל</button>
+              <span id="grid-search-count" style="font-size:12px;color:#86868b;"></span>
+            </div>
+
+
+            <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;" id="grid-scroll-container">
+              <div id="workers-grid-wrap"></div>
+            </div>
+          </div>
+        </div>
+
+
+      </div>
+
+
+      <!-- Admin Calendar -->
+      <div class="page" id="page-admin-calendar">
+        <div id="cal-admin-root"></div>
+      </div>
+
+      <!-- CEO Calendar -->
+      <div class="page" id="page-ceo-calendar">
+        <div id="cal-ceo-root"></div>
+      </div>
+
+      <!-- CEO Tasks -->
+
+
+      <!-- CEO Credentials -->
+      <div class="page" id="page-ceo-credentials">
+        <div class="card" style="margin-bottom:20px;padding:20px;background:linear-gradient(135deg,#fdf5e8,#fef9f0);border-color:var(--yellow);">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="font-size:32px;">🔑</div>
+            <div>
+              <div style="font-size:17px;font-weight:800;">פרטי כניסה של הצוות</div>
+              <div style="font-size:13px;color:var(--text2);">שמות משתמש וסיסמאות של כל העובדים והפועלים בחברה שלך</div>
+            </div>
+          </div>
+          <div style="margin-top:12px;padding:10px 14px;background:rgba(232,196,106,0.2);border-radius:8px;font-size:12px;color:#a07820;display:flex;align-items:center;gap:8px;">
+            🔒 <span>המידע הזה רגיש — שמור אותו בסודיות ואל תשתף עם גורמים לא מורשים</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">💼 עובדים</div>
+            <div style="margin-right:auto;">
+              <button onclick="ceoOpenAddMember('employee')" style="font-size:13px;padding:9px 18px;background:transparent;border:1.5px solid #0071e3;color:#0071e3;border-radius:980px;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">+ הוסף עובד</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>שם</th><th>שם משתמש</th><th>ת"ז / דרכון</th><th>סיסמה</th><th>עריכה</th></tr></thead>
+              <tbody id="ceo-emp-creds-table"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🔧 פועלים</div>
+            <div style="display:flex;gap:8px;margin-right:auto;">
+              <button id="btn-add-worker" onclick="ceoOpenAddMember('worker')" style="font-size:13px;padding:9px 18px;background:transparent;border:1.5px solid #0071e3;color:#0071e3;border-radius:980px;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#0071e3'">+ הוסף פועל</button>
+              <button id="btn-import-workers" onclick="openBulkImportWorkers()" style="font-size:13px;padding:9px 18px;background:transparent;border:1.5px solid #34c759;color:#34c759;border-radius:980px;cursor:pointer;font-family:inherit;font-weight:500;white-space:nowrap;transition:all 0.15s;" onmouseover="this.style.background='#34c759';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#34c759'">📥 ייבוא מאקסל</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>שם</th><th>שם משתמש</th><th>ת"ז / דרכון</th><th>סיסמה</th><th>עריכה</th></tr></thead>
+              <tbody id="ceo-worker-creds-table"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- סיסמת חתימה -->
+        <div class="card" style="margin-top:16px;">
+          <div class="card-header">
+            <div class="card-title">🔑 ניהול סיסמת חתימה</div>
+          </div>
+          <p style="color:var(--text2);font-size:13px;margin-bottom:14px;">קבע את הסיסמה שמנהל האתר ישתמש בה לאישור דוחות שעות</p>
+
+          <!-- Current password display -->
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px;">
+            <div style="font-size:12px;color:var(--text2);margin-bottom:8px;font-weight:600;">סיסמה נוכחית:</div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span id="current-sig-pass-display" style="font-family:monospace;font-size:15px;letter-spacing:3px;background:white;border:1px solid var(--border);border-radius:6px;padding:6px 14px;min-width:160px;color:var(--text);">••••••••</span>
+              <button onclick="toggleCurrentSigPass()" id="current-sig-pass-eye" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px 10px;cursor:pointer;font-size:14px;" title="הצג/הסתר">👁️</button>
+            </div>
+          </div>
+
+          <!-- Set new password -->
+          <div style="font-size:12px;color:var(--text2);margin-bottom:8px;font-weight:600;">הגדר סיסמה חדשה:</div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <input type="password" id="sigPasswordInput" class="search-input" style="width:200px;" placeholder="סיסמת חתימה חדשה">
+            <button class="btn btn-success btn-sm" onclick="setSigPassword()">💾 שמור סיסמה</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CEO Notes -->
+      <div class="page" id="page-ceo-notes">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📝 הערות אישיות - מנכ"ל</div>
+            <button class="btn btn-success btn-sm" id="notes-save-btn-ceo" onclick="saveNotes('ceo')">💾 שמור</button>
+          </div>
+          <textarea class="notes-area" id="ceo-notes" placeholder="כתוב כאן הערות עסקיות, תזכורות, ודברים חשובים..." rows="12" oninput="autoSaveNotes('ceo', this)"></textarea>
+        </div>
+        <div id="ceo-quick-notes" style="margin-top:16px;"></div>
+        <button class="btn btn-outline btn-sm" onclick="addQuickNote('ceo')" style="margin-top:10px;">+ הוסף פתק מהיר</button>
+      </div>
+
+
+
+      <!-- ════════════════ CEO WORK SITES PAGE ════════════════ -->
+      <div class="page" id="page-ceo-sites" style="background:transparent;min-height:100vh;padding:24px;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',Arial,sans-serif;">
+        <!-- Hours summary -->
+        <div style="background:rgba(255,255,255,0.72);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:20px;box-shadow:0 4px 30px rgba(0,0,0,0.08),0 1px 0 rgba(255,255,255,0.9) inset;border:1px solid rgba(255,255,255,0.6);margin-bottom:24px;overflow:hidden;">
+          <div style="padding:18px 22px 14px;display:flex;align-items:center;flex-wrap:wrap;gap:10px;border-bottom:1px solid rgba(0,0,0,0.06);">
+            <div style="display:flex;align-items:center;gap:8px;cursor:pointer;" onclick="toggleSection('sites-hours-section','sites-hours-toggle-icon')">
+              <span id="sites-hours-toggle-icon" style="font-size:13px;transition:transform 0.2s;display:inline-block;color:#86868b;">▾</span>
+              <span style="font-size:17px;font-weight:700;color:#1d1d1f;letter-spacing:-0.5px;">סיכום שעות לפי קבלן ואתר</span>
+            </div>
+            <span style="flex:1;"></span>
+            <div style="display:flex;align-items:center;gap:6px;background:rgba(0,0,0,0.06);border-radius:980px;padding:3px 6px;">
+              <button onclick="changeSitesMonth(-1)" style="background:transparent;border:none;border-radius:980px;padding:6px 14px;font-size:14px;cursor:pointer;color:#1d1d1f;display:flex;align-items:center;gap:5px;font-family:inherit;font-weight:500;transition:all 0.15s;white-space:nowrap;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#1d1d1f'"><span style="font-size:10px;">▶</span> חודש קודם</button>
+              <span id="sites-month-label" style="font-size:18px;font-weight:700;min-width:110px;text-align:center;color:#1d1d1f;letter-spacing:-0.3px;padding:0 10px;border-right:1px solid rgba(0,0,0,0.12);border-left:1px solid rgba(0,0,0,0.12);"></span>
+              <button onclick="changeSitesMonth(1)" style="background:transparent;border:none;border-radius:980px;padding:6px 14px;font-size:14px;cursor:pointer;color:#1d1d1f;display:flex;align-items:center;gap:5px;font-family:inherit;font-weight:500;transition:all 0.15s;white-space:nowrap;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#1d1d1f'">חודש הבא <span style="font-size:10px;">◀</span></button>
+            </div>
+            <span style="flex:1;"></span>
+          </div>
+          <div id="sites-hours-section">
+            <div style="padding:12px 0 4px;display:flex;align-items:center;gap:8px;">
+              <input type="text" id="sites-hours-search" placeholder="חפש קבלן או אתר" oninput="renderSitesHoursSummary()"
+                style="width:180px;border:1.5px solid rgba(255,255,255,0.6);border-radius:980px;padding:10px 14px;font-size:12px;font-family:inherit;background:rgba(255,255,255,0.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#1d1d1f;outline:none;box-shadow:0 1px 8px rgba(0,0,0,0.06);transition:border-color 0.15s;" onfocus="this.style.borderColor='#0071e3'" onblur="this.style.borderColor='rgba(255,255,255,0.6)'">
+              <span style="flex:1;"></span>
+              <!-- VAT gear -->
+              <div style="position:relative;display:inline-block;">
+                <button id="vat-gear-btn" onclick="toggleVatDropdown()" title='שינוי מע"מ' style="background:transparent;border:none;font-size:16px;cursor:pointer;color:#86868b;padding:4px;display:flex;align-items:center;transition:color 0.15s;" onmouseover="this.style.color='#1d1d1f'" onmouseout="this.style.color='#86868b'">⚙️</button>
+                <div id="vat-dropdown" style="display:none;position:absolute;left:0;top:calc(100% + 6px);background:#fff;border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,0.13);z-index:300;padding:14px 16px;min-width:160px;">
+                  <div style="font-size:11px;font-weight:700;color:#86868b;letter-spacing:0.4px;text-transform:uppercase;margin-bottom:8px;">שיעור מע"מ</div>
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <input type="number" id="sites-vat-rate" value="18" min="0" max="100"
+                      style="width:60px;border:1.5px solid #d2d2d7;border-radius:8px;padding:6px 8px;font-size:14px;font-family:inherit;background:#fff;color:#1d1d1f;outline:none;text-align:center;"
+                      onfocus="this.style.borderColor='#0071e3'" onblur="this.style.borderColor='#d2d2d7'"
+                      oninput="renderSitesHoursSummary()">
+                    <span style="font-size:14px;color:#1d1d1f;font-weight:600;">%</span>
+                  </div>
+                  <div id="vat-display" style="font-size:11px;color:#86868b;margin-top:6px;"></div>
+                </div>
+              </div>
+            </div>
+            <div id="sites-hours-summary"></div>
+          </div>
+        </div>
+
+        <!-- Sites list -->
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+          <input type="text" id="sites-search" placeholder="חפש קבלן או אתר" oninput="renderWorkSites()"
+            style="width:180px;border:1.5px solid rgba(255,255,255,0.6);border-radius:980px;padding:10px 14px;font-size:12px;font-family:inherit;background:rgba(255,255,255,0.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#1d1d1f;outline:none;box-shadow:0 1px 8px rgba(0,0,0,0.06);transition:border-color 0.15s;" onfocus="this.style.borderColor='#0071e3'" onblur="this.style.borderColor='rgba(255,255,255,0.6)'">
+          <button onclick="openAddContractorModal()" style="background:transparent;border:1.5px solid #1d1d1f;color:#1d1d1f;border-radius:980px;font-size:13px;padding:9px 18px;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;white-space:nowrap;" onmouseover="this.style.background='#1d1d1f';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#1d1d1f'">+ הוסף קבלן</button>
+          <button onclick="openAddSiteModal()" style="background:transparent;border:1.5px solid #1d1d1f;color:#1d1d1f;border-radius:980px;font-size:13px;padding:9px 18px;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;white-space:nowrap;" onmouseover="this.style.background='#1d1d1f';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#1d1d1f'">+ הוסף אתר</button>
+        </div>
+        <div id="sites-list-container"></div>
+
+        <!-- Bulk assign section -->
+        <div class="card" id="bulk-assign-card" style="display:none;margin-top:16px;border:2px solid var(--accent);background:#f0f7ff;">
+          <div class="card-header">
+            <div class="card-title">✅ שיוך מרובה — <span id="bulk-count">0</span> פועלים נבחרו</div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-outline btn-sm" onclick="clearBulkSelection()">ביטול בחירה</button>
+              <button class="btn btn-primary btn-sm" onclick="openBulkAssignModal()">שייך לאתר ←</button>
+            </div>
+          </div>
+          <div id="bulk-selected-names" style="font-size:12px;color:var(--text2);margin-top:6px;"></div>
+        </div>
+      </div>
+
+      <!-- ════════════════ CEO REQUESTS PAGE ════════════════ -->
+      <div class="page" id="page-ceo-requests">
+        <div class="card" style="margin-bottom:16px;padding:20px;background:linear-gradient(135deg,#f0ebff,#e8f0ff);border-color:#c8b8f0;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="font-size:32px;">📬</div>
+            <div style="flex:1;">
+              <div style="font-size:17px;font-weight:800;">פניות ובקשות פועלים</div>
+              <div style="font-size:13px;color:var(--text2);">כל הפניות מהפועלים שלך — ציוד חסר, בטיחות, בקשות שונות</div>
+            </div>
+            <span id="ceo-requests-badge" style="background:#e88fa0;color:white;font-size:13px;font-weight:800;padding:4px 12px;border-radius:20px;display:none;"></span>
+          </div>
+        </div>
+        <div class="card" style="padding:14px 18px;margin-bottom:14px;">
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <span style="font-size:13px;color:var(--text2);font-weight:600;">סנן לפי סטטוס:</span>
+            <select id="ceo-req-filter" onchange="renderCeoRequests()" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:13px;color:var(--text);font-family:inherit;cursor:pointer;outline:none;">
+              <option value="all">📋 הכל</option>
+              <option value="pending">⏳ ממתין לטיפול</option>
+              <option value="inprogress">🔄 בטיפול</option>
+              <option value="done">✅ טופל</option>
+            </select>
+          </div>
+        </div>
+        <div id="ceo-requests-container"></div>
+      </div>
+
+      <!-- ════════════════ EMPLOYEE PAGES ════════════════ -->
+      <!-- Employee Dashboard -->
+      <div class="page" id="page-emp-dashboard">
+        <div class="card" style="background:linear-gradient(135deg,#e8f5ef,#f0f8e8);border-color:var(--green);margin-bottom:20px;padding:24px;">
+          <div style="font-size:14px;color:var(--text2);">שלום,</div>
+          <div style="font-size:26px;font-weight:800;" id="emp-welcome-name">עובד</div>
+          <div style="color:var(--text2);font-size:13px;" id="emp-company-label">חברה</div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card yellow">
+            <div class="stat-header"><div class="stat-icon">📋</div><div class="stat-label">משימות פתוחות</div></div>
+            <div class="stat-value" id="emp-stat-open">0</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-header"><div class="stat-icon">✅</div><div class="stat-label">הושלמו</div></div>
+            <div class="stat-value" id="emp-stat-done">0</div>
+          </div>
+          <div class="stat-card red">
+            <div class="stat-header"><div class="stat-icon">🔥</div><div class="stat-label">דחופות</div></div>
+            <div class="stat-value" id="emp-stat-urgent">0</div>
+          </div>
+          <div class="stat-card purple">
+            <div class="stat-header"><div class="stat-icon">📅</div><div class="stat-label">להיום</div></div>
+            <div class="stat-value" id="emp-stat-today">0</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🔥 משימות דחופות</div>
+          </div>
+          <div id="emp-urgent-tasks"></div>
+        </div>
+      </div>
+
+      <!-- Employee Tasks -->
+      <div class="page" id="page-emp-tasks">
+        <div class="card-header" style="margin-bottom:20px;">
+          <div class="card-title" style="font-size:18px;">📋 המשימות שלי</div>
+          <button class="btn btn-primary btn-sm" onclick="openAddTask('emp')">+ הוסף משימה</button>
+        </div>
+        <div id="task-filter-emp" data-active="all" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+              <button onclick="filterTasks('all',this,'task-filter-emp')" data-filter="all" style="background:#0071e3;border:1.5px solid #0071e3;border-radius:980px;padding:7px 16px;font-size:13px;color:#fff;cursor:pointer;font-family:inherit;font-weight:600;transition:all 0.15s;white-space:nowrap;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="if(this.dataset.filter===document.getElementById('task-filter-emp').dataset.active){this.style.background='#0071e3';this.style.color='#fff'}else{this.style.background='transparent';this.style.color='#0071e3'}">הכל</button>
+              <button onclick="filterTasks('open',this,'task-filter-emp')" data-filter="open" style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:7px 16px;font-size:13px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;white-space:nowrap;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="if(this.dataset.filter===document.getElementById('task-filter-emp').dataset.active){this.style.background='#0071e3';this.style.color='#fff'}else{this.style.background='transparent';this.style.color='#0071e3'}">פתוחות</button>
+              <button onclick="filterTasks('done',this,'task-filter-emp')" data-filter="done" style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:7px 16px;font-size:13px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;white-space:nowrap;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="if(this.dataset.filter===document.getElementById('task-filter-emp').dataset.active){this.style.background='#0071e3';this.style.color='#fff'}else{this.style.background='transparent';this.style.color='#0071e3'}">הושלמו</button>
+              <button onclick="filterTasks('high',this,'task-filter-emp')" data-filter="high" style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:7px 16px;font-size:13px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;white-space:nowrap;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="if(this.dataset.filter===document.getElementById('task-filter-emp').dataset.active){this.style.background='#0071e3';this.style.color='#fff'}else{this.style.background='transparent';this.style.color='#0071e3'}">דחוף</button>
+            </div>
+        s.style.color='#fff'" onmouseout="if(this.dataset.filter===document.getElementById('task-filter-ceo').dataset.active){this.style.background='#0071e3';this.style.color='#fff'}else{this.style.background='transparent';this.style.color='#0071e3'}">הכל</button>
+              <button onclick="filterTasks('open',this,'task-filter-ceo')" data-filter="open" style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:7px 16px;font-size:13px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;white-space:nowrap;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="if(this.dataset.filter===document.getElementById('task-filter-ceo').dataset.active){this.style.background='#0071e3';this.style.color='#fff'}else{this.style.background='transparent';this.style.color='#0071e3'}">פתוחות</button>
+              <button onclick="filterTasks('done',this,'task-filter-ceo')" data-filter="done" style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:7px 16px;font-size:13px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;white-space:nowrap;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="if(this.dataset.filter===document.getElementById('task-filter-ceo').dataset.active){this.style.background='#0071e3';this.style.color='#fff'}else{this.style.background='transparent';this.style.color='#0071e3'}">הושלמו</button>
+              <button onclick="filterTasks('high',this,'task-filter-ceo')" data-filter="high" style="background:transparent;border:1.5px solid #0071e3;border-radius:980px;padding:7px 16px;font-size:13px;color:#0071e3;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;white-space:nowrap;" onmouseover="this.style.background='#0071e3';this.style.color='#fff'" onmouseout="if(this.dataset.filter===document.getElementById('task-filter-ceo').dataset.active){this.style.background='#0071e3';this.style.color='#fff'}else{this.style.background='transparent';this.style.color='#0071e3'}">דחוף</button>
+            </div>
               <button onclick="filterTasks('all',this,'task-filter-ceo')" data-filter="all" style="position:relative;z-index:1;padding:6px 16px;border-radius:980px;border:none;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit;background:transparent;color:#1d1d1f;transition:color 0.2s;white-space:nowrap;">הכל</button>
               <button onclick="filterTasks('open',this,'task-filter-ceo')" data-filter="open" style="position:relative;z-index:1;padding:6px 16px;border-radius:980px;border:none;cursor:pointer;font-size:13px;font-weight:500;font-family:inherit;background:transparent;color:#86868b;transition:color 0.2s;white-space:nowrap;">פתוחות</button>
               <button onclick="filterTasks('done',this,'task-filter-ceo')" data-filter="done" style="position:relative;z-index:1;padding:6px 16px;border-radius:980px;border:none;cursor:pointer;font-size:13px;font-weight:500;font-family:inherit;background:transparent;color:#86868b;transition:color 0.2s;white-space:nowrap;">הושלמו</button>
@@ -5043,7 +5412,6 @@ function fallbackCopy(text) {
 }
 
 function renderCeoTasks() {
-  _initTaskFilterSlider('task-filter-ceo');
   const grid = document.getElementById('ceo-tasks-grid');
   let tasks = DATA.tasks.filter(t => t.company === currentUser.company);
 
@@ -5098,7 +5466,6 @@ function renderEmpDashboard() {
 }
 
 function renderEmpTasks() {
-  _initTaskFilterSlider('task-filter-emp');
   const grid = document.getElementById('emp-tasks-grid');
   let tasks = DATA.tasks.filter(t => t.assignedTo === currentUser.id);
   if (taskFilter === 'open') tasks = tasks.filter(t => t.status === 'open');
@@ -6066,27 +6433,15 @@ function renderTaskCards(grid, tasks, mode) {
 
 function filterTasks(f, el, trackId) {
   taskFilter = f;
-  // עדכן סגנון כפתורים + הזז סליידר
   const track = trackId ? document.getElementById(trackId) : el?.closest('[id^="task-filter"]');
   if (track) {
-    const slider = document.getElementById(track.id + '-slider');
-    const btns = [...track.querySelectorAll('button[data-filter]')];
-    btns.forEach(b => {
+    track.dataset.active = f;
+    [...track.querySelectorAll('button[data-filter]')].forEach(b => {
       const active = b.dataset.filter === f;
-      b.style.color = active ? '#1d1d1f' : '#86868b';
-      b.style.fontWeight = active ? '700' : '500';
+      b.style.background = active ? '#0071e3' : 'transparent';
+      b.style.color       = active ? '#fff'    : '#0071e3';
+      b.style.fontWeight  = active ? '600'     : '500';
     });
-    if (slider) {
-      const activeBtn = btns.find(b => b.dataset.filter === f);
-      if (activeBtn) {
-        // חשב right מימין לשמאל
-        const trackRect = track.getBoundingClientRect();
-        const btnRect = activeBtn.getBoundingClientRect();
-        const rightOffset = trackRect.right - btnRect.right + 3;
-        slider.style.width = activeBtn.offsetWidth + 'px';
-        slider.style.right = rightOffset + 'px';
-      }
-    }
   }
   if (currentPage === 'ceo-employees') renderCeoTasks();
   else if (currentPage === 'emp-tasks') renderEmpTasks();
