@@ -7325,11 +7325,15 @@ function _buildCostModalHTML(siteName, contr, priceLbl, priceType, pricePerUnit,
   const prefix = compact ? '' : `<div style="padding:22px;max-width:620px;width:100%;max-height:85vh;overflow-y:auto;">
     <div style="font-size:17px;font-weight:800;margin-bottom:2px;">📍 ${siteName}</div>
     <div style="font-size:12px;color:var(--text3);margin-bottom:20px;">קבלן: ${contr}</div>`;
-  const suffix = compact ? '' : `<div style="display:flex;gap:10px;margin-top:16px;">
+  const suffix = compact ? '' : `<div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;">
     <button onclick="exportCostTableToExcel('${tableId}','${siteName.replace(/'/g,"\'")}')" style="background:transparent;border:1.5px solid #34c759;border-radius:980px;padding:9px 18px;font-size:13px;color:#34c759;cursor:pointer;font-family:inherit;font-weight:500;" onmouseover="this.style.background='#34c759';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#34c759'">📋 העתק לאקסל</button>
+    <button onclick="exportCostTableToPDF('${tableId}','${siteName.replace(/'/g,"\'")}','${contr.replace(/'/g,"\'")}')" style="background:transparent;border:1.5px solid #e74c3c;border-radius:980px;padding:9px 18px;font-size:13px;color:#e74c3c;cursor:pointer;font-family:inherit;font-weight:500;" onmouseover="this.style.background='#e74c3c';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#e74c3c'">📄 הורד PDF</button>
     <button onclick="closeModal()" style="background:transparent;border:1.5px solid #d2d2d7;border-radius:980px;padding:9px 20px;font-size:14px;cursor:pointer;font-family:inherit;">סגור</button>
   </div></div>`;
-  const exportBtnCompact = compact ? `<button onclick="exportCostTableToExcel('${tableId}','${siteName.replace(/'/g,"\'")}')" style="margin-right:auto;background:transparent;border:1.5px solid #34c759;border-radius:980px;padding:3px 12px;font-size:11px;color:#34c759;cursor:pointer;font-family:inherit;" onmouseover="this.style.background='#34c759';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#34c759'">📋 אקסל</button>` : '';
+  const exportBtnCompact = compact ? `<div style="margin-right:auto;display:flex;gap:6px;">
+    <button onclick="exportCostTableToExcel('${tableId}','${siteName.replace(/'/g,"\'")}')" style="background:transparent;border:1.5px solid #34c759;border-radius:980px;padding:3px 12px;font-size:11px;color:#34c759;cursor:pointer;font-family:inherit;" onmouseover="this.style.background='#34c759';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#34c759'">📋 אקסל</button>
+    <button onclick="exportCostTableToPDF('${tableId}','${siteName.replace(/'/g,"\'")}','${contr.replace(/'/g,"\'")}')" style="background:transparent;border:1.5px solid #e74c3c;border-radius:980px;padding:3px 12px;font-size:11px;color:#e74c3c;cursor:pointer;font-family:inherit;" onmouseover="this.style.background='#e74c3c';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#e74c3c'">📄 PDF</button>
+  </div>` : '';
   return `${prefix}
   <div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:${compact?'20px':'0'};">
     <div style="background:linear-gradient(135deg,var(--bg3),var(--bg2));padding:10px 14px;display:flex;gap:10px;align-items:center;">
@@ -7412,6 +7416,52 @@ function exportAllCostTablesToExcel(contrName) {
     blocks.push(_tableToTSV(table)); blocks.push('');
   });
   _copyText(blocks.join('\n'), '📋 כל הטבלאות הועתקו — הדבק ישירות לאקסל');
+}
+
+
+function exportCostTableToPDF(tableId, siteName, contr) {
+  const table = document.getElementById(tableId);
+  if (!table) { showToast('❌ טבלה לא נמצאה', 'error'); return; }
+
+  const monthNames = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+  const monthLabel = monthNames[sitesMonth] + ' ' + sitesYear;
+
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+  <meta charset="UTF-8">
+  <title>דוח עלויות — ${siteName}</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: 'Arial', sans-serif; font-size: 13px; color: #1d1d1f; padding: 32px; direction: rtl; }
+    h1 { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+    .sub { font-size: 13px; color: #86868b; margin-bottom: 6px; }
+    .month { font-size: 12px; color: #86868b; margin-bottom: 24px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+    th { background: #f5f5f7; padding: 9px 12px; text-align: right; font-size: 11px; font-weight: 700; color: #86868b; text-transform: uppercase; letter-spacing: 0.3px; border-bottom: 2px solid #d2d2d7; }
+    td { padding: 9px 12px; border-bottom: 1px solid #e5e5ea; }
+    tr:last-child td { border-bottom: none; }
+    .num { text-align: center; }
+    .total-row td { background: #f0f4f8; font-weight: 800; border-top: 2px solid #d2d2d7; }
+    .vat-row td { background: #fafafa; color: #6c5ce7; }
+    .grand-row td { background: #f0fff8; color: #00b894; font-weight: 800; font-size: 15px; }
+    .blue { color: #0071e3; }
+    .footer { margin-top: 32px; font-size: 11px; color: #86868b; border-top: 1px solid #e5e5ea; padding-top: 12px; }
+    @media print { body { padding: 16px; } button { display: none !important; } }
+  </style>
+</head>
+<body>
+  <h1>📍 ${siteName}</h1>
+  <div class="sub">קבלן: ${contr}</div>
+  <div class="month">📅 ${monthLabel}</div>
+  ${table.outerHTML}
+  <div class="footer">הופק על ידי WorkFlow Pro · ${new Date().toLocaleDateString('he-IL')}</div>
+  <br>
+  <button onclick="window.print()" style="background:#1d1d1f;color:#fff;border:none;border-radius:980px;padding:10px 24px;font-size:14px;cursor:pointer;font-family:inherit;font-weight:600;">🖨️ הדפס / שמור כ-PDF</button>
+</body>
+</html>`);
+  win.document.close();
 }
 
 function renderWorkSites() {
