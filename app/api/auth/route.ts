@@ -1,72 +1,58 @@
-import { NextRequest } from 'next/server'
-import { supabase } from '@/lib/supabase'
-import { verifyPassword, signToken, verifyToken } from '@/lib/auth'
-import { ok, err } from '@/lib/api'
+import jwt from 'jsonwebtoken'
+import bcrypt from 'bcryptjs'
 
-// GET — בדוק token מה-header
-export async function GET(req: NextRequest) {
-  const auth = req.headers.get('authorization')
-  if (!auth?.startsWith('Bearer ')) return err('Not authenticated', 401)
-  const token = auth.slice(7)
-  const session = verifyToken(token)
-  if (!session) return err('Invalid token', 401)
-  return ok({ user: session })
+const JWT_SECRET = process.env.JWT_SECRET!
+
+// ─── תיקון: ולידציה שה-secret קיים ───
+if (!JWT_SECRET) throw new Error('JWT_SECRET environment variable is required')
+
+const COOKIE_NAME = 'wfp_session'
+
+export interface SessionPayload {
+  id: number
+  username: string
+  name: string
+  role: string
+  company: string | null
 }
 
-// POST — התחברות
-export async function POST(req: NextRequest) {
-  const { username, password } = await req.json()
-  if (!username || !password) return err('חסרים פרטים')
-
-  const { data: user, error } = await supabase
-    .from('users')
-    .select('id,username,password_hash,name,role,company_id,avatar,avatar_color,ceo_interface,field_worker')
-    .eq('username', username.trim().toLowerCase())
-    .single()
-
-  if (error || !user) return err('שם משתמש או סיסמה שגויים', 401)
-
-  const valid = await verifyPassword(password, user.password_hash)
-  if (!valid) return err('שם משתמש או סיסמה שגויים', 401)
-
-  // שלוף את שם החברה לצורך אימות URL
-  let companySlug: string | null = null
-  if (user.company_id) {
-    const { data: company } = await supabase
-      .from('companies')
-      .select('id, name')
-      .eq('id', user.company_id)
-      .single()
-    // slug = company id (e.g. "techcorp") — זה מה שמופיע ב-URL
-    companySlug = company?.id || null
-  }
-
-  const payload = {
-    id:      user.id,
-    username: user.username,
-    name:    user.name,
-    role:    user.role,
-    company: user.company_id,
-  }
-
-  const token = signToken(payload)
-
-  return ok({
-    token,
-    id:           user.id,
-    username:     user.username,
-    name:         user.name,
-    role:         user.role,
-    company:      user.company_id,
-    companySlug,          // <-- חדש: ה-id של החברה לצורך השוואת URL
-    avatar:       user.avatar,
-    avatarColor:  user.avatar_color,
-    ceoInterface: user.ceo_interface,
-    fieldWorker:  user.field_worker,
-  })
+export function signToken(payload: SessionPayload): string {
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' })
 }
 
-// DELETE — התנתקות
-export async function DELETE(req: NextRequest) {
-  return ok({ ok: true })
+export function verifyToken(token: string): SessionPayload | null {
+  try {
+    return jwt.verify(token, JWT_SECRET) as SessionPayload
+  } catch {
+    return null
+  }
+}
+
+export async function hashPassword(password: string): Promise<string> {
+  return bcrypt.hash(password, 12) // ─── תיקון: מ-10 ל-12 rounds ───
+}
+
+// ─── תיקון #1: הסרת plain text fallback ───
+// ─── תיקון #2: dummy hash למניעת timing attack ───
+// bcrypt של מחרוזת קבועה — מחושב מראש כדי לא לחשב בכל request
+const DUMMY_HASH = '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4J3VGabAiG'
+
+export async function verifyPassword(password: string, hash: string | null): Promise<boolean> {
+  // אם אין hash (משתמש לא נמצא) — מריץ bcrypt בכל זאת למניעת timing attack
+  // ואז מחזיר false
+  if (!hash) {
+    await bcrypt.compare(password, DUMMY_HASH) // timing protection
+    return false
+  }
+
+  // ─── plain text fallback הוסר לחלוטין ───
+  // רק bcrypt נתמך
+  if (!hash.startsWith('$2')) {
+    // hash לא תקין — יכול לקרות למשתמשים ישנים עם plain text בDB
+    // מריצים dummy compare ומחזירים false עד שהסיסמה תתעדכן
+    await bcrypt.compare(password, DUMMY_HASH)
+    return false
+  }
+
+  return bcrypt.compare(password, hash)
 }
