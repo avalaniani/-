@@ -6482,7 +6482,7 @@ function openTaskDetail(taskId) {
     document.getElementById('modalBody').innerHTML = `
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px;">
         <div class="modal-title" style="margin:0;flex:1;">${t.title}</div>
-        ${canEdit ? `<button class="btn btn-outline btn-sm" onclick="editTask(${taskId})" style="flex-shrink:0;">✏️ ערוך</button>` : ''}
+        ${canEdit ? `<button class="btn btn-outline btn-sm" onclick="editTask(${taskId})" style="flex-shrink:0;margin-left:36px;">✏️ ערוך</button>` : ''}
       </div>
       <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
         <span class="tag tag-${t.status==='done'?'green':'yellow'}">${t.status==='done'?'✅ הושלם':'📋 פתוח'}</span>
