@@ -2197,6 +2197,13 @@
 
 <script>
 // ═══════════════════════════════════════════
+// XSS PROTECTION
+// ═══════════════════════════════════════════
+function esc(v) {
+  return String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;');
+}
+
+// ═══════════════════════════════════════════
 // DATA
 // ═══════════════════════════════════════════
 // ═══════════════════════════════════════════════════════════════
@@ -2271,7 +2278,6 @@ function mapUser(u) {
     id:           u.id,
     username:     u.username,
     password:      '',
-    passwordPlain: u.password_plain || '',
     name:         u.name,
     role:         u.role,
     company:      u.company_id,
@@ -2292,7 +2298,6 @@ function mapCompany(c, signedMap = {}) {
     field:       c.field        || '',
     emoji:       c.emoji        || '🏢',
     color:       c.color        || '#6c63ff',
-    sigPassword: c.sig_password || c.sigPassword || '',
     signed:      signedMap[c.id] || {},
   };
 }
@@ -2507,7 +2512,6 @@ async function loadAndInjectData(user) {
       fieldWorker:  user.fieldWorker   || user.field_worker  || false,
       idType:       user.idType        || user.id_type       || 'id',
       idNumber:     user.idNumber      || user.id_number     || '',
-      passwordPlain: '',
     };
     login(fallback);
   }
@@ -2618,7 +2622,6 @@ async function sbUpdateCompany(id, updates) {
       if (data.field       !== undefined) comp.field       = data.field;
       if (data.emoji       !== undefined) comp.emoji       = data.emoji;
       if (data.color       !== undefined) comp.color       = data.color;
-      if (data.sig_password !== undefined) comp.sigPassword = data.sig_password;
     }
     return { ok: true, data };
   } catch(e) {
@@ -2795,98 +2798,15 @@ function sbSaveNote(content, noteType) {
 
 
 const DATA = {
-  users: [
-    { id:1, username:'admin', password:'admin123', name:'מנהל המערכת', role:'admin', company:null, avatar:'👑', avatarColor:'#6c63ff' },
-    { id:2, username:'ceo_techcorp', password:'ceo123', name:'אלי ישראלי', role:'ceo', company:'techcorp', avatar:'🏢', avatarColor:'#60a5fa' },
-    { id:3, username:'ceo_buildpro', password:'ceo456', name:'מיכל גולן', role:'ceo', company:'buildpro', avatar:'🏗️', avatarColor:'#fb923c' },
-    { id:4, username:'employee1', password:'emp123', name:'דוד לוי', role:'employee', company:'techcorp', avatar:'💼', avatarColor:'#4ade80', idType:'id', idNumber:'312456789' },
-    { id:5, username:'employee2', password:'emp456', name:'שרה רוזן', role:'employee', company:'techcorp', avatar:'💼', avatarColor:'#fbbf24', idType:'id', idNumber:'208754321' },
-    { id:6, username:'employee3', password:'emp789', name:'רון אבן', role:'employee', company:'buildpro', avatar:'💼', avatarColor:'#f87171', idType:'id', idNumber:'425678901' },
-    { id:7, username:'worker1', password:'work123', name:'יוסף כהן', role:'worker', company:'buildpro', avatar:'🔧', avatarColor:'#fb923c', idType:'id', idNumber:'234567890' },
-    { id:8, username:'worker2', password:'work456', name:'אחמד חסן', role:'worker', company:'buildpro', avatar:'🔧', avatarColor:'#a78bfa', idType:'passport', idNumber:'AB1234567' },
-    { id:9, username:'ceo_cleanit', password:'ceo789', name:'נועה שמיר', role:'ceo', company:'cleanit', avatar:'✨', avatarColor:'#34d399' },
-    { id:10, username:'employee4', password:'emp321', name:'טל ברק', role:'employee', company:'cleanit', avatar:'💼', avatarColor:'#60a5fa', idType:'id', idNumber:'316789012' },
-    { id:11, username:'worker3', password:'work789', name:'פאדי יוסף', role:'worker', company:'techcorp', avatar:'🔧', avatarColor:'#f59e0b', idType:'passport', idNumber:'CD9876543' },
-    { id:12, username:'worker4', password:'work321', name:'ג׳ורג׳ מסיח', role:'worker', company:'cleanit', avatar:'🔧', avatarColor:'#ec4899', idType:'passport', idNumber:'EF5678901' },
-  ],
-  companies: [
-    { id:'techcorp', name:'TechCorp', emoji:'💻', field:'פיתוח תוכנה ואפליקציות', employees:3, color:'#6c63ff', sigPassword:'sign123', signed:{} },
-    { id:'buildpro', name:'BuildPro', emoji:'🏗️', field:'בנייה ופיתוח נדל"ן', employees:3, color:'#fb923c', sigPassword:'sign456', signed:{} },
-    { id:'cleanit', name:'CleanIt', emoji:'✨', field:'שירותי ניקיון ותחזוקה', employees:2, color:'#34d399', sigPassword:'sign789', signed:{} },
-  ],
-  tasks: [
-    { id:1, title:'עיצוב דף הבית החדש', desc:'ליצור מקאפ לדף הבית המעודכן', assignedTo:4, assignedBy:2, company:'techcorp', priority:'high', status:'open', dueDate:'2026-02-25', createdByEmp:false },
-    { id:2, title:'תיקון באג בלוגין', desc:'משתמשים מדווחים על שגיאת 500', assignedTo:4, assignedBy:2, company:'techcorp', priority:'high', status:'open', dueDate:'2026-02-22', createdByEmp:false },
-    { id:3, title:'כתיבת תיעוד API', desc:'לתעד את כל הנקודות הקיימות', assignedTo:5, assignedBy:2, company:'techcorp', priority:'medium', status:'open', dueDate:'2026-03-01', createdByEmp:false },
-    { id:4, title:'פגישת לקוח', desc:'הכנת מצגת לפגישה', assignedTo:5, assignedBy:2, company:'techcorp', priority:'low', status:'done', dueDate:'2026-02-18', createdByEmp:false },
-    { id:5, title:'בדיקת ביסוס יסודות', desc:'לבצע בדיקה מקיפה', assignedTo:6, assignedBy:3, company:'buildpro', priority:'high', status:'open', dueDate:'2026-02-23', createdByEmp:false },
-    { id:6, title:'תכנון תשתית חשמל', desc:'להכין תוכנית מפורטת', assignedTo:6, assignedBy:3, company:'buildpro', priority:'medium', status:'open', dueDate:'2026-02-28', createdByEmp:false },
-    { id:7, title:'הוספת פיצ׳ר חדש', desc:'הוספת לוח שנה למשתמשים', assignedTo:4, assignedBy:4, company:'techcorp', priority:'medium', status:'open', dueDate:'2026-03-05', createdByEmp:true },
-    { id:8, title:'ניקיון חדר שרתים', desc:'פעם בשבוע', assignedTo:10, assignedBy:9, company:'cleanit', priority:'low', status:'open', dueDate:'2026-02-27', createdByEmp:false },
-  ],
+  users: [],
+  companies: [],
+  tasks: [],
   notes: {},
   quickNotes: {},
   requests: [],
-  workSites: [],       // { id, companyId, name, contractor, address, phone }
-  workerSiteHistory: [], // { workerId, siteId, siteName, contractor, fromMonth, toMonth }
-  workerHours: (function() {
-    const d = {};
-    const now = new Date();
-    const y = now.getFullYear();
-    // workers: id 7 (יוסף כהן, buildpro), 8 (אחמד חסן, buildpro), 12 (ג'ורג' מסיח, cleanit)
-    // company buildpro workers: 7, 8
-    // company cleanit workers: 12
-    // company techcorp workers: 11
-    const demoWorkers = [
-      { id:7,  company:'buildpro', hoursProfile:[8,7,9,0,8,8,0,7,9,8,0,0,8,7,9,8,0,8,8,7,0,9,8,7,0,8,8,9,0,8] },
-      { id:8,  company:'buildpro', hoursProfile:[6,7,0,8,6,7,0,8,7,6,0,0,7,8,6,7,0,6,8,7,0,6,7,8,0,7,6,0,0,7] },
-      { id:11, company:'techcorp', hoursProfile:[9,8,0,9,8,9,0,0,8,9,0,0,9,8,7,9,0,8,9,0,0,9,8,9,0,8,0,9,0,9] },
-      { id:12, company:'cleanit', hoursProfile:[5,6,0,7,5,6,0,6,5,7,0,0,6,5,6,7,0,5,7,6,0,5,6,7,0,6,5,0,0,6] },
-    ];
-
-    // Current month
-    demoWorkers.forEach(w => {
-      const key = `${w.id}-${y}-${now.getMonth()}`;
-      d[key] = {};
-      w.hoursProfile.forEach((h, i) => {
-        if (h > 0) {
-          d[key][i+1] = { start:'08:00', end: `${String(8+h).padStart(2,'0')}:00`, hours: String(h), note:'' };
-        }
-      });
-    });
-
-    // Previous month
-    let pm = now.getMonth() - 1, py = y;
-    if (pm < 0) { pm = 11; py--; }
-    const prevProfile = [7,8,0,7,8,7,0,8,7,8,0,0,7,8,7,8,0,7,8,7,0,8,7,6,0,7,8,0,0,7];
-    demoWorkers.forEach(w => {
-      const key = `${w.id}-${py}-${pm}`;
-      d[key] = {};
-      prevProfile.forEach((h, i) => {
-        const adj = Math.max(0, h + (w.id % 3 - 1));
-        if (adj > 0) {
-          d[key][i+1] = { start:'08:00', end: `${String(8+adj).padStart(2,'0')}:00`, hours: String(adj), note:'' };
-        }
-      });
-    });
-
-    // 2 months ago
-    let pm2 = now.getMonth() - 2, py2 = y;
-    if (pm2 < 0) { pm2 += 12; py2--; }
-    const prev2Profile = [6,7,0,8,6,7,0,7,6,8,0,0,7,6,7,8,0,6,8,7,0,6,7,6,0,7,6,0,0,7];
-    demoWorkers.forEach(w => {
-      const key = `${w.id}-${py2}-${pm2}`;
-      d[key] = {};
-      prev2Profile.forEach((h, i) => {
-        const adj = Math.max(0, h + (w.id % 2));
-        if (adj > 0) {
-          d[key][i+1] = { start:'08:00', end: `${String(8+adj).padStart(2,'0')}:00`, hours: String(adj), note:'' };
-        }
-      });
-    });
-
-    return d;
-  })(),
+  workSites: [],
+  workerSiteHistory: [],
+  workerHours: {},
 };
 
 let currentUser = null;
@@ -2991,11 +2911,7 @@ async function doLogin() {
   }
 }
 
-function quickLogin(u, p) {
-  document.getElementById('loginUser').value = u;
-  document.getElementById('loginPass').value = p;
-  doLogin();
-}
+// quickLogin removed - no demo accounts
 
 function login(user) {
   currentUser = user;
@@ -3076,7 +2992,18 @@ function logout() {
   sbDoLogout();
   stopDataPolling();
   currentUser = null;
-  history.replaceState(null, '', window.location.pathname); // נקה hash
+  // ── נקה את כל הנתונים הרגישים מהזיכרון ──
+  DATA.users = [];
+  DATA.companies = [];
+  DATA.tasks = [];
+  DATA.requests = [];
+  DATA.workerHours = {};
+  DATA.workerSiteHistory = [];
+  DATA.workSites = [];
+  DATA.notes = {};
+  DATA.quickNotes = {};
+  _sigPassCache = null; // נקה cache של סיסמת חתימה
+  history.replaceState(null, '', window.location.pathname);
   document.getElementById('app').style.display = 'none';
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('loginUser').value = '';
@@ -3365,10 +3292,10 @@ function renderAdminCompanies() {
       <div style="width:44px;height:44px;border-radius:12px;background:${c.color}22;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">${c.emoji}</div>
       <div style="flex:1;min-width:0;">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-          <div style="font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.name}</div>
+          <div style="font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(c.name)}</div>
           ${rank}
         </div>
-        <div style="font-size:12px;color:var(--text3);margin-bottom:10px;">${c.field}</div>
+        <div style="font-size:12px;color:var(--text3);margin-bottom:10px;">${esc(c.field)}</div>
         <!-- Stats bars -->
         <div style="display:flex;flex-direction:column;gap:5px;">
           <div style="display:flex;align-items:center;gap:8px;">
@@ -3435,7 +3362,7 @@ function renderAdminUsers() {
   if (companyFilter) {
     const cur = companyFilter.value;
     companyFilter.innerHTML = '<option value="">כל החברות</option>' +
-      DATA.companies.map(c => `<option value="${c.id}" ${cur===c.id?'selected':''}>${c.emoji} ${c.name}</option>`).join('');
+      DATA.companies.map(c => `<option value="${c.id}" ${cur===c.id?'selected':''}>${c.emoji} ${esc(c.name)}</option>`).join('');
     // ברירת מחדל: כל החברות (value ריק)
     if (!cur) companyFilter.value = '';
   }
@@ -3487,12 +3414,12 @@ function renderAdminUsers() {
           <span style="font-weight:600;">${highlightText(u.name, searchVal)}</span>
         </div></td>
         <td>${roleLabels[u.role]}</td>
-        <td>${company ? `${company.emoji} ${company.name}` : '—'}</td>
+        <td>${company ? `${company.emoji} ${esc(company.name)}` : '—'}</td>
         <td><code style="background:var(--bg3);padding:3px 8px;border-radius:5px;font-size:12px;">${highlightText(u.username, searchVal)}</code></td>
         <td>
           <div style="display:flex;align-items:center;gap:6px;">
             <span id="pass-display-${u.id}" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:12px;font-family:monospace;letter-spacing:2px;">••••••••</span>
-            ${(currentUser.role==="admin"||currentUser.role==="ceo")?`<button onclick="togglePassView(${u.id})" id="eye-btn-${u.id}" data-pass="${u.passwordPlain||''}" title="הצג סיסמה" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:3px 8px;cursor:pointer;font-size:13px;">&#128065;&#65039;</button>`:""}
+            ""
           </div>
         </td>
         <td>
@@ -3659,7 +3586,7 @@ function renderCeoAnalytics() {
           <div style="display:flex;align-items:center;gap:10px;">
             <span style="font-size:20px;">${a.icon}</span>
             <div>
-              <div style="font-size:13px;font-weight:700;color:#2d3a4a;">${a.text}</div>
+              <div style="font-size:13px;font-weight:700;color:#2d3a4a;">${esc(a.text)}</div>
               ${a.sub ? `<div style="font-size:11px;color:#6b7e96;margin-top:3px;">${a.sub}</div>` : ''}
             </div>
           </div>
@@ -3860,7 +3787,7 @@ function renderCeoAnalytics() {
           <div style="font-size:20px;width:28px;text-align:center;flex-shrink:0;">${medals[i] || (i + 1)}</div>
           <div style="width:32px;height:32px;border-radius:50%;background:${r.w.avatarColor}33;color:${r.w.avatarColor};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;">${r.w.name[0]}</div>
           <div style="flex:1;min-width:0;">
-            <div style="font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.w.name}</div>
+            <div style="font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(r.w.name)}</div>
             <div style="margin-top:4px;background:var(--bg3);border-radius:20px;height:6px;overflow:hidden;">
               <div style="height:100%;border-radius:20px;background:${r.w.avatarColor};width:${maxHrs > 0 ? (r.hrs / maxHrs * 100).toFixed(1) : 0}%;transition:width 0.5s;"></div>
             </div>
@@ -3897,7 +3824,7 @@ function renderCeoAnalytics() {
         rows.map(r => `
         <div style="display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid var(--border);">
           <div style="width:26px;height:26px;border-radius:50%;background:${r.w.avatarColor}33;color:${r.w.avatarColor};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;flex-shrink:0;">${r.w.name[0]}</div>
-          <div style="flex:1;font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.w.name}</div>
+          <div style="flex:1;font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(r.w.name)}</div>
           <div style="text-align:left;flex-shrink:0;">
             <div style="font-size:12px;color:var(--text2);">${r.prev.toFixed(1)} → ${r.cur.toFixed(1)}</div>
             <div style="font-size:11px;font-weight:700;color:${r.clr};">${r.arrow} ${Math.abs(r.diff).toFixed(1)} שע' (${r.pct}%)</div>
@@ -3949,8 +3876,8 @@ function renderCeoEmployees() {
       <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
         <div style="width:46px;height:46px;border-radius:50%;background:${emp.avatarColor}22;color:${emp.avatarColor};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;flex-shrink:0;">${emp.name[0]}</div>
         <div style="flex:1;min-width:0;">
-          <div style="font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${emp.name}</div>
-          <div style="font-size:12px;color:var(--text3);">${emp.username}</div>
+          <div style="font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(emp.name)}</div>
+          <div style="font-size:12px;color:var(--text3);">${esc(emp.username)}</div>
         </div>
         <button onclick="openAssignTask(${emp.id})" style="flex-shrink:0;white-space:nowrap;padding:3px 8px;font-size:10px;background:var(--accent);color:white;border:none;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600;">+ משימה</button>
       </div>
@@ -4017,7 +3944,7 @@ function renderCeoCredentials(searchQ) {
       <td>${idDisplay}</td>
       <td><div style="display:flex;align-items:center;gap:8px;">
         <span id="ceo-pass-${prefix}-${u.id}" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:3px 12px;font-size:12px;font-family:monospace;letter-spacing:2px;">••••••••</span>
-        <button onclick="ceoPwToggle('${prefix}',${u.id})" id="ceo-eye-${prefix}-${u.id}" data-pass="${u.passwordPlain||''}" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:3px 8px;cursor:pointer;font-size:13px;color:var(--text2);">👁️</button>
+        <button onclick="ceoPwToggle('${prefix}',${u.id})" id="ceo-eye-${prefix}-${u.id}" data-pass="" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:3px 8px;cursor:pointer;font-size:13px;color:var(--text2);">👁️</button>
       </div></td>
       ${actionsHtml}
     </tr>`;
@@ -4031,11 +3958,10 @@ const ceoPwVisible = {};
 function ceoPwToggle(prefix, userId) {
   const key = `${prefix}-${userId}`;
   ceoPwVisible[key] = !ceoPwVisible[key];
-  const el = document.getElementById(`ceo-pass-${key}`);
+  const el  = document.getElementById(`ceo-pass-${key}`);
   const btn = document.getElementById(`ceo-eye-${key}`);
-  const btn2 = document.getElementById(`ceo-eye-${key}`);
-  const password = btn2 ? btn2.dataset.pass : '';
-  if (el) el.textContent = ceoPwVisible[key] ? (password || '(לא הוגדרה)') : '••••••••';
+  // סיסמאות לא נשמרות יותר בצד הלקוח — יש לאפס את הסיסמה דרך כפתור שינוי סיסמה
+  if (el)  el.textContent  = ceoPwVisible[key] ? '(לא זמין — השתמש בשינוי סיסמה)' : '••••••••';
   if (btn) btn.textContent = ceoPwVisible[key] ? '🙈' : '👁️';
 }
 
@@ -4043,10 +3969,10 @@ function fieldWorkerChangePass(userId) {
   const u = DATA.users.find(x => x.id === userId);
   if (!u) return;
   document.getElementById('modalBody').innerHTML = `
-    <div class="modal-title">🔑 שינוי סיסמה — ${u.name}</div>
+    <div class="modal-title">🔑 שינוי סיסמה — ${esc(u.name)}</div>
     <div style="background:var(--bg3);border-radius:10px;padding:12px 16px;margin-bottom:18px;display:flex;align-items:center;gap:10px;">
       <div style="width:34px;height:34px;border-radius:50%;background:${u.avatarColor}33;color:${u.avatarColor};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;">${u.name[0]}</div>
-      <div><div style="font-weight:700;font-size:14px;">${u.name}</div><div style="font-size:11px;color:var(--text2);">פועל</div></div>
+      <div><div style="font-weight:700;font-size:14px;">${esc(u.name)}</div><div style="font-size:11px;color:var(--text2);">פועל</div></div>
     </div>
     <div class="form-group">
       <label>סיסמה חדשה</label>
@@ -4074,7 +4000,7 @@ async function fieldWorkerSavePass(userId) {
   const np = document.getElementById('fw-new-pass').value.trim();
   const cp = document.getElementById('fw-confirm-pass').value.trim();
   if (!np) { errEl.textContent = '❌ יש להזין סיסמה'; errEl.style.display = 'block'; return; }
-  if (np.length < 4) { errEl.textContent = '❌ הסיסמה חייבת להכיל לפחות 4 תווים'; errEl.style.display = 'block'; return; }
+  if (np.length < 8) { errEl.textContent = '❌ הסיסמה חייבת להכיל לפחות 8 תווים'; errEl.style.display = 'block'; return; }
   if (np !== cp) { errEl.textContent = '❌ הסיסמאות אינן תואמות'; errEl.style.display = 'block'; return; }
   if (HAS_SUPABASE) {
     await sbUpdateUser(userId, { password: np });
@@ -4082,10 +4008,9 @@ async function fieldWorkerSavePass(userId) {
     if (u) u.password = np;
   }
   // עדכן DATA.users ו-data-pass מיד
-  if (u) u.passwordPlain = np;
   ['emp','work'].forEach(prefix => {
     const btn = document.getElementById(`ceo-eye-${prefix}-${userId}`);
-    if (btn) btn.dataset.pass = np;
+    if (btn) btn.dataset.pass = '';
   });
   // הצג סיסמה חדשה
   document.getElementById('modalBody').innerHTML = `
@@ -4093,7 +4018,7 @@ async function fieldWorkerSavePass(userId) {
     <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:20px;text-align:center;margin:16px 0;">
       <div style="font-size:13px;color:var(--text3);margin-bottom:8px;">פרטי הכניסה החדשים:</div>
       <div style="font-size:15px;margin-bottom:6px;">👤 שם משתמש: <strong>${u?.username || ''}</strong></div>
-      <div style="font-size:15px;">🔑 סיסמה חדשה: <strong style="background:#fef9c3;padding:2px 10px;border-radius:6px;letter-spacing:1px;">${np}</strong></div>
+      <div style="font-size:15px;color:var(--green);">✅ הסיסמה עודכנה בהצלחה</div>
     </div>
     <div class="modal-actions"><button class="btn btn-primary" onclick="closeModal();renderCeoCredentials();">הבנתי ✓</button></div>`;
 }
@@ -4105,7 +4030,7 @@ async function ceoDeleteMember(userId) {
     <div class="modal-title">🗑️ מחיקת משתמש</div>
     <div style="text-align:center;padding:16px 0;">
       <div style="font-size:48px;margin-bottom:12px;">⚠️</div>
-      <div style="font-size:16px;font-weight:700;margin-bottom:8px;">האם למחוק את <span style="color:var(--red);">${u.name}</span>?</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:8px;">האם למחוק את <span style="color:var(--red);">${esc(u.name)}</span>?</div>
       <div style="font-size:13px;color:var(--text3);">פעולה זו תמחק את המשתמש לצמיתות ולא ניתן לשחזר אותה.</div>
     </div>
     <div class="modal-actions">
@@ -4121,7 +4046,7 @@ async function doDeleteCeoMember(userId) {
   const res = await sbDeleteUser(userId);
   if (!res.ok) { showToast('❌ שגיאה במחיקה', 'error'); return; }
   closeModal();
-  showToast(`🗑️ ${u.name} נמחק`);
+  showToast(`🗑️ ${esc(u.name)} נמחק`);
   renderCeoCredentials();
 }
 
@@ -4141,7 +4066,7 @@ function ceoEditCredentials(userId) {
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
         <div style="width:44px;height:44px;border-radius:50%;background:${user.avatarColor}22;color:${user.avatarColor};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;flex-shrink:0;">${user.name[0]}</div>
         <div>
-          <div style="font-size:18px;font-weight:700;color:#1d1d1f;letter-spacing:-0.3px;">${user.name}</div>
+          <div style="font-size:18px;font-weight:700;color:#1d1d1f;letter-spacing:-0.3px;">${esc(user.name)}</div>
           <div style="font-size:13px;color:#86868b;margin-top:1px;">${roleLabel}</div>
         </div>
       </div>
@@ -4152,7 +4077,7 @@ function ceoEditCredentials(userId) {
         <div style="display:flex;gap:10px;">
           <div style="flex:2;">
             <label style="${LABEL}">שם מלא</label>
-            <input type="text" id="ceo-edit-name" value="${user.name}" placeholder="שם מלא..." style="${INPUT}" onfocus="this.style.borderColor='#0071e3'" onblur="this.style.borderColor='#d2d2d7'">
+            <input type="text" id="ceo-edit-name" value="${esc(user.name)}" placeholder="שם מלא..." style="${INPUT}" onfocus="this.style.borderColor='#0071e3'" onblur="this.style.borderColor='#d2d2d7'">
           </div>
           <div style="flex:1;">
             <label style="${LABEL}">תפקיד</label>
@@ -4181,7 +4106,7 @@ function ceoEditCredentials(userId) {
       <div style="${SECTION}">
         <div style="font-size:11px;font-weight:700;color:#86868b;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:12px;">פרטי כניסה</div>
         <label style="${LABEL}">שם משתמש</label>
-        <input type="text" id="ceo-edit-username" value="${user.username}" placeholder="שם משתמש..." style="${INPUT}margin-bottom:4px;" onfocus="this.style.borderColor='#0071e3'" onblur="this.style.borderColor='#d2d2d7'">
+        <input type="text" id="ceo-edit-username" value="${esc(user.username)}" placeholder="שם משתמש..." style="${INPUT}margin-bottom:4px;" onfocus="this.style.borderColor='#0071e3'" onblur="this.style.borderColor='#d2d2d7'">
         <div style="font-size:11px;color:#86868b;margin-bottom:10px;">באנגלית, ללא רווחים</div>
         <div style="display:flex;gap:10px;">
           <div style="flex:1;">
@@ -4305,7 +4230,7 @@ async function ceoSaveCredentials(userId) {
     errEl.textContent = '❌ שם משתמש זה כבר קיים במערכת'; errEl.style.display = 'block'; return;
   }
   if (newPass) {
-    if (newPass.length < 4) { errEl.textContent = '❌ הסיסמה חייבת להכיל לפחות 4 תווים'; errEl.style.display = 'block'; return; }
+    if (newPass.length < 8) { errEl.textContent = '❌ הסיסמה חייבת להכיל לפחות 8 תווים'; errEl.style.display = 'block'; return; }
     if (newPass !== confirm) { errEl.textContent = '❌ הסיסמאות אינן תואמות'; errEl.style.display = 'block'; return; }
   }
 
@@ -4337,15 +4262,12 @@ async function ceoSaveCredentials(userId) {
   if (u2) {
     u2.name = updates.name; u2.role = updates.role; u2.username = updates.username;
     u2.idType = updates.id_type; u2.idNumber = updates.id_number;
-    if (newPass) u2.passwordPlain = newPass;
   }
-  // עדכן data-pass על כפתורי העין
-  if (newPass) {
-    ['emp','work'].forEach(prefix => {
-      const btn = document.getElementById(`ceo-eye-${prefix}-${userId}`);
-      if (btn) btn.dataset.pass = newPass;
-    });
-  }
+  // נקה data-pass
+  ['emp','work'].forEach(prefix => {
+    const btn = document.getElementById(`ceo-eye-${prefix}-${userId}`);
+    if (btn) btn.dataset.pass = '';
+  });
   closeModal();
   renderCeoCredentials();
   showToast(`✅ פרטי ${newName} עודכנו בהצלחה!`);
@@ -4413,7 +4335,7 @@ function _populateSiteFilters() {
         : allSites;
 
     siteEl.innerHTML = '<option value="">🏗️ כל האתרים</option>' +
-      filteredSites.map(s=>`<option value="${s.id}">${s.name}</option>`).join('') +
+      filteredSites.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('') +
       (selectedContr ? '' : '<option value="__none__">— ללא אתר</option>');
 
     // שחזר בחירת אתר אם עדיין רלוונטית
@@ -4637,12 +4559,12 @@ function renderCeoWorkers() {
         <div style="width:32px;height:32px;border-radius:50%;background:${w.avatarColor}33;color:${w.avatarColor};display:flex;align-items:center;justify-content:center;font-weight:700;">${w.name[0]}</div>
         <div>
           ${w.idNumber ? `<div style="font-size:11px;font-weight:700;color:var(--text);">${w.idType==='passport'?'🛂':'🪪'} ${w.idNumber}</div>` : ''}
-          <div style="font-size:11px;color:var(--text3);">${w.name}</div>
+          <div style="font-size:11px;color:var(--text3);">${esc(w.name)}</div>
         </div>
       </div></td>
       <td>
         <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
-          ${(function(){ const s = DATA.workSites.find(s=>s.id===w.siteId && s.companyId===currentUser.company); return s ? `<span style="display:inline-flex;align-items:center;gap:5px;background:#e8f4fd;color:#2a6496;border-radius:20px;padding:3px 10px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #b8d8f0;white-space:nowrap;" onclick="openAssignSiteModal(${w.id})">🏗️ ${s.name}</span>` : `<span style="color:var(--text3);font-size:12px;cursor:pointer;padding:3px 8px;border-radius:20px;border:1px dashed var(--border);display:inline-block;" onclick="openAssignSiteModal(${w.id})">+ שייך אתר</span>`; })()}
+          ${(function(){ const s = DATA.workSites.find(s=>s.id===w.siteId && s.companyId===currentUser.company); return s ? `<span style="display:inline-flex;align-items:center;gap:5px;background:#e8f4fd;color:#2a6496;border-radius:20px;padding:3px 10px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #b8d8f0;white-space:nowrap;" onclick="openAssignSiteModal(${w.id})">🏗️ ${esc(s.name)}</span>` : `<span style="color:var(--text3);font-size:12px;cursor:pointer;padding:3px 8px;border-radius:20px;border:1px dashed var(--border);display:inline-block;" onclick="openAssignSiteModal(${w.id})">+ שייך אתר</span>`; })()}
           ${(function(){ const hist = (DATA.workerSiteHistory||[]).filter(h=>h.workerId===w.id); return hist.length ? `<button onclick="openWorkerSiteHistory(${w.id})" title="היסטוריית שיוכים (${hist.length})" style="background:none;border:1px solid var(--border);border-radius:20px;padding:2px 7px;font-size:11px;color:var(--text3);cursor:pointer;">📋 ${hist.length}</button>` : ''; })()}
         </div>
       </td>
@@ -4664,7 +4586,7 @@ function renderCeoWorkers() {
   if (company) {
     document.getElementById('sigPasswordInput').value = '';
     const dispEl = document.getElementById('current-sig-pass-display');
-    if (dispEl) { dispEl.textContent = '••••••••'; dispEl.dataset.pass = company.sigPassword || ''; }
+    if (dispEl) { dispEl.textContent = '••••••••'; }
     const eyeEl = document.getElementById('current-sig-pass-eye');
     if (eyeEl) eyeEl.textContent = '👁️';
     sigPassVisible = false;
@@ -5141,15 +5063,15 @@ function renderCeoWorkersGrid(fullscreen) {
     // Name cell content: show ID number when in ID search mode
     const idIcon = w.idType === 'passport' ? '🛂' : '🪪';
     const nameCellContent = showIdInCell
-      ? `<div style="display:flex;align-items:center;gap:4px;cursor:pointer;" onclick="viewWorkerReport(${w.id})" title="פתח דוח שעות"><span style="font-family:Arial,sans-serif;font-size:15px;font-weight:400;">${w.idNumber || '—'}</span></div>`
+      ? `<div style="display:flex;align-items:center;gap:4px;cursor:pointer;" onclick="viewWorkerReport(${w.id})" title="פתח דוח שעות"><span style="font-family:Arial,sans-serif;font-size:15px;font-weight:400;">${esc(w.idNumber) || '—'}</span></div>`
       : `<div style="display:flex;align-items:center;gap:5px;cursor:pointer;" onclick="viewWorkerReport(${w.id})" title="פתח דוח שעות">
           <div style="width:20px;height:20px;border-radius:50%;background:${w.avatarColor}33;color:${w.avatarColor};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:9px;flex-shrink:0;">${w.name[0]}</div>
-          <span>${w.name}</span>
+          <span>${esc(w.name)}</span>
         </div>`;
 
     workerRows += `
     <tr>
-      <td class="worker-name-td" title="${w.name}${w.idNumber ? ' | '+(w.idType==='passport'?'דרכון':'ת"ז')+': '+w.idNumber : ''}">
+      <td class="worker-name-td" title="${esc(w.name)}${w.idNumber ? ' | '+(w.idType==='passport'?'דרכון':'ת"ז')+': '+w.idNumber : ''}">
         ${nameCellContent}
       </td>
       ${dayCells}
@@ -5394,7 +5316,7 @@ function renderCeoTasks() {
     const companyEmployees = DATA.users.filter(u => u.company === currentUser.company && u.role === 'employee');
     empFilter.innerHTML = '<option value="">💼 כל העובדים</option>' +
       companyEmployees.map(u =>
-        `<option value="${u.id}" ${currentVal == u.id ? 'selected' : ''}>💼 ${u.name}</option>`
+        `<option value="${u.id}" ${currentVal == u.id ? 'selected' : ''}>💼 ${esc(u.name)}</option>`
       ).join('');
     if (currentVal) empFilter.value = currentVal;
   }
@@ -5422,7 +5344,7 @@ function renderCeoTasks() {
 function renderEmpDashboard() {
   document.getElementById('emp-welcome-name').textContent = currentUser.name;
   const company = DATA.companies.find(c => c.id === currentUser.company);
-  document.getElementById('emp-company-label').textContent = company ? `${company.emoji} ${company.name}` : '';
+  document.getElementById('emp-company-label').textContent = company ? `${company.emoji} ${esc(company.name)}` : '';
   const myTasks = DATA.tasks.filter(t => t.assignedTo === currentUser.id || (t.createdByEmp && t.assignedTo === currentUser.id));
   const open = myTasks.filter(t => t.status === 'open');
   const done = myTasks.filter(t => t.status === 'done');
@@ -5460,7 +5382,7 @@ function renderEmpCalendar() {
     const urgencyText = diff < 0 ? `איחור ${Math.abs(diff)} ימים` : diff === 0 ? 'היום!' : `עוד ${diff} ימים`;
     return `<div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg3);border-radius:10px;margin-bottom:8px;">
       <div class="priority-dot p-${t.priority}"></div>
-      <div style="flex:1;"><div style="font-weight:600;font-size:13px;">${t.title}</div>
+      <div style="flex:1;"><div style="font-weight:600;font-size:13px;">${esc(t.title)}</div>
       <div style="font-size:11px;color:var(--text2);">${t.dueDate}</div></div>
       <span class="tag ${urgency}">${urgencyText}</span>
     </div>`;
@@ -5507,7 +5429,7 @@ function renderWorkerHours(viewWorkerId, viewMonth, viewYear) {
   if (!isViewer) {
     document.getElementById('worker-name-display').textContent = currentUser.name;
     const company = DATA.companies.find(c => c.id === currentUser.company);
-    document.getElementById('worker-company-display').textContent = company ? `${company.emoji} ${company.name}` : '';
+    document.getElementById('worker-company-display').textContent = company ? `${company.emoji} ${esc(company.name)}` : '';
     const months = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
     document.getElementById('worker-month-label').textContent = `${months[month]} ${year}`;
   }
@@ -6085,7 +6007,7 @@ function addBulkRow(values = ['','','','','','']) {
           onkeydown="bulkCellKeydown(event,this,${rowIdx},${ci})"
           oninput="validateBulkTable()"
           onfocus="this.style.background='#f0f4ff'" onblur="this.style.background='transparent'">
-        <datalist id="bulk-sites-list">${sites.map(s=>`<option value="${s.name}" data-id="${s.id}" data-contractor="${s.contractor||''}">`).join('')}</datalist>
+        <datalist id="bulk-sites-list">${sites.map(s=>`<option value="${esc(s.name)}" data-id="${s.id}" data-contractor="${esc(s.contractor||'')}">`).join('')}</datalist>
       </td>`;
     }
     return `<td style="padding:0;border-left:${border};">
@@ -6169,7 +6091,7 @@ function validateBulkTable() {
     if (!username) rowErrors.push('שם משתמש חסר');
     else if (/\s/.test(username)) rowErrors.push('שם משתמש מכיל רווחים');
     if (!password) rowErrors.push('סיסמה חסרה');
-    else if (password.length < 4) rowErrors.push('סיסמה קצרה');
+    else if (password.length < 8) rowErrors.push('סיסמה קצרה — לפחות 8 תווים');
     if (username && DATA.users.find(u => u.username === username)) rowErrors.push('שם משתמש תפוס');
 
     // Highlight row
@@ -6268,7 +6190,7 @@ async function executeBulkImport() {
 
   rows.forEach(cols => {
     const [name, username, password, idNumber, contractor, siteName] = cols;
-    if (!name || !username || !password || password.length < 4 || /\s/.test(username)) return;
+    if (!name || !username || !password || password.length < 8 || /\s/.test(username)) return;
     if (DATA.users.find(u => u.username === username)) return;
     valid.push({ name, username, password, idType: docType, idNumber, contractor: contractor||'', siteName: siteName||'' });
   });
@@ -6332,14 +6254,28 @@ async function executeBulkImport() {
 }
 
 let sigPassVisible = false;
-function toggleCurrentSigPass() {
-  sigPassVisible = !sigPassVisible;
-  const company = DATA.companies.find(c => c.id === currentUser.company);
+let _sigPassCache = null; // cache fetched value per session, cleared on logout
+async function toggleCurrentSigPass() {
   const dispEl = document.getElementById('current-sig-pass-display');
-  const eyeEl = document.getElementById('current-sig-pass-eye');
-  if (!dispEl || !company) return;
-  dispEl.textContent = sigPassVisible ? (company.sigPassword || '(לא הוגדרה)') : '••••••••';
-  if (eyeEl) eyeEl.textContent = sigPassVisible ? '🙈' : '👁️';
+  const eyeEl  = document.getElementById('current-sig-pass-eye');
+  if (!dispEl) return;
+
+  if (!sigPassVisible) {
+    // Fetch from server only when showing (not stored in DATA)
+    if (_sigPassCache === null) {
+      try {
+        const res = await apiFetch('/companies/sig-password');
+        _sigPassCache = res?.sig_password || '(לא הוגדרה)';
+      } catch { _sigPassCache = '(שגיאה בטעינה)'; }
+    }
+    dispEl.textContent = _sigPassCache;
+    sigPassVisible = true;
+    if (eyeEl) eyeEl.textContent = '🙈';
+  } else {
+    dispEl.textContent = '••••••••';
+    sigPassVisible = false;
+    if (eyeEl) eyeEl.textContent = '👁️';
+  }
 }
 
 async function setSigPassword() {
@@ -6351,9 +6287,9 @@ async function setSigPassword() {
     const result = await sbUpdateCompany(company.id, { sig_password: pass });
     if (!result.ok) { showToast('❌ שגיאה בשמירת הסיסמה בשרת', 'error'); return; }
   }
-  company.sigPassword = pass;
+  _sigPassCache = pass; // עדכן cache
   const dispEl = document.getElementById('current-sig-pass-display');
-  if (dispEl) { dispEl.textContent = '••••••••'; dispEl.dataset.pass = pass; sigPassVisible = false; }
+  if (dispEl) { dispEl.textContent = '••••••••'; sigPassVisible = false; }
   showToast('✅ סיסמת החתימה עודכנה!');
   document.getElementById('sigPasswordInput').value = '';
 }
@@ -6381,7 +6317,7 @@ function taskCardHTML(t, mode) {
     <div class="priority-dot p-${t.priority}" title="${priorLabels[t.priority]}" style="flex-shrink:0;"></div>
     <div class="task-card-top">
       <div>
-        <div class="task-title">${t.title}</div>
+        <div class="task-title">${esc(t.title)}</div>
         ${subs.length ? `<div style="display:flex;align-items:center;gap:6px;margin-top:5px;">
           <div style="width:80px;height:4px;border-radius:4px;background:var(--bg3);overflow:hidden;"><div id="task-card-bar-${t.id}" style="height:100%;background:#4aaa7a;width:${subsPct}%;border-radius:4px;"></div></div>
           <span id="task-card-count-${t.id}" style="font-size:10px;color:var(--text3);">${subsDone}/${subs.length}</span>
@@ -6393,7 +6329,7 @@ function taskCardHTML(t, mode) {
       ${t.status === 'done' ? '<span class="tag tag-green">✅ הושלם</span>' : '<span class="tag tag-gray">📋 פתוח</span>'}
       ${isOverdue ? '<span class="tag tag-red">⚠️ באיחור</span>' : ''}
       ${t.dueDate ? `<span style="font-size:11px;color:var(--text3);white-space:nowrap;">📅 ${t.dueDate}</span>` : ''}
-      ${assignee ? `<span style="font-size:11px;color:var(--text3);white-space:nowrap;">👤 ${assignee.name}</span>` : ''}
+      ${assignee ? `<span style="font-size:11px;color:var(--text3);white-space:nowrap;">👤 ${esc(assignee.name)}</span>` : ''}
     </div>
   </div>`;
 }
@@ -6466,7 +6402,7 @@ function openTaskDetail(taskId) {
         ${t.subtasks.map(s => `
         <div id="sub-row-${s.id}" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;background:var(--bg3);margin-bottom:6px;opacity:${s.done ? '0.5' : '1'};">
           <div onclick="toggleSubtask(${taskId},${s.id})" class="sub-circle" style="width:20px;height:20px;border-radius:50%;border:2px solid ${s.done ? '#4aaa7a' : 'var(--border2)'};background:${s.done ? '#4aaa7a' : 'transparent'};cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s;">${s.done ? '<span style="color:white;font-size:11px;">✓</span>' : ''}</div>
-          <div class="sub-title" style="flex:1;font-size:13px;${s.done ? 'text-decoration:line-through;color:var(--text3);' : ''}">${s.title}</div>
+          <div class="sub-title" style="flex:1;font-size:13px;${s.done ? 'text-decoration:line-through;color:var(--text3);' : ''}">${esc(s.title)}</div>
           <button onclick="deleteSubtask(${taskId},${s.id})" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;padding:2px 4px;border-radius:4px;" title="מחק">✕</button>
         </div>`).join('')}
       </div>
@@ -6481,15 +6417,15 @@ function openTaskDetail(taskId) {
   const renderTaskModal = () => {
     document.getElementById('modalBody').innerHTML = `
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px;">
-        <div class="modal-title" style="margin:0;flex:1;">${t.title}</div>
+        <div class="modal-title" style="margin:0;flex:1;">${esc(t.title)}</div>
         ${canEdit ? `<button class="btn btn-outline btn-sm" onclick="editTask(${taskId})" style="flex-shrink:0;margin-left:36px;">✏️ ערוך</button>` : ''}
       </div>
       <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
         <span class="tag tag-${t.status==='done'?'green':'yellow'}">${t.status==='done'?'✅ הושלם':'📋 פתוח'}</span>
         <span class="tag ${priorTagCls[t.priority]}">${priorLabels[t.priority]}</span>
       </div>
-      ${t.desc ? `<p style="color:var(--text2);font-size:14px;line-height:1.6;margin-bottom:16px;background:var(--bg3);border-radius:10px;padding:12px 14px;">${t.desc}</p>` : ''}
-      ${assignee ? `<div style="margin-bottom:10px;font-size:13px;color:var(--text2);">👤 מוקצה ל: <strong>${assignee.name}</strong></div>` : ''}
+      ${t.desc ? `<p style="color:var(--text2);font-size:14px;line-height:1.6;margin-bottom:16px;background:var(--bg3);border-radius:10px;padding:12px 14px;">${esc(t.desc)}</p>` : ''}
+      ${assignee ? `<div style="margin-bottom:10px;font-size:13px;color:var(--text2);">👤 מוקצה ל: <strong>${esc(assignee.name)}</strong></div>` : ''}
       ${t.dueDate ? `<div style="margin-bottom:16px;font-size:13px;color:var(--text2);">📅 תאריך יעד: <strong>${t.dueDate}</strong></div>` : ''}
       <div style="border-top:1px solid var(--border);margin:16px 0;"></div>
       ${subtasksHtml()}
@@ -6574,8 +6510,8 @@ function editTask(taskId) {
   document.getElementById('modalBody').innerHTML = `
     <div class="modal-title">✏️ עריכת משימה</div>
     <div class="form-group"><label>כותרת</label><input type="text" id="et-title" class="form-input" value="${t.title.replace(/"/g,'&quot;')}" placeholder="כותרת המשימה..."></div>
-    <div class="form-group"><label>תיאור</label><textarea id="et-desc" class="form-input" placeholder="פרטי המשימה..." rows="3">${t.desc || ''}</textarea></div>
-    ${isCeo ? `<div class="form-group"><label>הוקצה ל</label><select id="et-assign" class="form-input"><option value="">בחר עובד</option>${assignees.map(e=>`<option value="${e.id}" ${t.assignedTo===e.id?'selected':''}>${e.name}</option>`).join('')}</select></div>` : ''}
+    <div class="form-group"><label>תיאור</label><textarea id="et-desc" class="form-input" placeholder="פרטי המשימה..." rows="3">${esc(t.desc || '')}</textarea></div>
+    ${isCeo ? `<div class="form-group"><label>הוקצה ל</label><select id="et-assign" class="form-input"><option value="">בחר עובד</option>${assignees.map(e=>`<option value="${e.id}" ${t.assignedTo===e.id?'selected':''}>${esc(e.name)}</option>`).join('')}</select></div>` : ''}
     <div class="form-group"><label>עדיפות</label><select id="et-priority" class="form-input">
       <option value="high" ${t.priority==='high'?'selected':''}>🔥 דחוף</option>
       <option value="medium" ${t.priority==='medium'?'selected':''}>⚡ בינוני</option>
@@ -6726,7 +6662,7 @@ function deleteTask(taskId) {
       <div style="font-size:36px;margin-bottom:10px;">🗑️</div>
       <div style="font-size:15px;font-weight:700;margin-bottom:8px;">מחיקת משימה</div>
       <div style="font-size:13px;color:var(--text2);margin-bottom:16px;">
-        האם למחוק את המשימה <strong>"${t.title}"</strong>?<br>
+        האם למחוק את המשימה <strong>"${esc(t.title)}"</strong>?<br>
         <span style="font-size:12px;color:var(--text3);">פעולה זו אינה ניתנת לביטול.</span>
       </div>
       ${subLine}
@@ -6764,7 +6700,7 @@ function openAddTask(mode) {
       <div id="nt-subtasks-list" style="display:flex;flex-direction:column;gap:6px;"></div>
     </div>
     <div class="form-group"><label>תיאור</label><textarea id="nt-desc" placeholder="פרטי המשימה..." rows="3"></textarea></div>
-    ${mode === 'ceo' ? `<div class="form-group"><label>הוקצה ל</label><select id="nt-assign"><option value="">בחר עובד</option>${assignees.map(e=>`<option value="${e.id}">${e.name}</option>`).join('')}</select></div>` : ''}
+    ${mode === 'ceo' ? `<div class="form-group"><label>הוקצה ל</label><select id="nt-assign"><option value="">בחר עובד</option>${assignees.map(e=>`<option value="${e.id}">${esc(e.name)}</option>`).join('')}</select></div>` : ''}
     <div class="form-group"><label>עדיפות</label><select id="nt-priority"><option value="high">🔥 דחוף</option><option value="medium" selected>⚡ בינוני</option><option value="low">🌿 נמוך</option></select></div>
     <div class="form-group"><label>תאריך יעד</label><input type="date" id="nt-date"></div>
     <div class="modal-actions">
@@ -6889,14 +6825,14 @@ function editCompany(compId) {
   const c = DATA.companies.find(x => x.id === compId);
   if (!c) return;
   document.getElementById('modalBody').innerHTML = `
-    <div class="modal-title">✏️ עריכת ${c.name}</div>
+    <div class="modal-title">✏️ עריכת ${esc(c.name)}</div>
     <input type="hidden" id="ec-comp-id">
-    <div class="form-group"><label>שם החברה</label><input type="text" id="ec-name" value="${c.name}"></div>
-    <div class="form-group"><label>תחום פעילות</label><input type="text" id="ec-field" value="${c.field}"></div>
+    <div class="form-group"><label>שם החברה</label><input type="text" id="ec-name" value="${esc(c.name)}"></div>
+    <div class="form-group"><label>תחום פעילות</label><input type="text" id="ec-field" value="${esc(c.field)}"></div>
     <div class="form-group">
       <label>אמוג׳י</label>
       <div style="display:flex;align-items:center;gap:10px;">
-        <input type="hidden" id="ec-emoji" value="${c.emoji}">
+        <input type="hidden" id="ec-emoji" value="${esc(c.emoji)}">
         <button id="emoji-preview-ec-emoji" onclick="openEmojiPicker('ec-emoji')"
           style="font-size:32px;width:56px;height:56px;border:2px solid var(--border);border-radius:12px;background:var(--bg3);cursor:pointer;transition:all 0.15s;"
           onmouseover="this.style.borderColor='var(--accent)'"
@@ -6922,8 +6858,8 @@ function deleteCompany(compId) {
     <div class="modal-title">🗑️ מחיקת חברה</div>
     <div style="background:#fff5f5;border:1px solid #f0c0c8;border-radius:12px;padding:18px;margin-bottom:18px;text-align:center;">
       <div style="font-size:36px;margin-bottom:8px;">${comp.emoji}</div>
-      <div style="font-size:18px;font-weight:800;">${comp.name}</div>
-      <div style="font-size:13px;color:var(--text2);margin-top:4px;">${comp.field}</div>
+      <div style="font-size:18px;font-weight:800;">${esc(comp.name)}</div>
+      <div style="font-size:13px;color:var(--text2);margin-top:4px;">${esc(comp.field)}</div>
     </div>
     <div style="background:#fff8f0;border:1px solid #f0d0a8;border-radius:10px;padding:14px;margin-bottom:18px;font-size:13px;color:#a05010;">
       ⚠️ <strong>שים לב:</strong> מחיקת החברה תנתק את <strong>${memberCount} המשתמשים</strong> הקשורים אליה. הם לא יימחקו אך לא יהיו משויכים לשום חברה.
@@ -6948,7 +6884,7 @@ async function addCompany() {
     if (!res.ok) { showToast('❌ שגיאה בהוספת חברה', 'error'); return; }
   } else {
     const id = name.toLowerCase().replace(/\s+/g, '');
-    DATA.companies.push({ id, ...payload, employees: 0, sigPassword: 'sign123', signed: {} });
+    DATA.companies.push({ id, ...payload, employees: 0, signed: {} });
   }
   closeModal(); renderAdminCompanies(); showToast('✅ חברה נוספה!');
 }
@@ -6996,7 +6932,7 @@ function openAddUser() {
       <select id="nu-role"><option value="ceo">מנכ"ל</option><option value="employee" selected>עובד</option><option value="worker">פועל</option></select>
     </div>
     <div class="form-group"><label>חברה</label>
-      <select id="nu-company"><option value="">בחר חברה</option>${DATA.companies.map(c=>`<option value="${c.id}">${c.emoji} ${c.name}</option>`).join('')}</select>
+      <select id="nu-company"><option value="">בחר חברה</option>${DATA.companies.map(c=>`<option value="${c.id}">${c.emoji} ${esc(c.name)}</option>`).join('')}</select>
     </div>
     <div class="modal-actions">
       <button class="btn btn-primary" onclick="addUser()">הוסף</button>
@@ -7079,21 +7015,18 @@ async function doChangePass(userId) {
   }
   // עדכן DATA.users מיד
   const u = DATA.users.find(x => x.id === userId);
-  if (u) u.passwordPlain = np;
-  // עדכן data-pass על כפתורי העין
-  const eyeBtn = document.getElementById(`eye-btn-${userId}`);
-  if (eyeBtn) eyeBtn.dataset.pass = np;
-  const ceoEyeEmp = document.getElementById(`ceo-eye-emp-${userId}`);
-  if (ceoEyeEmp) ceoEyeEmp.dataset.pass = np;
-  const ceoEyeWork = document.getElementById(`ceo-eye-work-${userId}`);
-  if (ceoEyeWork) ceoEyeWork.dataset.pass = np;
+  // data-pass מנוקה
+  ['eye-btn', 'ceo-eye-emp', 'ceo-eye-work'].forEach(prefix => {
+    const btn = document.getElementById(`${prefix}-${userId}`);
+    if (btn) btn.dataset.pass = '';
+  });
 
   document.getElementById('modalBody').innerHTML = `
     <div class="modal-title">✅ סיסמה עודכנה!</div>
     <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:20px;text-align:center;margin:16px 0;">
       <div style="font-size:13px;color:var(--text3);margin-bottom:8px;">פרטי הכניסה החדשים:</div>
       <div style="font-size:15px;margin-bottom:6px;">👤 שם משתמש: <strong>${u?.username || ''}</strong></div>
-      <div style="font-size:15px;">🔑 סיסמה חדשה: <strong style="background:#fef9c3;padding:2px 10px;border-radius:6px;letter-spacing:1px;">${np}</strong></div>
+      <div style="font-size:15px;color:var(--green);">✅ הסיסמה עודכנה בהצלחה</div>
     </div>
     <div style="font-size:12px;color:var(--red);text-align:center;margin-bottom:16px;">⚠️ הסיסמה תוצג גם בלחיצה על 👁️</div>
     <div class="modal-actions"><button class="btn btn-primary" onclick="closeModal()">הבנתי ✓</button></div>`;
@@ -7138,7 +7071,7 @@ function changePassword(userId) {
   const u = DATA.users.find(x => x.id === userId);
   if (!u) return;
   document.getElementById('modalBody').innerHTML = `
-    <div class="modal-title">🔑 שינוי סיסמה — ${u.name}</div>
+    <div class="modal-title">🔑 שינוי סיסמה — ${esc(u.name)}</div>
     <div class="form-group"><label>סיסמה חדשה</label><input type="password" id="new-pass" placeholder="סיסמה חדשה..."></div>
     <div class="form-group"><label>אימות סיסמה</label><input type="password" id="conf-pass" placeholder="הזן שוב..."></div>
     <div class="modal-actions">
@@ -7152,10 +7085,10 @@ function editUser(userId) {
   const u = DATA.users.find(x => x.id === userId);
   if (!u) return;
   document.getElementById('modalBody').innerHTML = `
-    <div class="modal-title">✏️ עריכת ${u.name}</div>
-    <div class="form-group"><label>שם מלא</label><input type="text" id="eu-name" value="${u.name}"></div>
+    <div class="modal-title">✏️ עריכת ${esc(u.name)}</div>
+    <div class="form-group"><label>שם מלא</label><input type="text" id="eu-name" value="${esc(u.name)}"></div>
     <div class="form-group"><label>חברה</label>
-      <select id="eu-company"><option value="">ללא חברה</option>${DATA.companies.map(c=>`<option value="${c.id}" ${u.company===c.id?'selected':''}>${c.emoji} ${c.name}</option>`).join('')}</select>
+      <select id="eu-company"><option value="">ללא חברה</option>${DATA.companies.map(c=>`<option value="${c.id}" ${u.company===c.id?'selected':''}>${c.emoji} ${esc(c.name)}</option>`).join('')}</select>
     </div>
     <div class="modal-actions">
       <button class="btn btn-primary" onclick="saveUser(${userId})">💾 שמור</button>
@@ -7181,7 +7114,7 @@ function viewWorkerReport(workerId) {
   }
 
   document.getElementById('modalBody').innerHTML = `
-    <div class="modal-title">📊 דוח שעות — ${worker.name}</div>
+    <div class="modal-title">📊 דוח שעות — ${esc(worker.name)}</div>
     <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;">
       <select id="report-month-select" onchange="loadWorkerReportMonth(${workerId})" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'Heebo',sans-serif;font-size:13px;outline:none;">
         ${monthOptions.map((o,i) => `<option value="${o.m}|${o.y}" ${i===0?'selected':''}>${o.label}</option>`).join('')}
@@ -7269,8 +7202,8 @@ function loadWorkerReportMonth(workerId) {
     const siteInfo = getSiteForDay(workerId, dateStr);
     const siteCellContent = siteInfo
       ? (siteInfo.contractor
-          ? `<span style="font-size:11px;color:#2a6496;font-weight:600;">${siteInfo.contractor}</span><span style="color:var(--text3);font-size:10px;"> / ${siteInfo.site}</span>`
-          : `<span style="font-size:11px;color:#2a6496;">${siteInfo.site}</span>`)
+          ? `<span style="font-size:11px;color:#2a6496;font-weight:600;">${esc(siteInfo.contractor)}</span><span style="color:var(--text3);font-size:10px;"> / ${esc(siteInfo.site)}</span>`
+          : `<span style="font-size:11px;color:#2a6496;">${esc(siteInfo.site)}</span>`)
       : '<span style="color:var(--text3);font-size:11px;">—</span>';
 
     rows += `<tr style="${rowBg}${isToday ? 'border-right:3px solid #f5c518;' : ''}">
@@ -7296,7 +7229,7 @@ function loadWorkerReportMonth(workerId) {
 
 function removeWorker(workerId) {
   const w = DATA.users.find(u => u.id === workerId);
-  if (!confirm(`להסיר את ${w.name}?`)) return;
+  if (!confirm(`להסיר את ${esc(w.name)}?`)) return;
   w.company = null;
   renderCeoWorkersGrid(false); showToast('✅ פועל הוסר מהחברה');
 }
@@ -7441,8 +7374,8 @@ function renderWorkerRequests() {
           <button onclick="deleteWorkerRequest(${r.id})" style="background:transparent;border:1.5px solid #ff3b30;border-radius:980px;padding:3px 10px;font-size:11px;color:#ff3b30;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;" onmouseover="this.style.background='#ff3b30';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#ff3b30'">🗑️ מחק</button>
         </div>
       </div>
-      <div style="font-size:13px;color:var(--text);line-height:1.5;">${r.text}</div>
-      ${r.reply ? `<div style="margin-top:8px;background:#f0fff4;border:1px solid #a8e8c0;border-radius:8px;padding:10px 12px;font-size:12px;color:#2d7a5a;"><strong>תשובת המנהל:</strong> ${r.reply}</div>` : ''}
+      <div style="font-size:13px;color:var(--text);line-height:1.5;">${esc(r.text)}</div>
+      ${r.reply ? `<div style="margin-top:8px;background:#f0fff4;border:1px solid #a8e8c0;border-radius:8px;padding:10px 12px;font-size:12px;color:#2d7a5a;"><strong>תשובת המנהל:</strong> ${esc(r.reply)}</div>` : ''}
     </div>`;
   }).join('');
 }
@@ -7484,8 +7417,8 @@ function renderCeoRequests() {
           <span class="tag ${st.cls}" style="font-size:11px;">${st.text}</span>
         </div>
       </div>
-      <div style="font-size:13px;color:var(--text);line-height:1.5;margin-bottom:12px;">${r.text}</div>
-      ${r.reply ? `<div style="background:#f0fff4;border:1px solid #a8e8c0;border-radius:8px;padding:10px 12px;font-size:12px;color:#2d7a5a;margin-bottom:10px;"><strong>תשובתך:</strong> ${r.reply}</div>` : ''}
+      <div style="font-size:13px;color:var(--text);line-height:1.5;margin-bottom:12px;">${esc(r.text)}</div>
+      ${r.reply ? `<div style="background:#f0fff4;border:1px solid #a8e8c0;border-radius:8px;padding:10px 12px;font-size:12px;color:#2d7a5a;margin-bottom:10px;"><strong>תשובתך:</strong> ${esc(r.reply)}</div>` : ''}
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
         <select onchange="updateRequestStatus(${r.id},this.value)" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:12px;color:var(--text);font-family:inherit;cursor:pointer;outline:none;">
           <option value="pending"    ${r.status==='pending'    ?'selected':''}>⏳ ממתין</option>
@@ -7504,7 +7437,7 @@ function openReplyRequest(reqId) {
   if (!r) return;
   document.getElementById('modalBody').innerHTML = `
     <div class="modal-title">💬 תשובה לפנייה — ${r.workerName}</div>
-    <div style="background:var(--bg3);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--text2);">${r.text}</div>
+    <div style="background:var(--bg3);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--text2);">${esc(r.text)}</div>
     <div class="form-group">
       <label>תשובתך</label>
       <textarea id="reply-text" class="notes-area" rows="4" placeholder="כתוב תשובה לפועל...">${r.reply || ''}</textarea>
@@ -7524,7 +7457,7 @@ function deleteRequest(reqId) {
     <div class="modal-title">🗑️ מחיקת פנייה</div>
     <div style="background:#fff5f5;border:1px solid #f0c0c8;border-radius:12px;padding:16px;margin-bottom:18px;">
       <div style="font-size:13px;font-weight:700;color:#c0506a;margin-bottom:6px;">${requestTypeLabels[r.type] || r.type} — ${r.workerName}</div>
-      <div style="font-size:13px;color:var(--text2);line-height:1.5;">${r.text}</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.5;">${esc(r.text)}</div>
     </div>
     <div style="background:#fff8f0;border:1px solid #f0d0a8;border-radius:10px;padding:12px 14px;margin-bottom:18px;font-size:13px;color:#a05010;">
       ⚠️ פעולה זו תמחק את הפנייה לצמיתות ולא ניתן לשחזרה.
@@ -7982,7 +7915,7 @@ function _buildCostModalHTML(siteName, contr, priceLbl, priceType, pricePerUnit,
     const qty = priceType === 'hourly' ? r.hours.toFixed(1) : priceType === 'daily' ? r.days : 1;
     return `<tr style="border-bottom:1px solid var(--border);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
       <td style="padding:8px 10px;font-size:12px;color:var(--text2);">${r.worker.idNumber || '—'}</td>
-      <td style="padding:8px 10px;font-weight:600;">${r.worker.name}</td>
+      <td style="padding:8px 10px;font-weight:600;">${esc(r.worker.name)}</td>
       <td style="padding:8px 6px;text-align:center;font-weight:600;">${qty}</td>
       <td style="padding:8px 6px;text-align:center;color:#0071e3;">${pricePerUnit ? '₪'+pricePerUnit.toLocaleString() : '—'}</td>
       <td style="padding:8px 6px;text-align:center;color:#0071e3;font-weight:700;">${r.cost!=null ? '₪'+Math.round(r.cost).toLocaleString() : '—'}</td>
@@ -8231,8 +8164,8 @@ function renderWorkSites() {
           <div style="display:flex;align-items:flex-start;gap:12px;">
             <div style="flex:1;">
               <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-                <span style="font-size:15px;font-weight:700;color:var(--text);">📍 ${site.name}</span>
-                ${site.address ? `<span style="font-size:11px;color:var(--text3);background:white;border-radius:6px;padding:2px 7px;border:1px solid var(--border);">📌 ${site.address}</span>` : ''}
+                <span style="font-size:15px;font-weight:700;color:var(--text);">📍 ${esc(site.name)}</span>
+                ${site.address ? `<span style="font-size:11px;color:var(--text3);background:white;border-radius:6px;padding:2px 7px;border:1px solid var(--border);">📌 ${esc(site.address)}</span>` : ''}
               </div>
               ${site.phone ? `<div style="font-size:12px;color:var(--text2);margin-bottom:8px;">📞 ${site.phone}</div>` : ''}
               <!-- פועלים באתר -->
@@ -8241,7 +8174,7 @@ function renderWorkSites() {
                 ${siteWorkers.length ? siteWorkers.map(w => `
                   <span style="display:inline-flex;align-items:center;gap:4px;background:white;border:1px solid var(--border);border-radius:20px;padding:3px 8px;font-size:12px;">
                     <span style="width:18px;height:18px;border-radius:50%;background:${w.avatarColor}33;color:${w.avatarColor};display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;">${w.name[0]}</span>
-                    ${w.name}
+                    ${esc(w.name)}
                     <button onclick="openWorkerSiteHistory(${w.id})" title="היסטוריית שיוכים" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:11px;padding:0 2px;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text3)'">📋</button>
                     <button onclick="removeWorkerFromSite(${w.id})" title="הסר מאתר" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:0 2px;line-height:1;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'">×</button>
                   </span>`).join('') : `<span style="font-size:12px;color:var(--text3);font-style:italic;">אין פועלים משויכים</span>`}
@@ -8278,7 +8211,7 @@ function renderWorkSites() {
             <div style="display:inline-flex;align-items:center;gap:8px;background:white;border:1px solid var(--border);border-radius:10px;padding:8px 12px;">
               <input type="checkbox" id="bulk-cb-${w.id}" onchange="toggleBulkSelect(${w.id})" style="width:16px;height:16px;cursor:pointer;accent-color:var(--accent);">
               <span style="width:28px;height:28px;border-radius:50%;background:${w.avatarColor}33;color:${w.avatarColor};display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">${w.name[0]}</span>
-              <span style="font-size:13px;font-weight:600;">${w.name}</span>
+              <span style="font-size:13px;font-weight:600;">${esc(w.name)}</span>
               <button onclick="openAssignSiteModal(${w.id})" class="btn btn-primary btn-sm" style="font-size:11px;padding:3px 8px;">שייך</button>
             </div>`).join('')}
         </div>
@@ -8586,8 +8519,8 @@ async function deleteSite(siteId) {
   if (!site) return;
   const workers = DATA.users.filter(u=>u.siteId===siteId);
   const msg = workers.length
-    ? `מחיקת "${site.name}" תסיר שיוך מ-${workers.length} פועלים. להמשיך?`
-    : `למחוק את "${site.name}"?`;
+    ? `מחיקת "${esc(site.name)}" תסיר שיוך מ-${workers.length} פועלים. להמשיך?`
+    : `למחוק את "${esc(site.name)}"?`;
   if (!confirm(msg)) return;
   // הסר שיוך מפועלים
   for (const w of workers) await sbAssignWorkerSite(w.id, null);
@@ -8607,7 +8540,7 @@ function openAssignSiteModal(workerId) {
     <div style="padding:24px;max-width:380px;width:100%;">
       <div style="font-size:17px;font-weight:800;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
         <span style="width:36px;height:36px;border-radius:50%;background:${worker.avatarColor}33;color:${worker.avatarColor};display:inline-flex;align-items:center;justify-content:center;font-weight:700;">${worker.name[0]}</span>
-        שיוך אתר — ${worker.name}
+        שיוך אתר — ${esc(worker.name)}
       </div>
       ${!sites.length ? `<div style="color:var(--text3);font-size:13px;margin-bottom:16px;">אין אתרי עבודה. <button onclick="closeModal();openAddSiteModal()" class="btn btn-primary btn-sm">+ הוסף אתר</button></div>` : `
       <div style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;margin-bottom:16px;">
@@ -8657,9 +8590,9 @@ function openAssignToSiteFromList(siteId) {
         style="width:100%;border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:14px;font-family:inherit;background:var(--bg3);color:var(--text);outline:none;box-sizing:border-box;margin-bottom:10px;">
       <div id="${workersListId}" style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;margin-bottom:16px;">
         ${unassigned.map(w=>`
-          <label data-name="${w.name}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;border:1px solid var(--border);background:white;" onclick="closeModal();assignWorkerToSite(${w.id},${siteId});">
+          <label data-name="${esc(w.name)}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;border:1px solid var(--border);background:white;" onclick="closeModal();assignWorkerToSite(${w.id},${siteId});">
             <span style="width:30px;height:30px;border-radius:50%;background:${w.avatarColor}33;color:${w.avatarColor};display:inline-flex;align-items:center;justify-content:center;font-weight:700;">${w.name[0]}</span>
-            <span style="font-weight:600;">${w.name}</span>
+            <span style="font-weight:600;">${esc(w.name)}</span>
             ${w.siteId ? `<span style="font-size:11px;color:var(--text3);margin-right:auto;">${DATA.workSites.find(s=>s.id===w.siteId)?.name||''}</span>` : ''}
           </label>`).join('')}
       </div>
@@ -8758,9 +8691,9 @@ function openWorkerSiteHistory(workerId) {
     <div style="padding:22px;max-width:420px;width:100%;">
       <div style="font-size:17px;font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:10px;">
         <span style="width:34px;height:34px;border-radius:50%;background:${worker.avatarColor}33;color:${worker.avatarColor};display:inline-flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;">${worker.name[0]}</span>
-        היסטוריית אתרי עבודה — ${worker.name}
+        היסטוריית אתרי עבודה — ${esc(worker.name)}
       </div>
-      ${currentSite ? `<div style="font-size:12px;color:var(--accent);margin-bottom:16px;padding-right:44px;">🔵 אתר נוכחי: ${currentSite.name}</div>` : '<div style="font-size:12px;color:var(--text3);margin-bottom:16px;padding-right:44px;">אין אתר עבודה נוכחי</div>'}
+      ${currentSite ? `<div style="font-size:12px;color:var(--accent);margin-bottom:16px;padding-right:44px;">🔵 אתר נוכחי: ${esc(currentSite.name)}</div>` : '<div style="font-size:12px;color:var(--text3);margin-bottom:16px;padding-right:44px;">אין אתר עבודה נוכחי</div>'}
 
       ${!history.length ? `<div style="text-align:center;padding:24px;color:var(--text3);font-size:13px;">אין היסטוריית שיוכים</div>` : `
       <div style="display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;">
@@ -8803,7 +8736,7 @@ function openAddHistoryEntry(workerId) {
           <select id="hist-add-site" onchange="updateHistAddContractor(this)"
             style="width:100%;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;background:var(--bg3);font-family:inherit;">
             <option value="">— בחר אתר עבודה —</option>
-            ${sites.map(s=>`<option value="${s.id}" data-contractor="${s.contractor||''}" data-site="${s.name}">${s.contractor||'ללא קבלן'} — ${s.name}</option>`).join('')}
+            ${sites.map(s=>`<option value="${s.id}" data-contractor="${esc(s.contractor||'')}" data-site="${esc(s.name)}">${s.contractor||'ללא קבלן'} — ${esc(s.name)}</option>`).join('')}
           </select>
         </div>
         <div id="hist-add-contractor-display" style="font-size:12px;color:var(--text2);display:none;">
@@ -9053,7 +8986,7 @@ function renderQuickNotes(type) {
   container.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:4px;">${notes.map((n,i) => `
     <div style="background:${n.color}15;border:1px solid ${n.color}44;border-radius:10px;padding:14px;position:relative;">
       <button onclick="deleteQuickNote('${type}',${i})" style="position:absolute;top:8px;left:8px;background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;">✕</button>
-      <div style="font-size:13px;line-height:1.5;color:var(--text);margin-bottom:6px;">${n.text}</div>      <div style="font-size:11px;color:var(--text3);">${n.time}</div>
+      <div style="font-size:13px;line-height:1.5;color:var(--text);margin-bottom:6px;">${esc(n.text)}</div>      <div style="font-size:11px;color:var(--text3);">${esc(n.time)}</div>
     </div>`).join('')}</div>`;
 }
 
@@ -9066,10 +8999,10 @@ function deleteQuickNote(type, idx) {
 const passVisible = {};
 function togglePassView(userId) {
   passVisible[userId] = !passVisible[userId];
-  const el = document.getElementById(`pass-display-${userId}`);
+  const el  = document.getElementById(`pass-display-${userId}`);
   const btn = document.getElementById(`eye-btn-${userId}`);
-  const password = btn ? btn.dataset.pass : '';
-  if (el) el.textContent = passVisible[userId] ? (password || '(לא הוגדרה)') : '••••••••';
+  // סיסמאות לא נשמרות יותר בצד הלקוח — יש לשנות סיסמה דרך כפתור ייעודי
+  if (el)  el.textContent  = passVisible[userId] ? '(לא זמין — השתמש בשינוי סיסמה)' : '••••••••';
   if (btn) btn.textContent = passVisible[userId] ? '🙈' : '👁️';
 }
 
@@ -9522,11 +9455,11 @@ function calDayView(allEvents) {
         onmouseover="this.style.background='${color}25'" onmouseout="this.style.background='${color}15'">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
           <span style="font-size:18px;">${type.icon}</span>
-          <div style="font-size:15px;font-weight:700;${ev.status==='done'?'text-decoration:line-through;color:var(--text3)':''}">${ev.title}</div>
+          <div style="font-size:15px;font-weight:700;${ev.status==='done'?'text-decoration:line-through;color:var(--text3)':''}">${esc(ev.title)}</div>
           <span style="font-size:11px;background:${color}22;color:${color};border-radius:6px;padding:2px 8px;font-weight:600;margin-right:auto;">${status.label}</span>
         </div>
-        ${ev.time ? `<div style="font-size:12px;color:var(--text2);">🕐 ${ev.time}</div>` : ''}
-        ${ev.note ? `<div style="font-size:12px;color:var(--text2);margin-top:4px;">${ev.note}</div>` : ''}
+        ${ev.time ? `<div style="font-size:12px;color:var(--text2);">🕐 ${esc(ev.time)}</div>` : ''}
+        ${ev.note ? `<div style="font-size:12px;color:var(--text2);margin-top:4px;">${esc(ev.note)}</div>` : ''}
         ${ev.fromTask ? `<div style="font-size:11px;color:var(--text3);margin-top:4px;">📋 ממשימה</div>` : ''}
       </div>`;
     }).join('');
@@ -9542,7 +9475,7 @@ function calEventChip(ev, tall = false) {
   return `<div data-calevent="${ev.id}" style="background:${color};color:white;border-radius:4px;
     padding:${tall?'4px 6px':'2px 5px'};font-size:${tall?'12px':'10px'};margin-bottom:2px;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;opacity:${ev.status==='done'?'0.5':'1'};">
-    ${type.icon} ${ev.title}
+    ${type.icon} ${esc(ev.title)}
   </div>`;
 }
 
@@ -9650,7 +9583,7 @@ function openCalEventModal(dateStr) {
         ${(DATA.users||[]).filter(u => u.company === currentUser?.company && u.role === 'employee').map(u =>
           `<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
             <input type="checkbox" value="${u.id}" style="width:16px;height:16px;">
-            ${u.name}
+            ${esc(u.name)}
           </label>`).join('')}
       </div>
     </div>` : ''}
@@ -9727,7 +9660,7 @@ function openCalEventEdit(eventId) {
     <div class="modal-title">✏️ עריכת אירוע</div>
     <div class="form-group">
       <label>כותרת</label>
-      <input type="text" id="cal-ed-title" class="search-input" value="${ev.title}" style="width:100%;">
+      <input type="text" id="cal-ed-title" class="search-input" value="${esc(ev.title)}" style="width:100%;">
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
       <div class="form-group">
@@ -9747,7 +9680,7 @@ function openCalEventEdit(eventId) {
           <input type="text" id="cal-ed-time"
             placeholder="20:00" maxlength="5"
             oninput="calFormatTimeInput(this)"
-            value="${ev.time||''}"
+            value="${esc(ev.time||'')}"
             style="flex:1;border:none;background:none;outline:none;font-size:13px;direction:ltr;text-align:left;color:var(--text);font-family:inherit;">
           <svg onclick="openCalTimePicker('cal-ed-time')" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text3);flex-shrink:0;cursor:pointer;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text3)'"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         </div>
@@ -9785,7 +9718,7 @@ function openCalEventEdit(eventId) {
     </div>
     <div class="form-group">
       <label>הערה</label>
-      <textarea id="cal-ed-note" class="search-input" rows="2" style="width:100%;resize:vertical;">${ev.note||''}</textarea>
+      <textarea id="cal-ed-note" class="search-input" rows="2" style="width:100%;resize:vertical;">${esc(ev.note||'')}</textarea>
     </div>
     <div class="modal-actions">
       <button class="btn btn-primary" id="cal-update-btn">💾 עדכן</button>
