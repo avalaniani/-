@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { jwtVerify } from 'jose'
 
+const COOKIE_NAME = 'wfp_session'
+
 // ─── תיקון: Rate limiting פשוט בזיכרון (לייצור מומלץ Upstash Redis) ───
 // מגביל ניסיונות login ל-10 בדקה לכל IP
 const loginAttempts = new Map<string, { count: number; resetAt: number }>()
@@ -56,8 +58,11 @@ export async function middleware(request: NextRequest) {
 
   // ─── JWT ולידציה על כל ה-API חוץ מ-auth ───
   if (pathname.startsWith('/api/') && !pathname.startsWith('/api/auth')) {
-    const auth = request.headers.get('authorization')
-    const token = auth?.startsWith('Bearer ') ? auth.slice(7) : null
+    // ─── תיקון: קרא token מ-cookie (httpOnly) תחילה, אחר כך header ───
+    const token = request.cookies.get(COOKIE_NAME)?.value
+      || (request.headers.get('authorization')?.startsWith('Bearer ')
+          ? request.headers.get('authorization')!.slice(7)
+          : null)
 
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
