@@ -912,9 +912,10 @@
   }
 
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx-js-style.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha512-ZwR1/gSZM3ai6vCdI+LVF1zSq/5HznD3oD+sCoJrzXJ+yKRWEzbXLvpi4oBEx1FdWoqnpDdO3lgtZSo8wa+g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<!-- NOTE: supabase-js loaded but not used with credentials (service_role stays server-side) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx-js-style.min.js" crossorigin="anonymous"></script>
 </head>
 <body>
 
@@ -2212,13 +2213,21 @@ function esc(v) {
 // ═══════════════════════════════════════════════════════════════
 
 // ── Token storage — localStorage לשמירה לאחר רענון ──
-const TOKEN_KEY = 'wfp_token';
 const HAS_SUPABASE = true;
 
-function getToken() { return localStorage.getItem(TOKEN_KEY); }
+// ─── Token: httpOnly cookie (שרת) — localStorage רק לזיכרון session ───
+// ה-cookie מוגדר אוטומטית בשרת ב-POST /auth (httpOnly, secure)
+// ה-token כאן הוא fallback לאחר הכניסה, לא נשמר מחדש בין sessions
+let _sessionToken = null;
+
+function getToken() {
+  // מחזיר token מזיכרון ה-session (לא מ-localStorage)
+  return _sessionToken;
+}
 function setToken(t) {
-  if (t) localStorage.setItem(TOKEN_KEY, t);
-  else   localStorage.removeItem(TOKEN_KEY);
+  _sessionToken = t || null;
+  // ─── לא שומרים ב-localStorage ───
+  // httpOnly cookie מטפל בהתמדה בין sessions
 }
 
 // ── API fetch wrapper ─────────────────────────────────────────
@@ -5243,10 +5252,12 @@ function _copyGridToExcelImpl(fullscreen) {
   } else {
     const s = document.createElement('script');
     s.src = 'https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx-js-style.min.js';
+    s.crossOrigin = 'anonymous';
     s.onload = doExport;
     s.onerror = () => {
       const s2 = document.createElement('script');
       s2.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+      s2.crossOrigin = 'anonymous';
       s2.onload = doExport; document.head.appendChild(s2);
     };
     document.head.appendChild(s);
@@ -5282,6 +5293,7 @@ function _downloadXLSX(tsv, filename) {
   } else {
     const s = document.createElement('script');
     s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s.crossOrigin = 'anonymous';
     s.onload = doExport;
     s.onerror = () => showToast('❌ שגיאה בטעינת ספריית אקסל', 'error');
     document.head.appendChild(s);
